@@ -1,0 +1,27 @@
+<Server port="8005" shutdown="SHUTDOWN">
+
+  <Service name="Catalina">
+    <Connector port="${tomcat.init.port}" maxThreads="10000" 
+    maxProcessors="0"  minSpareThreads="25"
+			maxSpareThreads="75" maxKeepAliveRequests="-1" enableLookups="false"/>
+			
+	<!-- 		<Connector port="${tomcat.init.port}" maxThreads="10000" 
+    maxProcessors="0"  minSpareThreads="100"
+			maxSpareThreads="5000" maxKeepAliveRequests="-1" enableLookups="false"
+			maxPostSize="0"/> -->
+    
+<!--   <Connector port="8002" maxHttpHeaderSize="8192"
+			maxProcessors="1500" maxThreads="2000" minSpareThreads="25"
+			maxSpareThreads="75" maxKeepAliveRequests="1" enableLookups="false"
+			redirectPort="8443" acceptCount="200" connectionTimeout="0"
+			disableUploadTimeout="true" moveAbandoned="true"
+			removeAbandonedTimeout="300" /> -->
+
+    <Engine name="Catalina" defaultHost="localhost">
+      <Host name="localhost" unpackWARs="false" autoDeploy="false"
+       liveDeploy="false" deployOnStartup="false"
+       xmlValidation="false" xmlNamespaceAware="false"/>
+    </Engine>
+    
+  </Service>
+</Server>

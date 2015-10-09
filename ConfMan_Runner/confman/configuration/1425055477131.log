@@ -1,0 +1,12 @@
+!SESSION 2015-02-27 17:44:37.009 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.7.0_75
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86_64, WS=gtk, NL=en_US
+Command-line arguments:  -console
+
+!ENTRY org.eclipse.osgi 4 0 2015-02-27 17:44:37.503
+!MESSAGE Bundle #plugins/log4j/log4j-config_OFF.jar not found.
+
+!ENTRY org.eclipse.osgi 4 0 2015-02-27 17:44:37.504
+!MESSAGE Bundle plugins/neclab/ngsihierarchystorage-1.0.5.jar@start not found.

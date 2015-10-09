@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.neclab.iotplatform.confman</groupId>
+		<artifactId>parent</artifactId>
+		<version>4.3.3</version>
+		<relativePath>../eu.neclab.iotplatform.confman.parent</relativePath>
+	</parent>
+
+	<artifactId>builder</artifactId>
+	<packaging>pom</packaging>
+	<name>eu.neclab.iotplatform.confman.builder</name>
+
+
+
+	<properties>
+		<target-framework>equinox</target-framework>
+		<dependency.pax.web.version>0.5.2</dependency.pax.web.version>
+	</properties>
+
+
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>2.3</version>
+				<executions>
+					<execution>
+						<id>create-target</id>
+						<phase>package</phase>
+						<goals>
+							<goal>single</goal>
+						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>assembly.xml</descriptor>
+							</descriptors>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
+	<repositories>
+		<repository>
+			<id>ops4j-runner-snapshot</id>
+			<name>ops4j.org pax runner snapshot repository</name>
+			<url>http://scm.ops4j.org/repos/ops4j/projects/pax/runner-repository</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+
+	<modules>
+		<module>../eu.neclab.iotplatform.ngsi.api</module>
+		<module>../eu.neclab.iotplatform.confman.commons</module>
+		<module>../eu.neclab.iotplatform.confman.postgres/</module>
+		<module>../eu.neclab.iotplatform.confman.utilitystorage/</module>
+		<module>../eu.neclab.iotplatform.confman.couchdb</module>
+		<module>../eu.neclab.iotplatform.confman.extensionmanager</module>
+		<module>../eu.neclab.iotplatform.confman.coreextensible</module>
+		<module>../eu.neclab.iotplatform.confman.restcontroller</module>
+		<module>../eu.neclab.iotplatform.confman.serverconf</module>		
+	</modules>
+
+
+</project>

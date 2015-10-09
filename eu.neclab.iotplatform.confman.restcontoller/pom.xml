@@ -1,0 +1,82 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.neclab.iotplatform.confman</groupId>
+		<artifactId>parent</artifactId>
+		<version>4.3.3</version>
+		<relativePath>../eu.neclab.iotplatform.confman.parent</relativePath>
+	</parent>
+
+
+	<artifactId>restcontroller</artifactId>
+	<name>eu.neclab.iotplatform.confman.restcontroller</name>
+	<packaging>bundle</packaging>
+
+	<properties>
+		<java-version>1.7</java-version>
+	</properties>
+
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>2.4.0</version>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.ngsi9.restcontroller.*</Private-Package>
+						<Import-Package>eu.neclab.iotplatform.confman.commons.methods;version="${confman.version}",
+							eu.neclab.iotplatform.ngsi.api.ngsi9;version="${iotbroker.version}",
+							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
+							javax.servlet.http;version="2.5",
+							org.apache.log4j;version="1.2.15",
+							org.springframework.beans.factory;version="3.2.3.RELEASE",
+							org.springframework.beans.factory.annotation;version="3.2.3.RELEASE",
+							org.springframework.http;version="3.2.3.RELEASE",
+							org.springframework.osgi.web.context.support;version="2.0.0.M1",
+							org.springframework.stereotype;version="3.2",
+							org.springframework.web.bind.annotation;version="3.2",
+							org.springframework.web.context;version="3.2.3.RELEASE",
+							org.springframework.web.servlet;version="3.2.3.RELEASE"</Import-Package>
+						<Include-Resource>src/main/resources,src/main/webapp</Include-Resource>
+						<Web-ContextPath>/</Web-ContextPath>
+					</instructions>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+			<version>${iotbroker.version}</version>
+			<type>bundle</type>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.neclab.iotplatform.confman</groupId>
+			<artifactId>commons</artifactId>
+			<type>bundle</type>
+			<version>${confman.version}</version>
+		</dependency>
+
+	</dependencies>
+</project>

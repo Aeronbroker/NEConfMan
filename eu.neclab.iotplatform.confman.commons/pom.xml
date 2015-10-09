@@ -1,0 +1,133 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+
+
+	<parent>
+		<groupId>eu.neclab.iotplatform.confman</groupId>
+		<artifactId>parent</artifactId>
+		<version>4.3.3</version>
+		<relativePath>../eu.neclab.iotplatform.confman.parent</relativePath>
+	</parent>
+
+	<artifactId>commons</artifactId>
+	<packaging>bundle</packaging>
+
+	<name>eu.neclab.iotplatform.confman.commons</name>
+	<url>http://maven.apache.org</url>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.confman.commons.*</Private-Package>
+						<Import-Package>com.google.common.collect;version="17.0.0",
+							com.sun.xml.bind.marshaller,
+							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
+							org.apache.log4j;version="1.2.15",
+							com.google.gson;version="2.2.2",
+							org.junit;version="4.11.0",
+							org.apache.http,
+							org.apache.http.message</Import-Package>
+						<Export-Package>
+							eu.neclab.iotplatform.confman.commons.exceptions;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.interfaces;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.methods;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.comparators;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.datatype;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.spatial.datatype;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.spatial.interfaces;version=${confman.version},
+							eu.neclab.iotplatform.confman.commons.spatial.utils;version=${confman.version}
+						</Export-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20140107</version>
+		</dependency>
+
+		<dependency>
+			<groupId>eu.neclab.iotplatform</groupId>
+			<artifactId>ngsi.api</artifactId>
+			<type>bundle</type>
+			<version>${iotbroker.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.code.gson</groupId>
+			<artifactId>gson</artifactId>
+			<version>2.2.4</version>
+		</dependency>
+
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.3.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpcore</artifactId>
+			<version>4.3.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>com.springsource.org.apache.commons.httpclient</artifactId>
+			<version>3.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.xmlgraphics</groupId>
+			<artifactId>batik-awt-util</artifactId>
+			<version>1.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+	</dependencies>
+</project>

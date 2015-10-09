@@ -1,0 +1,16 @@
+-Declipse.ignoreApp=true
+-Dconfman.registerContextDbName=confman_registerContext_1
+-Dconfman.subscriptionDbName=confman_subscribeContextAvailability_1
+-Dosgi.noShutdown=true 
+-Dbundles.configuration.location=/home/flavio/fiwareRelease/configurations 
+-Dtomcat.init.port=8061
+-Dtomcat.init.httpsport=9444
+-Ddir.config=/home/flavio/testingABit/test1/
+-Dngsiclient.layer=connector 
+-Djava.awt.headless=true 
+-Dfile.encoding=UTF-8 
+-XX:NewSize=1024m 
+-XX:MaxNewSize=1024m 
+-XX:PermSize=1024m
+-XX:MaxPermSize=1024m 
+-XX:+DisableExplicitGC
