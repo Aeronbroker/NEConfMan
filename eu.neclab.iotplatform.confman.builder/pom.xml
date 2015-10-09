@@ -65,12 +65,12 @@
 
 
 	<modules>
-		<module>../eu.neclab.iotplatform.ngsi.api</module>
+		<!--   <module>../eu.neclab.iotplatform.ngsi.api</module> -->
 		<module>../eu.neclab.iotplatform.confman.commons</module>
 		<module>../eu.neclab.iotplatform.confman.postgres/</module>
 		<module>../eu.neclab.iotplatform.confman.utilitystorage/</module>
 		<module>../eu.neclab.iotplatform.confman.couchdb</module>
-		<module>../eu.neclab.iotplatform.confman.extensionmanager</module>
+		<!-- <module>../eu.neclab.iotplatform.confman.extensionmanager</module>-->
 		<module>../eu.neclab.iotplatform.confman.coreextensible</module>
 		<module>../eu.neclab.iotplatform.confman.restcontroller</module>
 		<module>../eu.neclab.iotplatform.confman.serverconf</module>		

@@ -84,7 +84,7 @@
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>ngsi.api</artifactId>
 			<type>bundle</type>
-			<version>${iotbroker.version}</version>
+			<version>4.4.3</version>
 		</dependency>
 
 		<dependency>
