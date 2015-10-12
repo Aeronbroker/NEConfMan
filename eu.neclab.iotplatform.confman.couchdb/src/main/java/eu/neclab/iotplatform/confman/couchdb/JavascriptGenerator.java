@@ -170,18 +170,18 @@ public class JavascriptGenerator {
 			jsContRegCheck = jsContRegCheck + 
 						"providingApplication = contextRegistrationList.contextRegistration.providingApplication;" +
 						"var registrationMetadataResult;" +
-						"if (contextRegistrationList.contextRegistration.registrationMetaData) {" +
-							" registrationMetadataResult = contextRegistrationList.contextRegistration.registrationMetaData;" +
+						"if (contextRegistrationList.contextRegistration.registrationMetadata) {" +
+							" registrationMetadataResult = contextRegistrationList.contextRegistration.registrationMetadata;" +
 						"}" +
-						"if (contextRegistrationList.contextRegistration.registrationMetaData){" +
-							"metadata = contextRegistrationList.contextRegistration.registrationMetaData;" +
+						"if (contextRegistrationList.contextRegistration.registrationMetadata){" +
+							"metadata = contextRegistrationList.contextRegistration.registrationMetadata;" +
 						"}";
 		} else {
 			jsContRegCheck = jsContRegCheck + 
 						"providingApplication = contextRegistrationList.contextRegistration[i].providingApplication;" +
 						"var registrationMetadataResult;" +
-						"if (contextRegistrationList.contextRegistration[i].registrationMetaData) {" +
-							"registrationMetadataResult = contextRegistrationList.contextRegistration[i].registrationMetaData;" +
+						"if (contextRegistrationList.contextRegistration[i].registrationMetadata) {" +
+							"registrationMetadataResult = contextRegistrationList.contextRegistration[i].registrationMetadata;" +
 						"}";
 		}
 
@@ -197,7 +197,7 @@ public class JavascriptGenerator {
 						"entityIdListResult = {\\\"entityId\\\": entityIds};" +
 					"}"+
 					"value = {\\\"providingApplication\\\":providingApplication," +
-								"\\\"registrationMetaData\\\":registrationMetadataResult," +
+								"\\\"registrationMetadata\\\":registrationMetadataResult," +
 								"\\\"contextRegistrationAttributeList\\\":contextRegistrationAttributeListResult," +
 								"\\\"entityIdList\\\":entityIdListResult" +
 							 "};" +
@@ -566,11 +566,11 @@ public class JavascriptGenerator {
 						"if (emitCondition) {" +
 							"providingApplication = contextRegistration.providingApplication;" +
 							"var registrationMetadataResult;" +
-							"if (contextRegistration.registrationMetaData) {" +
-								"registrationMetadataResult = contextRegistration.registrationMetaData;" +
+							"if (contextRegistration.registrationMetadata) {" +
+								"registrationMetadataResult = contextRegistration.registrationMetadata;" +
 							"};" +
-							"if (contextRegistration.registrationMetaData) {" +
-								"metadata = contextRegistration.registrationMetaData;" +
+							"if (contextRegistration.registrationMetadata) {" +
+								"metadata = contextRegistration.registrationMetadata;" +
 							"};" +
 							"var contextRegistrationAttributeListResult;" +
 						    "if (attributes.length != 0){"+
@@ -581,7 +581,7 @@ public class JavascriptGenerator {
 								"entityIdListResult = {\\\"entityId\\\": entityIds};" +
 							"}"+
 							"value = {\\\"providingApplication\\\": providingApplication," +
-										"\\\"registrationMetaData\\\": registrationMetadataResult," +
+										"\\\"registrationMetadata\\\": registrationMetadataResult," +
 										"\\\"contextRegistrationAttributeList\\\": contextRegistrationAttributeListResult," +
 										"\\\"entityIdList\\\": entityIdListResult" +
 									"};" +
@@ -924,22 +924,22 @@ public class JavascriptGenerator {
 						"if (emitCondition) {" +
 							"providingApplication = contextRegistration.providingApplication;" +
 							"var contextMetadataResult = []; " +
-							"if (contextRegistration.registrationMetaData) {" +
+							"if (contextRegistration.registrationMetadata) {" +
 								"if (takeAllMetadata) {" +
-									"contextMetadataResult = contextRegistration.registrationMetaData.contextMetadata;" +
+									"contextMetadataResult = contextRegistration.registrationMetadata.contextMetadata;" +
 								"} else {" +
 									"for (h = 0; h < isMetadataCompliant.length; h++) {" +
 										"if (isMetadataCompliant[h]) {" +
-											"var registrationMetadataLength = contextRegistration.registrationMetaData.contextMetadata.length;" +
+											"var registrationMetadataLength = contextRegistration.registrationMetadata.contextMetadata.length;" +
 											"if (registrationMetadataLength) {" +
 												"for (q = 0; q < registrationMetadataLength; q++) {" +
-													"var registrationMetadata = contextRegistration.registrationMetaData.contextMetadata[q];" +
+													"var registrationMetadata = contextRegistration.registrationMetadata.contextMetadata[q];" +
 													"if (registrationMetadata.name = metadataName[h]) {" +
 														"contextMetadataResult[contextMetadataResult.length] = registrationMetadata;" +
 													"};" +
 												"};" +
 											"} else {" +
-												"var registrationMetadata = contextRegistration.registrationMetaData.contextMetadata;" +
+												"var registrationMetadata = contextRegistration.registrationMetadata.contextMetadata;" +
 												"if (registrationMetadata.name = metadataName[h]) {" +
 													"contextMetadataResult = registrationMetadata;" +
 												"};" +
@@ -960,7 +960,7 @@ public class JavascriptGenerator {
         					"};" +
         					"value = {"+
         						"\\\"providingApplication\\\": providingApplication," +
-        						"\\\"registrationMetaData\\\": registrationMetadataResult," +
+        						"\\\"registrationMetadata\\\": registrationMetadataResult," +
         						"\\\"contextRegistrationAttributeList\\\": contextRegistrationAttributeListResult," +
         						"\\\"entityIdList\\\": entityIdListResult" +
         					"};"+
