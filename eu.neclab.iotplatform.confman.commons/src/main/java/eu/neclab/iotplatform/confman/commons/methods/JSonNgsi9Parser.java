@@ -816,18 +816,18 @@ public class JSonNgsi9Parser {
 		// JsonArray jsonRegistrationMetadataList = jo.getAsJsonObject()
 		// .getAsJsonArray("contextMetadata");
 		JsonArray jsonRegistrationMetadataList;
-		if (jo.getAsJsonObject("registrationMetaData") != null
-				&& jo.getAsJsonObject("registrationMetaData").get(
+		if (jo.getAsJsonObject("registrationMetadata") != null
+				&& jo.getAsJsonObject("registrationMetadata").get(
 						"contextMetadata") != null) {
-			if (jo.getAsJsonObject("registrationMetaData")
+			if (jo.getAsJsonObject("registrationMetadata")
 					.get("contextMetadata").isJsonArray()) {
 				jsonRegistrationMetadataList = jo.getAsJsonObject(
-						"registrationMetaData").getAsJsonArray(
+						"registrationMetadata").getAsJsonArray(
 						"contextMetadata");
 			} else {
 				jsonRegistrationMetadataList = new JsonArray();
 				jsonRegistrationMetadataList.add(jo.getAsJsonObject(
-						"registrationMetaData").getAsJsonObject(
+						"registrationMetadata").getAsJsonObject(
 						"contextMetadata"));
 			}
 
