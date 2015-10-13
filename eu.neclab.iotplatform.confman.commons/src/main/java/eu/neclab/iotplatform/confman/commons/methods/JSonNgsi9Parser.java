@@ -66,6 +66,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Point;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Polygon;
@@ -86,8 +87,7 @@ public class JSonNgsi9Parser {
 		return json.fromJson(jo.getAsJsonObject(), EntityId.class);
 	}
 
-	public static ContextMetadata parseContextMetadata(
-			String jsonContextMetadata) {
+	public static ContextMetadata parseContextMetadata(String jsonContextMetadata) {
 
 		JsonParser jsonParser = new JsonParser();
 		JsonObject jo = (JsonObject) jsonParser.parse(jsonContextMetadata);
@@ -98,8 +98,7 @@ public class JSonNgsi9Parser {
 		 * Parse ContextMetadata.Name
 		 */
 		if (jo.get("name") != null) {
-			contextMetadata.setName(jo.getAsJsonObject().get("name")
-					.getAsString());
+			contextMetadata.setName(jo.getAsJsonObject().get("name").getAsString());
 		}
 
 		/*
@@ -107,8 +106,7 @@ public class JSonNgsi9Parser {
 		 */
 		if (jo.get("type") != null) {
 			try {
-				contextMetadata.setType(new URI(jo.getAsJsonObject()
-						.get("type").getAsString()));
+				contextMetadata.setType(new URI(jo.getAsJsonObject().get("type").getAsString()));
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -124,37 +122,28 @@ public class JSonNgsi9Parser {
 				if (jo.get("value").toString().contains("segment")) {
 					Segment segment = new Segment();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value")
-							.getAsJsonObject("segment");
+					JsonObject jsonSegment = jo.getAsJsonObject().getAsJsonObject("value").getAsJsonObject("segment");
 
 					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
+						jsonSegment = jo.getAsJsonObject().getAsJsonObject("value");
 					}
 
-					segment.setNW_Corner(jsonSegment.get("NW_Corner")
-							.getAsString());
-					segment.setSE_Corner(jsonSegment.get("SE_Corner")
-							.getAsString());
+					segment.setNW_Corner(jsonSegment.get("NW_Corner").getAsString());
+					segment.setSE_Corner(jsonSegment.get("SE_Corner").getAsString());
 
 					contextMetadata.setValue((Segment) segment);
 				} else if (jo.get("value").toString().contains("point")) {
 
 					Point point = new Point();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value").getAsJsonObject("point");
+					JsonObject jsonSegment = jo.getAsJsonObject().getAsJsonObject("value").getAsJsonObject("point");
 
 					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
+						jsonSegment = jo.getAsJsonObject().getAsJsonObject("value");
 					}
 
-					point.setLatitude(Float.valueOf(jsonSegment.get("latitude")
-							.getAsString()));
-					point.setLongitude(Float.valueOf(jsonSegment.get(
-							"longitude").getAsString()));
+					point.setLatitude(Float.valueOf(jsonSegment.get("latitude").getAsString()));
+					point.setLongitude(Float.valueOf(jsonSegment.get("longitude").getAsString()));
 
 					contextMetadata.setValue((Point) point);
 
@@ -162,20 +151,15 @@ public class JSonNgsi9Parser {
 
 					Circle circle = new Circle();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value").getAsJsonObject("circle");
+					JsonObject jsonSegment = jo.getAsJsonObject().getAsJsonObject("value").getAsJsonObject("circle");
 
 					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
+						jsonSegment = jo.getAsJsonObject().getAsJsonObject("value");
 					}
 
-					circle.setCenterLatitude(Float.valueOf(jsonSegment.get(
-							"centerLatitude").getAsString()));
-					circle.setCenterLongitude(Float.valueOf(jsonSegment.get(
-							"centerLongitude").getAsString()));
-					circle.setRadius(Float.valueOf(jsonSegment.get("radius")
-							.getAsString()));
+					circle.setCenterLatitude(Float.valueOf(jsonSegment.get("centerLatitude").getAsString()));
+					circle.setCenterLongitude(Float.valueOf(jsonSegment.get("centerLongitude").getAsString()));
+					circle.setRadius(Float.valueOf(jsonSegment.get("radius").getAsString()));
 
 					contextMetadata.setValue((Circle) circle);
 
@@ -183,26 +167,19 @@ public class JSonNgsi9Parser {
 
 					Polygon polygon = new Polygon();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value")
-							.getAsJsonObject("polygon");
+					JsonObject jsonSegment = jo.getAsJsonObject().getAsJsonObject("value").getAsJsonObject("polygon");
 
 					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
+						jsonSegment = jo.getAsJsonObject().getAsJsonObject("value");
 					}
 
-					JsonArray vertexList = jsonSegment.getAsJsonObject(
-							"vertexList").getAsJsonArray("vertex");
+					JsonArray vertexList = jsonSegment.getAsJsonObject("vertexList").getAsJsonArray("vertex");
 					List<Vertex> vertexListXML = new ArrayList<Vertex>();
 
 					for (int i = 0; i < vertexList.size(); i++) {
-						String lat = vertexList.get(i).getAsJsonObject()
-								.get("latitude").getAsString();
-						String lng = vertexList.get(i).getAsJsonObject()
-								.get("longitude").getAsString();
-						Vertex vertex = new Vertex(Float.valueOf(lat),
-								Float.valueOf(lng));
+						String lat = vertexList.get(i).getAsJsonObject().get("latitude").getAsString();
+						String lng = vertexList.get(i).getAsJsonObject().get("longitude").getAsString();
+						Vertex vertex = new Vertex(Float.valueOf(lat), Float.valueOf(lng));
 						vertexListXML.add(vertex);
 					}
 
@@ -215,8 +192,7 @@ public class JSonNgsi9Parser {
 				if (!jo.getAsJsonObject().get("value").isJsonObject()) {
 					string = jo.getAsJsonObject().get("value").getAsString();
 				} else {
-					string = jo.getAsJsonObject().getAsJsonObject("value")
-							.get("content").getAsString();
+					string = jo.getAsJsonObject().getAsJsonObject("value").get("content").getAsString();
 				}
 				contextMetadata.setValue((String) string);
 			}
@@ -246,25 +222,21 @@ public class JSonNgsi9Parser {
 		Polygon polygon = new Polygon();
 
 		if (jo.get("vertexList") != null && jo.get("vertexList").isJsonArray()) {
-			JsonArray vertexList = jo.getAsJsonObject("vertexList")
-					.getAsJsonArray("vertex");
+			JsonArray vertexList = jo.getAsJsonObject("vertexList").getAsJsonArray("vertex");
 			List<Vertex> vertexListXML = new ArrayList<Vertex>();
 
 			for (int i = 0; i < vertexList.size(); i++) {
 				String lat = null;
 				String lng = null;
 				if (vertexList.get(i).getAsJsonObject().get("latitude") != null) {
-					lat = vertexList.get(i).getAsJsonObject().get("latitude")
-							.getAsString();
+					lat = vertexList.get(i).getAsJsonObject().get("latitude").getAsString();
 				}
 				if (vertexList.get(i).getAsJsonObject().get("longitude") != null) {
-					lng = vertexList.get(i).getAsJsonObject().get("longitude")
-							.getAsString();
+					lng = vertexList.get(i).getAsJsonObject().get("longitude").getAsString();
 				}
 
 				if (lat != null && lng != null) {
-					Vertex vertex = new Vertex(Float.valueOf(lat),
-							Float.valueOf(lng));
+					Vertex vertex = new Vertex(Float.valueOf(lat), Float.valueOf(lng));
 					vertexListXML.add(vertex);
 				}
 			}
@@ -280,13 +252,9 @@ public class JSonNgsi9Parser {
 
 		Circle circle = new Circle();
 
-		if (jo.get("centerLatitude") != null
-				&& jo.get("centerLongitude") != null
-				&& jo.get("radius") != null) {
-			circle.setCenterLatitude(Float.valueOf(jo.get("centerLatitude")
-					.getAsString()));
-			circle.setCenterLongitude(Float.valueOf(jo.get("centerLongitude")
-					.getAsString()));
+		if (jo.get("centerLatitude") != null && jo.get("centerLongitude") != null && jo.get("radius") != null) {
+			circle.setCenterLatitude(Float.valueOf(jo.get("centerLatitude").getAsString()));
+			circle.setCenterLongitude(Float.valueOf(jo.get("centerLongitude").getAsString()));
 			circle.setRadius(Float.valueOf(jo.get("radius").getAsString()));
 		}
 
@@ -359,8 +327,7 @@ public class JSonNgsi9Parser {
 		 * Parse OperationScope.ScopeType
 		 */
 		if (jo.get("scopeType") != null) {
-			operationScope.setScopeType(jo.getAsJsonObject().get("scopeType")
-					.getAsString());
+			operationScope.setScopeType(jo.getAsJsonObject().get("scopeType").getAsString());
 		}
 
 		/*
@@ -372,13 +339,11 @@ public class JSonNgsi9Parser {
 
 				if (jo.get("scopeValue").toString().contains("segment")) {
 
-					JsonObject scopeValue = jo.getAsJsonObject()
-							.getAsJsonObject("scopeValue")
+					JsonObject scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue")
 							.getAsJsonObject("segment");
 
 					if (scopeValue == null) {
-						scopeValue = jo.getAsJsonObject().getAsJsonObject(
-								"scopeValue");
+						scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue");
 					}
 
 					Segment segment;
@@ -387,13 +352,11 @@ public class JSonNgsi9Parser {
 					operationScope.setScopeValue((Segment) segment);
 				} else if (jo.get("scopeValue").toString().contains("circle")) {
 
-					JsonObject scopeValue = jo.getAsJsonObject()
-							.getAsJsonObject("scopeValue")
+					JsonObject scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue")
 							.getAsJsonObject("segment");
 
 					if (scopeValue == null) {
-						scopeValue = jo.getAsJsonObject().getAsJsonObject(
-								"scopeValue");
+						scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue");
 					}
 
 					Circle circle;
@@ -403,13 +366,11 @@ public class JSonNgsi9Parser {
 
 				} else if (jo.get("scopeValue").toString().contains("polygon")) {
 
-					JsonObject scopeValue = jo.getAsJsonObject()
-							.getAsJsonObject("scopeValue")
+					JsonObject scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue")
 							.getAsJsonObject("polygon");
 
 					if (scopeValue == null) {
-						scopeValue = jo.getAsJsonObject().getAsJsonObject(
-								"scopeValue");
+						scopeValue = jo.getAsJsonObject().getAsJsonObject("scopeValue");
 					}
 
 					Polygon polygon = new Polygon();
@@ -419,8 +380,7 @@ public class JSonNgsi9Parser {
 
 				}
 			} else {
-				String string = jo.getAsJsonObject().get("scopeValue")
-						.toString();
+				String string = jo.getAsJsonObject().get("scopeValue").toString();
 				operationScope.setScopeValue((String) string);
 			}
 		}
@@ -439,24 +399,20 @@ public class JSonNgsi9Parser {
 		 * Parse Restriction.AttributeExpression
 		 */
 		if (jo.get("attributeExpression") != null) {
-			restriction.setAttributeExpression(jo.getAsJsonObject()
-					.get("attributeExpression").getAsString());
+			restriction.setAttributeExpression(jo.getAsJsonObject().get("attributeExpression").getAsString());
 		}
 
 		/*
 		 * Parse Restriction.OperationScope
 		 */
 		JsonArray jsonOperationScope;
-		if (jo.get("scope") != null
-				&& jo.getAsJsonObject("scope").get("operationScope") != null) {
+		if (jo.get("scope") != null && jo.getAsJsonObject("scope").get("operationScope") != null) {
 
 			if (jo.getAsJsonObject("scope").get("operationScope").isJsonArray()) {
-				jsonOperationScope = jo.getAsJsonObject("scope")
-						.getAsJsonArray("operationScope");
+				jsonOperationScope = jo.getAsJsonObject("scope").getAsJsonArray("operationScope");
 			} else {
 				jsonOperationScope = new JsonArray();
-				jsonOperationScope.add(jo.getAsJsonObject("scope")
-						.getAsJsonObject("operationScope"));
+				jsonOperationScope.add(jo.getAsJsonObject("scope").getAsJsonObject("operationScope"));
 			}
 
 			if (!jsonOperationScope.isJsonNull()) {
@@ -466,8 +422,7 @@ public class JSonNgsi9Parser {
 
 					// EntityId entity = json.fromJson(jsonEntityIdList.get(j)
 					// .getAsJsonObject(), EntityId.class);
-					OperationScope operationScope = parseOperationScope(jsonOperationScope
-							.get(j).toString());
+					OperationScope operationScope = parseOperationScope(jsonOperationScope.get(j).toString());
 					operationScopeList.add(operationScope);
 
 				}
@@ -478,11 +433,11 @@ public class JSonNgsi9Parser {
 		return restriction;
 	}
 
-	public static void main(String[] args) throws URISyntaxException,
-			JAXBException {
+	public static void main(String[] args) throws URISyntaxException, JAXBException {
 		for (int i = 0; i < 18; i++) {
 			int value = 3070 + i;
-			String file = "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:" + value +".obs";
+			String file = "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:"
+					+ value + ".obs";
 			BufferedReader br;
 			StringBuffer sb = new StringBuffer();
 			try {
@@ -499,26 +454,21 @@ public class JSonNgsi9Parser {
 					float lat = 0;
 					float lng = 0;
 
-					JsonArray joAttributes = joValue
-							.getAsJsonArray("attributes");
+					JsonArray joAttributes = joValue.getAsJsonArray("attributes");
 					Iterator<JsonElement> iter = joAttributes.iterator();
 					while (iter.hasNext()) {
 						JsonElement element = iter.next();
-						String type = element.getAsJsonObject().get("type")
-								.getAsString();
-						if ("date".equals(type) || "district".equals(type)
-								|| "section".equals(type)
+						String type = element.getAsJsonObject().get("type").getAsString();
+						if ("date".equals(type) || "district".equals(type) || "section".equals(type)
 								|| "count".equals(type)) {
 							iter.remove();
 						}
 						if ("latitude".equals(type)) {
-							lat = element.getAsJsonObject().get("contextValue")
-									.getAsFloat();
+							lat = element.getAsJsonObject().get("contextValue").getAsFloat();
 							iter.remove();
 						}
 						if ("longitude".equals(type)) {
-							lng = element.getAsJsonObject().get("contextValue")
-									.getAsFloat();
+							lng = element.getAsJsonObject().get("contextValue").getAsFloat();
 							iter.remove();
 						}
 					}
@@ -528,18 +478,14 @@ public class JSonNgsi9Parser {
 					simpleGeoLocation.setType(new URI("SimpleGeoLocation"));
 					simpleGeoLocation.setValue("geoLocationPlaceHolder");
 
-					Segment segment = new Segment(String.format("%f,%f", lat,
-							lng), String.format("%f,%f", lat, lng), null);
-					JAXBContext jaxbContext = JAXBContext
-							.newInstance(Segment.class);
+					Segment segment = new Segment(String.format("%f,%f", lat, lng), String.format("%f,%f", lat, lng),
+							null);
+					JAXBContext jaxbContext = JAXBContext.newInstance(Segment.class);
 					Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 					StringWriter sw = new StringWriter();
 					jaxbMarshaller.marshal(segment, sw);
-					String segmentString = sw
-							.toString()
-							.replace(
-									"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
-									"");
+					String segmentString = sw.toString()
+							.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n", "");
 
 					// Circle circle = new Circle(lat,lng,0f);
 					//
@@ -550,14 +496,14 @@ public class JSonNgsi9Parser {
 					// StringWriter sw = new StringWriter();
 					// jaxbMarshaller.marshal(circle, sw);
 					// String cicleString =
-					// sw.toString().replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
+					// sw.toString().replace("<?xml version=\"1.0\"
+					// encoding=\"UTF-8\" standalone=\"yes\"?>\n",
 					// "");
 
 					ObjectMapper mapper = new ObjectMapper();
 
 					// 2. Convert JSON to Java object
-					ContextElement contextElement = mapper.readValue(
-							joValue.toString(), ContextElement.class);
+					ContextElement contextElement = mapper.readValue(joValue.toString(), ContextElement.class);
 					// System.out.println(contextElement);
 					List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
 					contextMetadataList.add(simpleGeoLocation);
@@ -572,20 +518,17 @@ public class JSonNgsi9Parser {
 
 					// JAXBContext context;
 					try {
-						jaxbContext = JAXBContext
-								.newInstance(ContextElement.class);
+						jaxbContext = JAXBContext.newInstance(ContextElement.class);
 						jaxbMarshaller = jaxbContext.createMarshaller();
 						sw = new StringWriter();
 						jaxbMarshaller.marshal(contextElement, sw);
 						String contextElementString = sw.toString();
 
 						// String string = contextElement.toString();
-						contextElementString = contextElementString
-								.replace(
-										"<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
-										"<value>" + segmentString + "</value>");
-						String finalContextElement = contextElementString
-								.replace("\n", "");
+						contextElementString = contextElementString.replace(
+								"<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
+								"<value>" + segmentString + "</value>");
+						String finalContextElement = contextElementString.replace("\n", "");
 
 						sb.append(finalContextElement + "\n");
 
@@ -655,8 +598,7 @@ public class JSonNgsi9Parser {
 		ContextRegistrationAttribute contRegAtt = new ContextRegistrationAttribute();
 
 		JsonParser jsonParser = new JsonParser();
-		JsonObject jo = (JsonObject) jsonParser
-				.parse(jsonContextRegistrationAttribute);
+		JsonObject jo = (JsonObject) jsonParser.parse(jsonContextRegistrationAttribute);
 
 		/*
 		 * Parse ContextRegistrationAttribute.Name
@@ -670,8 +612,7 @@ public class JSonNgsi9Parser {
 		 */
 		if (jo.get("type") != null) {
 			try {
-				contRegAtt.setType(new URI(jo.getAsJsonObject().get("type")
-						.getAsString()));
+				contRegAtt.setType(new URI(jo.getAsJsonObject().get("type").getAsString()));
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -682,32 +623,26 @@ public class JSonNgsi9Parser {
 		 * Parse ContextRegistrationAttribute.IsDomain
 		 */
 		if (jo.get("isDomain") != null) {
-			contRegAtt.setIsDomain(jo.getAsJsonObject().get("isDomain")
-					.getAsBoolean());
+			contRegAtt.setIsDomain(jo.getAsJsonObject().get("isDomain").getAsBoolean());
 		}
 
 		/*
 		 * Parse ContextRegistrationAttribute.Metadata
 		 */
-		if (jo.get("metaData") != null
-				&& jo.getAsJsonObject("metaData").get("contextMetadata") != null) {
+		if (jo.get("metaData") != null && jo.getAsJsonObject("metaData").get("contextMetadata") != null) {
 
 			JsonArray jsonContextMetadataList;
-			if (jo.getAsJsonObject("metaData").get("contextMetadata")
-					.isJsonArray()) {
-				jsonContextMetadataList = jo.getAsJsonObject("metaData")
-						.getAsJsonArray("contextMetadata");
+			if (jo.getAsJsonObject("metaData").get("contextMetadata").isJsonArray()) {
+				jsonContextMetadataList = jo.getAsJsonObject("metaData").getAsJsonArray("contextMetadata");
 			} else {
 				jsonContextMetadataList = new JsonArray();
-				jsonContextMetadataList.add(jo.getAsJsonObject("metaData")
-						.getAsJsonObject("contextMetadata"));
+				jsonContextMetadataList.add(jo.getAsJsonObject("metaData").getAsJsonObject("contextMetadata"));
 			}
 
 			List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
 			for (int j = 0; j < jsonContextMetadataList.size(); j++) {
 
-				ContextMetadata contextMetadata = parseContextMetadata(jsonContextMetadataList
-						.get(j).toString());
+				ContextMetadata contextMetadata = parseContextMetadata(jsonContextMetadataList.get(j).toString());
 				contextMetadataList.add(contextMetadata);
 			}
 			contRegAtt.setMetaData(contextMetadataList);
@@ -716,8 +651,7 @@ public class JSonNgsi9Parser {
 		return contRegAtt;
 	}
 
-	public static ContextRegistration parseContextRegistration(
-			String jsonContextRegistration) {
+	public static ContextRegistration parseContextRegistration(String jsonContextRegistration) {
 
 		// System.out.println("Here is the ContextRegistration to parse:"
 		// + jsonContextRegistration);
@@ -733,17 +667,13 @@ public class JSonNgsi9Parser {
 		 * Parse ContextRegistrationList.EntityIdList
 		 */
 		JsonArray jsonEntityIdList;
-		if (jo.get("entityIdList") != null
-				&& jo.getAsJsonObject("entityIdList").get("entityId") != null) {
+		if (jo.get("entityIdList") != null && jo.getAsJsonObject("entityIdList").get("entityId") != null) {
 
-			if (jo.getAsJsonObject("entityIdList").get("entityId")
-					.isJsonArray()) {
-				jsonEntityIdList = jo.getAsJsonObject("entityIdList")
-						.getAsJsonArray("entityId");
+			if (jo.getAsJsonObject("entityIdList").get("entityId").isJsonArray()) {
+				jsonEntityIdList = jo.getAsJsonObject("entityIdList").getAsJsonArray("entityId");
 			} else {
 				jsonEntityIdList = new JsonArray();
-				jsonEntityIdList.add(jo.getAsJsonObject("entityIdList")
-						.getAsJsonObject("entityId"));
+				jsonEntityIdList.add(jo.getAsJsonObject("entityIdList").getAsJsonObject("entityId"));
 			}
 			// jo.getAsJsonObject().getAsJsonArray("entityId");
 
@@ -754,8 +684,7 @@ public class JSonNgsi9Parser {
 
 					// EntityId entity = json.fromJson(jsonEntityIdList.get(j)
 					// .getAsJsonObject(), EntityId.class);
-					EntityId entity = parseEntityId(jsonEntityIdList.get(j)
-							.toString());
+					EntityId entity = parseEntityId(jsonEntityIdList.get(j).toString());
 					enityIdList.add(entity);
 
 				}
@@ -768,22 +697,18 @@ public class JSonNgsi9Parser {
 		 */
 		JsonArray jsonContextRegistrationAttributeList;
 		if (jo.getAsJsonObject("contextRegistrationAttributeList") != null
-				&& jo.getAsJsonObject("contextRegistrationAttributeList").get(
-						"contextRegistrationAttribute") != null) {
-			if (jo.getAsJsonObject("contextRegistrationAttributeList")
-					.get("contextRegistrationAttribute").isJsonArray()) {
-				jsonContextRegistrationAttributeList = jo.getAsJsonObject(
-						"contextRegistrationAttributeList").getAsJsonArray(
-						"contextRegistrationAttribute");
+				&& jo.getAsJsonObject("contextRegistrationAttributeList").get("contextRegistrationAttribute") != null) {
+			if (jo.getAsJsonObject("contextRegistrationAttributeList").get("contextRegistrationAttribute")
+					.isJsonArray()) {
+				jsonContextRegistrationAttributeList = jo.getAsJsonObject("contextRegistrationAttributeList")
+						.getAsJsonArray("contextRegistrationAttribute");
 			} else {
 				jsonContextRegistrationAttributeList = new JsonArray();
-				jsonContextRegistrationAttributeList.add(jo.getAsJsonObject(
-						"contextRegistrationAttributeList").getAsJsonObject(
-						"contextRegistrationAttribute"));
+				jsonContextRegistrationAttributeList.add(jo.getAsJsonObject("contextRegistrationAttributeList")
+						.getAsJsonObject("contextRegistrationAttribute"));
 			}
 
-			if (jsonContextRegistrationAttributeList != null
-					&& !jsonContextRegistrationAttributeList.isJsonNull()) {
+			if (jsonContextRegistrationAttributeList != null && !jsonContextRegistrationAttributeList.isJsonNull()) {
 				List<ContextRegistrationAttribute> contextRegistrationAttributeList = new ArrayList<ContextRegistrationAttribute>();
 
 				for (int j = 0; j < jsonContextRegistrationAttributeList.size(); j++) {
@@ -794,18 +719,16 @@ public class JSonNgsi9Parser {
 					// jsonContextRegistrationAttributeList.get(j)
 					// .getAsJsonObject(),
 					// ContextRegistrationAttribute.class);
-					ContextRegistrationAttribute contextRegistrationAttribute = parseContextRegistrationAttribute(jsonContextRegistrationAttributeList
-							.get(j).toString());
+					ContextRegistrationAttribute contextRegistrationAttribute = parseContextRegistrationAttribute(
+							jsonContextRegistrationAttributeList.get(j).toString());
 
 					// System.out.println("Attribute to Parse:"
 					// +jsonContextRegistrationAttributeList
 					// .get(j).toString());
-					contextRegistrationAttributeList
-							.add(contextRegistrationAttribute);
+					contextRegistrationAttributeList.add(contextRegistrationAttribute);
 
 				}
-				contextReg
-						.setListContextRegistrationAttribute(contextRegistrationAttributeList);
+				contextReg.setListContextRegistrationAttribute(contextRegistrationAttributeList);
 
 			}
 		}
@@ -817,28 +740,23 @@ public class JSonNgsi9Parser {
 		// .getAsJsonArray("contextMetadata");
 		JsonArray jsonRegistrationMetadataList;
 		if (jo.getAsJsonObject("registrationMetadata") != null
-				&& jo.getAsJsonObject("registrationMetadata").get(
-						"contextMetadata") != null) {
-			if (jo.getAsJsonObject("registrationMetadata")
-					.get("contextMetadata").isJsonArray()) {
-				jsonRegistrationMetadataList = jo.getAsJsonObject(
-						"registrationMetadata").getAsJsonArray(
-						"contextMetadata");
+				&& jo.getAsJsonObject("registrationMetadata").get("contextMetadata") != null) {
+			if (jo.getAsJsonObject("registrationMetadata").get("contextMetadata").isJsonArray()) {
+				jsonRegistrationMetadataList = jo.getAsJsonObject("registrationMetadata")
+						.getAsJsonArray("contextMetadata");
 			} else {
 				jsonRegistrationMetadataList = new JsonArray();
-				jsonRegistrationMetadataList.add(jo.getAsJsonObject(
-						"registrationMetadata").getAsJsonObject(
-						"contextMetadata"));
+				jsonRegistrationMetadataList
+						.add(jo.getAsJsonObject("registrationMetadata").getAsJsonObject("contextMetadata"));
 			}
 
-			if (jsonRegistrationMetadataList != null
-					&& !jsonRegistrationMetadataList.isJsonNull()) {
+			if (jsonRegistrationMetadataList != null && !jsonRegistrationMetadataList.isJsonNull()) {
 				List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
 
 				for (int t = 0; t < jsonRegistrationMetadataList.size(); t++) {
 
-					ContextMetadata contextMetadata = parseContextMetadata(jsonRegistrationMetadataList
-							.get(t).toString());
+					ContextMetadata contextMetadata = parseContextMetadata(
+							jsonRegistrationMetadataList.get(t).toString());
 
 					contextMetadataList.add(contextMetadata);
 
@@ -856,8 +774,8 @@ public class JSonNgsi9Parser {
 		if (jo.get("providingApplication") != null) {
 			try {
 
-				contextReg.setProvidingApplication(new URI(jo.getAsJsonObject()
-						.get("providingApplication").getAsString()));
+				contextReg.setProvidingApplication(
+						new URI(jo.getAsJsonObject().get("providingApplication").getAsString()));
 
 			} catch (URISyntaxException e) {
 				// TODO Auto-generated catch block
@@ -868,8 +786,7 @@ public class JSonNgsi9Parser {
 		return contextReg;
 	}
 
-	public static RegisterContextRequest parseRegisterContextRequestJson(
-			String jsonRegisterContext) {
+	public static RegisterContextRequest parseRegisterContextRequestJson(String jsonRegisterContext) {
 
 		RegisterContextRequest registerContextRequest = new RegisterContextRequest();
 
@@ -884,9 +801,8 @@ public class JSonNgsi9Parser {
 		 * Parse RegisterContextRequest.RegistrationId
 		 */
 		if (jo.getAsJsonObject("registerContextRequest").get("registrationId") != null) {
-			registerContextRequest.setRegistrationId(jo
-					.getAsJsonObject("registerContextRequest")
-					.get("registrationId").getAsString());
+			registerContextRequest.setRegistrationId(
+					jo.getAsJsonObject("registerContextRequest").get("registrationId").getAsString());
 		}
 
 		/*
@@ -897,9 +813,8 @@ public class JSonNgsi9Parser {
 			try {
 				dataFactory = DatatypeFactory.newInstance();
 
-				registerContextRequest.setDuration(dataFactory.newDuration(jo
-						.getAsJsonObject("registerContextRequest")
-						.get("duration").getAsString()));
+				registerContextRequest.setDuration(dataFactory
+						.newDuration(jo.getAsJsonObject("registerContextRequest").get("duration").getAsString()));
 			} catch (DatatypeConfigurationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -912,19 +827,14 @@ public class JSonNgsi9Parser {
 		List<ContextRegistration> contextRegistrationList = new ArrayList<ContextRegistration>();
 
 		JsonArray jsonContextRegistration;
-		if (jo.getAsJsonObject("registerContextRequest")
-				.getAsJsonObject("contextRegistrationList")
+		if (jo.getAsJsonObject("registerContextRequest").getAsJsonObject("contextRegistrationList")
 				.get("contextRegistration").isJsonArray()) {
-			jsonContextRegistration = jo
-					.getAsJsonObject("registerContextRequest")
-					.getAsJsonObject("contextRegistrationList")
-					.getAsJsonArray("contextRegistration");
+			jsonContextRegistration = jo.getAsJsonObject("registerContextRequest")
+					.getAsJsonObject("contextRegistrationList").getAsJsonArray("contextRegistration");
 		} else {
 			jsonContextRegistration = new JsonArray();
-			jsonContextRegistration.add(jo
-					.getAsJsonObject("registerContextRequest")
-					.getAsJsonObject("contextRegistrationList")
-					.getAsJsonObject("contextRegistration"));
+			jsonContextRegistration.add(jo.getAsJsonObject("registerContextRequest")
+					.getAsJsonObject("contextRegistrationList").getAsJsonObject("contextRegistration"));
 		}
 
 		if (!jsonContextRegistration.isJsonNull()) {
@@ -933,16 +843,14 @@ public class JSonNgsi9Parser {
 
 				ContextRegistration contextReg = new ContextRegistration();
 
-				contextReg = parseContextRegistration(jsonContextRegistration
-						.get(i).toString());
+				contextReg = parseContextRegistration(jsonContextRegistration.get(i).toString());
 
 				contextRegistrationList.add(contextReg);
 
 			}
 		}
 
-		registerContextRequest
-				.setContextRegistrationList(contextRegistrationList);
+		registerContextRequest.setContextRegistrationList(contextRegistrationList);
 
 		return registerContextRequest;
 	}
@@ -957,11 +865,13 @@ public class JSonNgsi9Parser {
 
 		JsonObject jsonSubCont;
 		if (jo.getAsJsonObject("subscribeContextAvailabilityRequest") != null) {
-			jsonSubCont = jo
-					.getAsJsonObject("subscribeContextAvailabilityRequest");
+			jsonSubCont = jo.getAsJsonObject("subscribeContextAvailabilityRequest");
 		} else {
 			return subscription;
 		}
+
+		subscription = (SubscribeContextAvailabilityRequest) NgsiStructure.parseStringToJson(jsonSubCont.toString(),
+				SubscribeContextAvailabilityRequest.class);
 
 		/*
 		 * Parse ContextRegistrationList.SubscriptionId
@@ -969,93 +879,79 @@ public class JSonNgsi9Parser {
 		if (jo.get("_id") != null && jo.get("_rev") != null) {
 			String id = jo.get("_id").getAsString();
 			String rev = jo.get("_rev").getAsString();
-			subscription.setSubscriptionId(id
-					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + rev);
+			subscription.setSubscriptionId(id + Ngsi9StorageInterface.ID_REV_SEPARATOR + rev);
 		}
-		/*
-		 * Parse ContextRegistrationList.EntityIdList
-		 */
-		JsonArray jsonEntityIdList;
-		if (jsonSubCont.get("entityIdList") != null
-				&& jsonSubCont.getAsJsonObject("entityIdList").get("entityId") != null) {
-
-			if (jsonSubCont.getAsJsonObject("entityIdList").get("entityId")
-					.isJsonArray()) {
-				jsonEntityIdList = jsonSubCont.getAsJsonObject("entityIdList")
-						.getAsJsonArray("entityId");
-			} else {
-				jsonEntityIdList = new JsonArray();
-				jsonEntityIdList.add(jsonSubCont
-						.getAsJsonObject("entityIdList").getAsJsonObject(
-								"entityId"));
-			}
-
-			if (!jsonEntityIdList.isJsonNull()) {
-				List<EntityId> entityIdList = new ArrayList<EntityId>();
-
-				for (int j = 0; j < jsonEntityIdList.size(); j++) {
-
-					EntityId entity = parseEntityId(jsonEntityIdList.get(j)
-							.toString());
-					entityIdList.add(entity);
-
-				}
-				subscription.setEntityIdList(entityIdList);
-			}
-		}
-
-		/*
-		 * Parse ContextRegistrationList.Reference
-		 */
-		if (jsonSubCont.get("reference") != null) {
-
-			subscription.setReference(jsonSubCont.get("reference")
-					.getAsString());
-
-		}
-
-		/*
-		 * Parse ContextRegistrationList.AttributeList
-		 */
-		JsonArray jsonAttributeList;
-		if (jsonSubCont.get("attributeList") != null
-				&& !jsonSubCont.get("attributeList").isJsonPrimitive()
-				&& jsonSubCont.getAsJsonObject("attributeList")
-						.get("attribute") != null) {
-
-			if (jsonSubCont.getAsJsonObject("attributeList").get("attribute")
-					.isJsonArray()) {
-				jsonAttributeList = jsonSubCont
-						.getAsJsonObject("attributeList").getAsJsonArray(
-								"attribute");
-			} else {
-				jsonAttributeList = new JsonArray();
-				jsonAttributeList.add(jsonSubCont.getAsJsonObject(
-						"attributeList").get("attribute"));
-			}
-
-			if (!jsonAttributeList.isJsonNull()) {
-				List<String> attributeList = new ArrayList<String>();
-
-				for (int j = 0; j < jsonAttributeList.size(); j++) {
-
-					attributeList.add(jsonAttributeList.get(j).getAsString());
-
-				}
-				subscription.setAttributeList(attributeList);
-			}
-		}
-
-		/*
-		 * Parse ContextRegistrationList.Restriction
-		 */
-		if (jsonSubCont.get("restriction") != null) {
-
-			Restriction restriction;
-			restriction = parseRestriction(jsonSubCont.getAsJsonObject()
-					.getAsJsonObject("restriction").toString());
-			subscription.setRestriction(restriction);
-		}
+//		/*
+//		 * Parse ContextRegistrationList.EntityIdList
+//		 */
+//		JsonArray jsonEntityIdList;
+//		if (jsonSubCont.get("entityIdList") != null
+//				&& jsonSubCont.getAsJsonObject("entityIdList").get("entityId") != null) {
+//
+//			if (jsonSubCont.getAsJsonObject("entityIdList").get("entityId").isJsonArray()) {
+//				jsonEntityIdList = jsonSubCont.getAsJsonObject("entityIdList").getAsJsonArray("entityId");
+//			} else {
+//				jsonEntityIdList = new JsonArray();
+//				jsonEntityIdList.add(jsonSubCont.getAsJsonObject("entityIdList").getAsJsonObject("entityId"));
+//			}
+//
+//			if (!jsonEntityIdList.isJsonNull()) {
+//				List<EntityId> entityIdList = new ArrayList<EntityId>();
+//
+//				for (int j = 0; j < jsonEntityIdList.size(); j++) {
+//
+//					EntityId entity = parseEntityId(jsonEntityIdList.get(j).toString());
+//					entityIdList.add(entity);
+//
+//				}
+//				subscription.setEntityIdList(entityIdList);
+//			}
+//		}
+//
+//		/*
+//		 * Parse ContextRegistrationList.Reference
+//		 */
+//		if (jsonSubCont.get("reference") != null) {
+//
+//			subscription.setReference(jsonSubCont.get("reference").getAsString());
+//
+//		}
+//
+//		/*
+//		 * Parse ContextRegistrationList.AttributeList
+//		 */
+//		JsonArray jsonAttributeList;
+//		if (jsonSubCont.get("attributeList") != null && !jsonSubCont.get("attributeList").isJsonPrimitive()
+//				&& jsonSubCont.getAsJsonObject("attributeList").get("attribute") != null) {
+//
+//			if (jsonSubCont.getAsJsonObject("attributeList").get("attribute").isJsonArray()) {
+//				jsonAttributeList = jsonSubCont.getAsJsonObject("attributeList").getAsJsonArray("attribute");
+//			} else {
+//				jsonAttributeList = new JsonArray();
+//				jsonAttributeList.add(jsonSubCont.getAsJsonObject("attributeList").get("attribute"));
+//			}
+//
+//			if (!jsonAttributeList.isJsonNull()) {
+//				List<String> attributeList = new ArrayList<String>();
+//
+//				for (int j = 0; j < jsonAttributeList.size(); j++) {
+//
+//					attributeList.add(jsonAttributeList.get(j).getAsString());
+//
+//				}
+//				subscription.setAttributeList(attributeList);
+//			}
+//		}
+//
+//		/*
+//		 * Parse ContextRegistrationList.Restriction
+//		 */
+//		if (jsonSubCont.get("restriction") != null) {
+//
+//			Restriction restriction;
+//			restriction = parseRestriction(jsonSubCont.getAsJsonObject().getAsJsonObject("restriction").toString());
+//			subscription.setRestriction(restriction);
+//		}
 
 		return subscription;
 
