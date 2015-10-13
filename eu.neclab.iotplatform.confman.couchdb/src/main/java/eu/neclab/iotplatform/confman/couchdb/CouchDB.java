@@ -67,6 +67,7 @@ import eu.neclab.iotplatform.confman.commons.methods.JSonNgsi9Parser;
 import eu.neclab.iotplatform.confman.couchdb.datamodel.ObjectId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
@@ -565,8 +566,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 				String regId = row.get("key").getAsString();
 
 				// Parse the ContextRegistration
-				ContextRegistration contextReg = JSonNgsi9Parser
-						.parseContextRegistration(row.get("value").toString());
+//				ContextRegistration contextReg = JSonNgsi9Parser
+//						.parseContextRegistration(row.get("value").toString());
+				ContextRegistration contextReg = (ContextRegistration) NgsiStructure.parseStringToJson(row.get("value").toString(), ContextRegistration.class);
 				logger.info("Row " + i + " :" + row + "\n" + contextReg);
 
 				regIdAndContReg.put(regId, contextReg);
