@@ -39,7 +39,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -47,7 +49,7 @@ import java.util.Set;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
-//import org.json.XML;
+import org.json.XML;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -61,13 +63,13 @@ import eu.neclab.iotplatform.confman.commons.datatype.FullHttpResponse;
 import eu.neclab.iotplatform.confman.commons.datatype.SubscriptionToNotify;
 import eu.neclab.iotplatform.confman.commons.exceptions.NotExistingInDatabase;
 import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
-import eu.neclab.iotplatform.confman.commons.methods.UniqueIDGenerator;
 import eu.neclab.iotplatform.confman.commons.methods.HttpRequester;
 import eu.neclab.iotplatform.confman.commons.methods.JSonNgsi9Parser;
+import eu.neclab.iotplatform.confman.commons.methods.UniqueIDGenerator;
 import eu.neclab.iotplatform.confman.couchdb.datamodel.ObjectId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
@@ -96,6 +98,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// registrationId
 	private UniqueIDGenerator idGenerator = new UniqueIDGenerator();
 
+	private DocumentGenerator documentGenerator = new DocumentGenerator(
+			idGenerator);
+
 	public CouchDB() {
 
 		/*
@@ -108,13 +113,15 @@ public class CouchDB implements Ngsi9StorageInterface {
 		try {
 
 			input = new FileInputStream(
-					System.getProperty("dir.config") + "/confmanconfig/configurationManager/config/config.properties");
+					System.getProperty("dir.config")
+							+ "/confmanconfig/configurationManager/config/config.properties");
 
 			// load the properties file
 			prop.load(input);
 
 			// Set up the ip address of CouchDB
-			couchDB_IP = prop.getProperty("couchdb_ip", "http://127.0.0.1:5984");
+			couchDB_IP = prop
+					.getProperty("couchdb_ip", "http://127.0.0.1:5984");
 
 			// Check if all DBs exists in CouchDB
 			this.checkDBs();
@@ -141,7 +148,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private void checkDBs() {
 		try {
 			// Get the list of all the existing dbs in CouchDB
-			String resp = HttpRequester.sendGet(new URL(couchDB_IP + "/_all_dbs")).getBody();
+			String resp = HttpRequester.sendGet(
+					new URL(couchDB_IP + "/_all_dbs")).getBody();
 
 			// Parse the response and create a Set of existingDB
 			Set<String> existingDbsSet = new HashSet<String>();
@@ -188,7 +196,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		try {
 
 			// Send the HTTP PUT request
-			response = HttpRequester.sendPut(new URL(couchDB_IP + "/" + dbName), null, null);
+			response = HttpRequester.sendPut(
+					new URL(couchDB_IP + "/" + dbName), null, null);
 
 		} catch (MalformedURLException e) {
 
@@ -219,7 +228,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		try {
 			// Send the HTTP PUT request
-			response = HttpRequester.sendDelete(new URL(couchDB_IP + "/" + dbName));
+			response = HttpRequester.sendDelete(new URL(couchDB_IP + "/"
+					+ dbName));
 
 		} catch (MalformedURLException e) {
 
@@ -281,19 +291,152 @@ public class CouchDB implements Ngsi9StorageInterface {
 	//
 	// }
 
+	/**
+	 * This function will generate JSON document of the NGSI-10
+	 * RegisterContextRequest, correctly handling the ContextMetadata.value i.e.
+	 * it will generate a xml string as it is as a json attribute
+	 * 
+	 * @param registerContextRequest
+	 * @return
+	 */
+	private String generateJsonString(
+			RegisterContextRequest registerContextRequest) {
+
+		/*
+		 * In this method we are going to create a new RegisterContextRequest
+		 * that will contain the same information of the original one but with
+		 * all the ContextMetatada.value turned as a pure string representing
+		 * the actual XML. In such way we are removing the significance of the
+		 * XML and it will not be translated in JSON, but it will be treated as
+		 * a pure chain of character and so it will treated by the JSON handler.
+		 * 
+		 * For doing so we are doing 3 steps:
+		 * 
+		 * 1) remove from the RegisterContextRequest all the
+		 * ContextMetadata.value(s) and replace with a placeholder
+		 * 
+		 * 2) create the string representing the pure xml
+		 * 
+		 * 3) replacing the placeholder with the pure string
+		 */
+
+		/**
+		 * This class is mainly a structure used to encapsulate information for
+		 * the ContextMetadata.value handling. Mainly is the
+		 * ContextMetadata.value correctly formatted and the placeholder in the
+		 * JSON string
+		 * 
+		 * @author Flavio Cirillo (flavio.cirillo@neclab.eu)
+		 * 
+		 */
+		class JsonMetadataValue {
+			String placeholder;
+			String valueString;
+
+			public JsonMetadataValue(String placeholder, String valueString) {
+				super();
+				this.placeholder = placeholder;
+				this.valueString = valueString;
+			}
+
+		}
+
+		// This variable will contain the list of all the ContextMetadata.value
+		// to be replaced
+		List<JsonMetadataValue> jsonMetadataValueList = new ArrayList<JsonMetadataValue>();
+
+		// This list will contain the new ContextRegistrationList (the rest of
+		// RegisterContextRequest it will be the same of the original.
+		// We are creating a new list in order to do not change the original
+		// ContextRegistration information
+		List<ContextRegistration> newContextRegistrationList = new ArrayList<ContextRegistration>();
+
+		// Applying the three steps for each ContextRegistration
+		for (ContextRegistration contextRegistration : registerContextRequest
+				.getContextRegistrationList()) {
+			// This will contain the ContextMetadata where the values has been
+			// changed to the placeholders
+			List<ContextMetadata> newContextMetadataList = new ArrayList<ContextMetadata>();
+
+			// Creating the new ContextRegistration with new ContextMetadataList
+			ContextRegistration newContextRegistration = new ContextRegistration(
+					contextRegistration.getListEntityId(),
+					contextRegistration.getContextRegistrationAttribute(),
+					newContextMetadataList,
+					contextRegistration.getProvidingApplication());
+
+			newContextRegistrationList.add(newContextRegistration);
+
+			// Apply the placeholder fix and compute the pure xml string
+			for (ContextMetadata contextMetadata : contextRegistration
+					.getListContextMetadata()) {
+
+				// In order to extract the string we are going to compute the
+				// full ContextMetadata xml string (using the toString method of
+				// NgsiStructure that is mainly using JAXB) and then manually
+				// removing the not need tags
+				String value = contextMetadata.toString();
+
+				value = value
+						.replaceAll(
+								"<\\?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"\\?>\n",
+								"");
+				value = value.replaceAll("<name>.*</name>\n", "");
+				value = value.replaceAll("<type>.*</type>\n", "");
+				value = value.replaceAll("<contextMetadata>\n", "");
+				value = value.replaceAll("</contextMetadata>\n", "");
+
+				value = value.replaceAll("<value>", "");
+				value = value.replaceAll("</value>", "");
+				value = value.replace("\"", "\\\\\"");
+				value = value.replaceAll("\t", "");
+				value = value.replaceAll("\n", "");
+
+				// Create the placeholder randomly (in order to prevent unwanted
+				// ambiguity in the string)
+				String placeholder = idGenerator.getNextUniqueId();
+
+				// Set the placeholder
+				contextMetadata.setValue(placeholder);
+				newContextMetadataList.add(contextMetadata);
+
+				// Add the structure to the list
+				jsonMetadataValueList.add(new JsonMetadataValue(placeholder,
+						value));
+
+			}
+		}
+
+		// Create the new RegisterContextRequest using the original information
+		// from the original request and replacing the ContextRegistrationList
+		RegisterContextRequest newRegisterContextRequest = new RegisterContextRequest(
+				newContextRegistrationList,
+				registerContextRequest.getDuration(),
+				registerContextRequest.getRegistrationId());
+
+		// Create the JSON by
+		JSONObject xmlJSONObj = XML.toJSONObject(newRegisterContextRequest
+				.toString());
+		String jsonString = xmlJSONObj.toString();
+
+		for (JsonMetadataValue jsonMetadataValue : jsonMetadataValueList) {
+			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
+					jsonMetadataValue.valueString);
+		}
+
+		return jsonString;
+	}
+
 	@Override
 	public String store(RegisterContextRequest request) {
 
 		// Create a unique identifier
 		String id = idGenerator.getNextUniqueId();
 
-		// logger.info("Register request:" + request.toString());
-		logger.info("Register request:" + request.toJsonString());
+		logger.info("Register request:" + request.toString());
 
-		// Create a Json Object from the XML
-		// JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
-		// String jsonString = xmlJSONObj.toString();
-		String jsonString = request.toJsonString();
+		// String jsonString = generateJsonString(request);
+		String jsonString = documentGenerator.generateJsonString(request);
 
 		/*
 		 * To be reliable on hot deletion:
@@ -307,7 +450,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		 */
 
 		// Send the request to the Database
-		FullHttpResponse response = sendData(id, jsonString, DocumentType.REGISTER_CONTEXT);
+		FullHttpResponse response = sendData(id, jsonString,
+				DocumentType.REGISTER_CONTEXT);
 
 		// Check if CouchDB returned an error because of no database found
 		if (response.getStatusLine().getStatusCode() == 404) {
@@ -322,7 +466,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			// If still an error
 			if (response.getStatusLine().getStatusCode() == 404) {
-				logger.error("Impossible to store data in " + DocumentType.REGISTER_CONTEXT.getDb_name());
+				logger.error("Impossible to store data in "
+						+ DocumentType.REGISTER_CONTEXT.getDb_name());
 				return null;
 			}
 
@@ -330,7 +475,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		String registrationId;
 		if (response.getStatusLine().getStatusCode() > 299) {
-			logger.error("CouchDB returned error when registering: " + response.toString());
+			logger.error("CouchDB returned error when registering: "
+					+ response.toString());
 			registrationId = null;
 		} else {
 			// Parse and generate the registrationId from the response
@@ -345,7 +491,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		String id;
 
-		if (request.getSubscriptionId() == null || request.getSubscriptionId().equals("")) {
+		if (request.getSubscriptionId() == null
+				|| request.getSubscriptionId().equals("")) {
 			/*
 			 * If we are here it means that the user is not proposing his
 			 * subsciptionId
@@ -360,30 +507,38 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		}
 
-		logger.info("Subscribe request:" + request.toJsonString());
+		logger.info("Subscribe request:" + request.toString());
+		
 
-		// Create a Json Object from the XML
-		// JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
-		// String jsonString = xmlJSONObj.toString();
-		String jsonString = request.toJsonString();
+
+//		 Create a Json Object from the XML
+//		JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
+//		String jsonString = xmlJSONObj.toString();
+		
+		String jsonString = documentGenerator.generateJsonString(request);
 
 		// Send the request to the Database
-		FullHttpResponse response = sendData(id, jsonString, DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+		FullHttpResponse response = sendData(id, jsonString,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 		// Check if CouchDB returned an error because of no database found
 		if (response.getStatusLine().getStatusCode() == 404) {
-			logger.warn(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+			logger.warn(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY
+					.getDb_name()
 					+ " database was not found in couchDB, it will be created");
 
 			// Create the DB
-			createDb(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name().toLowerCase());
+			createDb(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+					.toLowerCase());
 
 			// Try storing again
-			response = sendData(id, jsonString, DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+			response = sendData(id, jsonString,
+					DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 			// If still an error
 			if (response.getStatusLine().getStatusCode() == 404) {
-				logger.error("Impossible to store data in " + DocumentType.REGISTER_CONTEXT.getDb_name());
+				logger.error("Impossible to store data in "
+						+ DocumentType.REGISTER_CONTEXT.getDb_name());
 				return null;
 			}
 		}
@@ -393,7 +548,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// Check if there were some error
 		String subscriptionId;
 		if (response.getStatusLine().getStatusCode() > 299) {
-			logger.error("CouchDB returned error when storing: " + response.toString());
+			logger.error("CouchDB returned error when storing: "
+					+ response.toString());
 			subscriptionId = null;
 		} else {
 			// Parse and generate the subscriptionId from the response
@@ -404,7 +560,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	}
 
 	@Override
-	public void remove(String docId, DocumentType type) throws NotExistingInDatabase {
+	public void remove(String docId, DocumentType type)
+			throws NotExistingInDatabase {
 
 		if (docId.contains(Ngsi9StorageInterface.ID_REV_SEPARATOR)) {
 
@@ -420,8 +577,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				logger.info("Removing from CouchDB: id:" + id + ", rev:" + rev);
 
 				// Send the deletion request
-				httpResponse = HttpRequester
-						.sendDelete(new URL(couchDB_IP + "/" + type.getDb_name() + "/" + id + "?rev=" + rev));
+				httpResponse = HttpRequester.sendDelete(new URL(couchDB_IP
+						+ "/" + type.getDb_name() + "/" + id + "?rev=" + rev));
 
 			} catch (MalformedURLException e) {
 				logger.error("Error!! ", e);
@@ -430,54 +587,64 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 
 			// Check if the database contained the document
-			if (httpResponse != null && httpResponse.getStatusLine().getStatusCode() == 404) {
-				throw new NotExistingInDatabase("It is not stored an object with id : " + docId);
+			if (httpResponse != null
+					&& httpResponse.getStatusLine().getStatusCode() == 404) {
+				throw new NotExistingInDatabase(
+						"It is not stored an object with id : " + docId);
 			}
 
 		} else {
 
 			// Error in the request
-			throw new IllegalArgumentException(type.toString() + " id " + docId + " MUST be in the form: " + "<id>"
+			throw new IllegalArgumentException(type.toString() + " id " + docId
+					+ " MUST be in the form: " + "<id>"
 					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + "<rev>");
 		}
 	}
 
 	@Override
-	public String update(RegisterContextRequest request) throws NotExistingInDatabase, IllegalArgumentException {
+	public String update(RegisterContextRequest request)
+			throws NotExistingInDatabase, IllegalArgumentException {
 
-		return this.update(request.getRegistrationId(), request.toJsonString(), DocumentType.REGISTER_CONTEXT);
+		return this.update(request.getRegistrationId(), request.toString(),
+				DocumentType.REGISTER_CONTEXT);
 
 	}
 
-	private String update(String id, String requestString, DocumentType docType) throws NotExistingInDatabase {
+	private String update(String id, String requestString, DocumentType docType)
+			throws NotExistingInDatabase {
 
 		// Check that the is contains both documentId and revision (fundamental
 		// information for CouchDB)
 		if (!id.contains(Ngsi9StorageInterface.ID_REV_SEPARATOR)) {
 			logger.warn("Invalid id to update: " + id);
-			throw new IllegalArgumentException(docType.toString() + " Id " + id + " MUST be in the form: " + "<id>"
+			throw new IllegalArgumentException(docType.toString() + " Id " + id
+					+ " MUST be in the form: " + "<id>"
 					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + "<rev>");
 		}
 
 		ObjectId objectId = new ObjectId(id);
 
 		// Create the Json from XML
-		// JSONObject xmlJSONObj = XML.toJSONObject(requestString);
-		// String jsonString = xmlJSONObj.toString();
-		String jsonString = requestString;
-		logger.info("json register update: " + jsonString);
+		JSONObject xmlJSONObj = XML.toJSONObject(requestString);
+		logger.info("json register update: " + xmlJSONObj.toString());
 
 		// Inject the documentId and revision in the JSon document
-		String jsonUpdate = jsonString.replaceFirst("\\{",
-				"{ \"_id\":\"" + objectId.get_id() + "\", \"_rev\":\"" + objectId.get_rev() + "\",");
+		String jsonUpdate = xmlJSONObj.toString().replaceFirst(
+				"\\{",
+				"{ \"_id\":\"" + objectId.get_id() + "\", \"_rev\":\""
+						+ objectId.get_rev() + "\",");
 
 		logger.debug("Json Update sent to CouchDB:" + jsonUpdate);
 
 		// Send the request
-		FullHttpResponse response = sendData(objectId.get_id(), jsonUpdate, docType);
+		FullHttpResponse response = sendData(objectId.get_id(), jsonUpdate,
+				docType);
 
 		if (response.getStatusLine().getStatusCode() == 409) {
-			throw new NotExistingInDatabase("It is not stored a context with the RegistrationId : " + id);
+			throw new NotExistingInDatabase(
+					"It is not stored a context with the RegistrationId : "
+							+ id);
 		}
 
 		// Parse and generate the new documentId
@@ -491,26 +658,28 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public String update(UpdateContextAvailabilitySubscriptionRequest request)
 			throws NotExistingInDatabase, IllegalArgumentException {
 
-		// return this.update(request.getSubscriptionId(), request.toString(),
-		// DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
-		return this.update(request.getSubscriptionId(), request.toJsonString(),
+		return this.update(request.getSubscriptionId(), request.toString(),
 				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 	}
 
 	@Override
-	public Multimap<String, ContextRegistration> discover(DiscoverContextAvailabilityRequest request,
+	public Multimap<String, ContextRegistration> discover(
+			DiscoverContextAvailabilityRequest request,
 			Set<String> registrationIdList) {
 
 		// This map will contain: RegistrationID -> Set<ContextRegistration>
-		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap.create();
+		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap
+				.create();
 
 		// Create the javaScriptView to query couchDB
-		String javaScriptView = JavascriptGenerator.createJavaScriptView(request, registrationIdList);
+		String javaScriptView = JavascriptGenerator.createJavaScriptView(
+				request, registrationIdList);
 		logger.info("Creating view : " + javaScriptView);
 
 		// Execute the javascriptView and get the response
-		FullHttpResponse response = executeView(javaScriptView, DocumentType.REGISTER_CONTEXT);
+		FullHttpResponse response = executeView(javaScriptView,
+				DocumentType.REGISTER_CONTEXT);
 
 		// Parse the response
 		regIdAndContReg = this.parseDiscoverResponse(response.getBody());
@@ -519,10 +688,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 	}
 
-	private Multimap<String, ContextRegistration> parseDiscoverResponse(String response) {
+	private Multimap<String, ContextRegistration> parseDiscoverResponse(
+			String response) {
 
 		// This map will contain: RegistrationID -> Set<ContextRegistration>
-		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap.create();
+		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap
+				.create();
 
 		JsonElement jelement = new JsonParser().parse(response);
 		if (!jelement.isJsonNull()) {
@@ -540,10 +711,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				String regId = row.get("key").getAsString();
 
 				// Parse the ContextRegistration
-				// ContextRegistration contextReg = JSonNgsi9Parser
-				// .parseContextRegistration(row.get("value").toString());
-				ContextRegistration contextReg = (ContextRegistration) NgsiStructure
-						.parseStringToJson(row.get("value").toString(), ContextRegistration.class);
+				ContextRegistration contextReg = JSonNgsi9Parser
+						.parseContextRegistration(row.get("value").toString());
 				logger.info("Row " + i + " :" + row + "\n" + contextReg);
 
 				regIdAndContReg.put(regId, contextReg);
@@ -561,11 +730,13 @@ public class CouchDB implements Ngsi9StorageInterface {
 	 * @param documentType
 	 * @return
 	 */
-	private FullHttpResponse executeView(String javaScriptView, DocumentType documentType) {
+	private FullHttpResponse executeView(String javaScriptView,
+			DocumentType documentType) {
 		FullHttpResponse response = null;
 
 		// Create the view headers
-		String view = "{\"views\":{\"query\":{\"map\":\"" + javaScriptView + "\"}}}";
+		String view = "{\"views\":{\"query\":{\"map\":\"" + javaScriptView
+				+ "\"}}}";
 
 		// Generate a random id of the view
 		String queryName = "query" + new Random().nextInt(999999);
@@ -577,7 +748,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			// Check done in order to be reliable on hot deletion of database
 			if (response.getStatusLine().getStatusCode() == 404) {
-				logger.warn(documentType.getDb_name() + " database was not found in couchDB, it will be created");
+				logger.warn(documentType.getDb_name()
+						+ " database was not found in couchDB, it will be created");
 				createDb(documentType.getDb_name().toLowerCase());
 
 				// Try again store
@@ -585,7 +757,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				// If still the same problem, give up and report the error
 				if (response.getStatusLine().getStatusCode() == 404) {
-					logger.error("Impossible to store view in " + documentType.getDb_name());
+					logger.error("Impossible to store view in "
+							+ documentType.getDb_name());
 					return response;
 				}
 			}
@@ -619,8 +792,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private FullHttpResponse getView(String queryName, DocumentType documentType) {
 		FullHttpResponse response = null;
 		try {
-			response = HttpRequester.sendGet(
-					new URL(couchDB_IP + "/" + documentType.getDb_name() + "/_design/" + queryName + "/_view/query"));
+			response = HttpRequester.sendGet(new URL(couchDB_IP + "/"
+					+ documentType.getDb_name() + "/_design/" + queryName
+					+ "/_view/query"));
 		} catch (MalformedURLException e) {
 			logger.error("Error: ", e);
 		} catch (Exception e) {
@@ -642,12 +816,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 	 *            Type of Document to be stored
 	 * @return
 	 */
-	private FullHttpResponse sendData(String id, String objectJson, DocumentType documentType) {
+	private FullHttpResponse sendData(String id, String objectJson,
+			DocumentType documentType) {
 		FullHttpResponse response = null;
 		logger.debug("JSON Object:" + objectJson);
 		try {
-			response = HttpRequester.sendPut(new URL(couchDB_IP + "/" + documentType.getDb_name() + "/" + id),
-					objectJson, "application/json");
+			response = HttpRequester.sendPut(new URL(couchDB_IP + "/"
+					+ documentType.getDb_name() + "/" + id), objectJson,
+					"application/json");
 		} catch (MalformedURLException e) {
 			logger.error("Error: ", e);
 		} catch (Exception e) {
@@ -658,13 +834,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 	}
 
-	private FullHttpResponse sendView(String queryName, String view, DocumentType documentType) {
+	private FullHttpResponse sendView(String queryName, String view,
+			DocumentType documentType) {
 		FullHttpResponse response = null;
 		logger.debug("JSON Object:" + view);
 		try {
-			response = HttpRequester.sendPut(
-					new URL(couchDB_IP + "/" + documentType.getDb_name() + "/_design/" + queryName), view,
-					"application/json");
+			response = HttpRequester.sendPut(new URL(couchDB_IP + "/"
+					+ documentType.getDb_name() + "/_design/" + queryName),
+					view, "application/json");
 		} catch (MalformedURLException e) {
 			logger.error("Error: ", e);
 		} catch (Exception e) {
@@ -679,9 +856,11 @@ public class CouchDB implements Ngsi9StorageInterface {
 		String registrationId = null;
 
 		if (response != null) {
-			JsonElement jelement = new JsonParser().parse(response.getBody().toString());
+			JsonElement jelement = new JsonParser().parse(response.getBody()
+					.toString());
 			JsonObject jobject = jelement.getAsJsonObject();
-			registrationId = jobject.get("id").toString() + Ngsi9StorageInterface.ID_REV_SEPARATOR
+			registrationId = jobject.get("id").toString()
+					+ Ngsi9StorageInterface.ID_REV_SEPARATOR
 					+ jobject.get("rev").toString();
 			registrationId = registrationId.replace("\"", "");
 
@@ -700,14 +879,16 @@ public class CouchDB implements Ngsi9StorageInterface {
 		String response = null;
 
 		// Extract the documentId from the registrationID
-		String[] strs = registrationId.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
+		String[] strs = registrationId
+				.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
 		String id = strs[0];
 
 		// Query the CouchDB
 		try {
-			response = HttpRequester
-					.sendGet(new URL(couchDB_IP + "/" + DocumentType.REGISTER_CONTEXT.getDb_name() + "/" + id))
-					.getBody();
+			response = HttpRequester.sendGet(
+					new URL(couchDB_IP + "/"
+							+ DocumentType.REGISTER_CONTEXT.getDb_name() + "/"
+							+ id)).getBody();
 		} catch (MalformedURLException e) {
 			logger.error("Error: ", e);
 		} catch (Exception e) {
@@ -717,10 +898,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// If everything went well, parse the Json response and create a
 		// RegisterContextRequest instance
 		if (response != null) {
-			// regContReq =
-//			 JSonNgsi9Parser.parseRegisterContextRequestJson(response);
-			regContReq = (RegisterContextRequest) NgsiStructure.parseStringToJson(response,
-					RegisterContextRequest.class);
+			regContReq = JSonNgsi9Parser
+					.parseRegisterContextRequestJson(response);
 		}
 
 		return regContReq;
@@ -728,22 +907,25 @@ public class CouchDB implements Ngsi9StorageInterface {
 	}
 
 	@Override
-	public SubscribeContextAvailabilityRequest getSubscribeContextAvailability(String subscriptionId) {
+	public SubscribeContextAvailabilityRequest getSubscribeContextAvailability(
+			String subscriptionId) {
 
 		String response = null;
 
 		SubscribeContextAvailabilityRequest subscribeContextAvailabilityRequest = null;
 
 		// Extract the documentId from the registrationID
-		String[] strs = subscriptionId.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
+		String[] strs = subscriptionId
+				.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
 		String id = strs[0];
 
 		// Query the CouchDB
 		try {
-			response = HttpRequester
-					.sendGet(new URL(
-							couchDB_IP + "/" + DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name() + "/" + id))
-					.getBody();
+			response = HttpRequester.sendGet(
+					new URL(couchDB_IP
+							+ "/"
+							+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY
+									.getDb_name() + "/" + id)).getBody();
 		} catch (MalformedURLException e) {
 			logger.error("Error: ", e);
 		} catch (Exception e) {
@@ -753,8 +935,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// If everything went well, parse the Json response and create a
 		// RegisterContextRequest instance
 		if (response != null) {
-			subscribeContextAvailabilityRequest = JSonNgsi9Parser.parseSubscribeContextAvaialabilityRequest(response);
-//			subscribeContextAvailabilityRequest = NgsiStructure.parseStringToJson(response, arg1)
+			subscribeContextAvailabilityRequest = JSonNgsi9Parser
+					.parseSubscribeContextAvaialabilityRequest(response);
 		}
 
 		return subscribeContextAvailabilityRequest;
@@ -762,17 +944,22 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 	@Override
 	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
-			ContextRegistration contextRegistration, boolean hasMetadataRestriction,
-			Multimap<String, String> metadataToSubscriptionMap, Set<String> otherRestrictiveMetadata) {
+			ContextRegistration contextRegistration,
+			boolean hasMetadataRestriction,
+			Multimap<String, String> metadataToSubscriptionMap,
+			Set<String> otherRestrictiveMetadata) {
 
-		String jsView = JavascriptGenerator.createJavaScriptView(contextRegistration, metadataToSubscriptionMap,
+		String jsView = JavascriptGenerator.createJavaScriptView(
+				contextRegistration, metadataToSubscriptionMap,
 				otherRestrictiveMetadata);
 		logger.info("View from contextRegistration created:" + jsView);
 
-		FullHttpResponse viewResult = executeView(jsView, DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+		FullHttpResponse viewResult = executeView(jsView,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 		logger.info("Result of the contextRegistration in the "
-				+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name() + ": \n" + viewResult.getBody());
+				+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+				+ ": \n" + viewResult.getBody());
 
 		Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
 				.generateNotificationsMap(viewResult.getBody());
@@ -783,16 +970,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 	/**
 	 * This method will create a table that will contain the
 	 * ContextRegistrations that shall be sent as notifications to such
-	 * Subscriber. The multimap is in the form: Subscriber -> Set
-	 * <ContextRegistration>
+	 * Subscriber. The multimap is in the form: Subscriber ->
+	 * Set<ContextRegistration>
 	 * 
 	 * @param results
 	 * @return
 	 */
-	private Multimap<SubscriptionToNotify, ContextRegistration> generateNotificationsMap(String results) {
+	private Multimap<SubscriptionToNotify, ContextRegistration> generateNotificationsMap(
+			String results) {
 
 		// Subscriber -> Set<ContextRegistration>
-		Multimap<SubscriptionToNotify, ContextRegistration> multimap = HashMultimap.create();
+		Multimap<SubscriptionToNotify, ContextRegistration> multimap = HashMultimap
+				.create();
 
 		JsonElement jelement = new JsonParser().parse(results);
 		if (!jelement.isJsonNull()) {
@@ -809,23 +998,25 @@ public class CouchDB implements Ngsi9StorageInterface {
 				// Create the SubscriptionToNotify Object
 				SubscriptionToNotify subscriptionToNotify = new SubscriptionToNotify();
 
-				String subscriptionId = row.getAsJsonObject("key").get("id").getAsString()
-						+ Ngsi9StorageInterface.ID_REV_SEPARATOR + row.getAsJsonObject("key").get("rev").getAsString();
+				String subscriptionId = row.getAsJsonObject("key").get("id")
+						.getAsString()
+						+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+						+ row.getAsJsonObject("key").get("rev").getAsString();
 				subscriptionToNotify.setSubscriptionId(subscriptionId);
 
-				subscriptionToNotify.setReference(row.getAsJsonObject("key").get("reference").getAsString());
+				subscriptionToNotify.setReference(row.getAsJsonObject("key")
+						.get("reference").getAsString());
 
 				// Parse the ContextRegistration
-				// ContextRegistration contextRegAv = JSonNgsi9Parser
-				// .parseContextRegistration(row.get("value").toString());
-				ContextRegistration contextRegAv = (ContextRegistration) NgsiStructure
-						.parseStringToJson(row.get("value").toString(), ContextRegistration.class);
-						// JSonNgsi9Parser.parseContextRegistration(row.get("value").toString());
+				ContextRegistration contextRegAv = JSonNgsi9Parser
+						.parseContextRegistration(row.get("value").toString());
 
 				// Put in the multimap
 				multimap.put(subscriptionToNotify, contextRegAv);
-				logger.info("Row " + i + " :" + row + "\nNotification should be sent to:\n" + subscriptionToNotify
-						+ "\nWith data:\n" + contextRegAv);
+				logger.info("Row " + i + " :" + row
+						+ "\nNotification should be sent to:\n"
+						+ subscriptionToNotify + "\nWith data:\n"
+						+ contextRegAv);
 			}
 		}
 
