@@ -150,7 +150,7 @@ public class JSonNgsi9ParserTest {
 			contRegAttList.add(contRegAtt1);
 			expectedContextRegistration.setListContextRegistrationAttribute(contRegAttList);
 			
-			assertEquals(comparator.compare(expectedContextRegistration, actualContextRegistration), 0);
+			assertEquals(0, comparator.compare(expectedContextRegistration, actualContextRegistration));
 			
 			
 			
@@ -305,7 +305,7 @@ public class JSonNgsi9ParserTest {
 			contRegAttList.add(contRegAtt2);
 			expectedContextRegistration.setListContextRegistrationAttribute(contRegAttList);
 			
-			assertEquals(comparator.compare(expectedContextRegistration, actualContextRegistration), 0);
+			assertEquals(0, comparator.compare(expectedContextRegistration, actualContextRegistration));
 			
 			
 			/*
@@ -355,7 +355,7 @@ public class JSonNgsi9ParserTest {
 			contRegAttList.add(contRegAtt2);
 			expectedContextRegistration.setListContextRegistrationAttribute(contRegAttList);
 			
-			assertEquals(comparator.compare(expectedContextRegistration, actualContextRegistration), 0);
+			assertEquals(0, comparator.compare(expectedContextRegistration, actualContextRegistration));
 			
 			/*
 			 * ################# Test #################################
@@ -414,7 +414,7 @@ public class JSonNgsi9ParserTest {
 			contMDList2.add(contMD3);
 			expectedContextRegistration.setListContextMetadata(contMDList2);
 			
-			assertEquals(comparator.compare(expectedContextRegistration, actualContextRegistration), 0);
+			assertEquals(0 ,comparator.compare(expectedContextRegistration, actualContextRegistration));
 			
 			
 			/*
