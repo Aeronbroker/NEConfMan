@@ -36,6 +36,7 @@ package eu.neclab.iotplatform.confman.core;
 
 import java.net.ConnectException;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
@@ -85,6 +86,10 @@ public class NotifierThread extends Thread {
 				logger.warn("Problem with connection to " + reference + "\n"
 						+ e.toString());
 			}
+
+		} catch (NoRouteToHostException e) {
+			logger.warn("Impossible to contact " + reference
+					+ ": No route to host");
 
 		} catch (Exception e) {
 
