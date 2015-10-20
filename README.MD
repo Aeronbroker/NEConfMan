@@ -53,7 +53,19 @@ The NEC ConfMan is implemented in Java and packaged as a set of OSGi bundles. It
 The following software additionally needs to be installed:
 * Java 1.7 or higher
 * PostgreSQL server (version 9.2 or higher recommended). Please note that the credentials for access by ConfMan need to be set consistent to the access credentials configured in the ConfMan config file.
-* CouchDB (version 1.5.1. or higher recommended). 
+* CouchDB (version 1.5.1. or higher recommended).
 
+Runtime Environment
+--
+A pre-configured runtime environment based on Equinox is included by this release in the folder `ConfMan_Runner`. To start the ConfMan, run one of the two executable scripts `startConfigurationManager.bat` or `startConfigurationManager.sh`, depending on your operating system.
 
-
+System Configuration
+---
+The NEC ConfMan is configured by means of the following files
+* `ConfMan_Runner/confman/configuration/config.ini` is the configuration file for the Equinox OSGi environment. The most important parameters to set here are
+ * `tomcat.init.port`: The port to which the ConfMan's NGSI API is listening to
+ * `dir.config`: the (absolute path) of the location of the fiwareRelease folder
+* `fiwareRelease/confmanconfig/configurationManager/config/` folder
+ * `config.properties`: Database configuration (including credentials for postgreSQL; see the system requirements section above)
+ * `config.xml`: location of xml schema files for message body syntax checking, and path prefix of the exposed FIWARE NGSI-9 REST interface
+*  `fiwareRelease/confmanconfig/bundleConfigurations/services/org.ops4j.pax.logging.properties`: configuration of logger
