@@ -264,21 +264,39 @@ public class DocumentGenerator {
 
 	private String extractAndStringifyFromXML(String xml, String tag) {
 
-		String openingTag = "<" + tag + ">";
-		String closingTag = "</" + tag + ">";
+		String value = xml;
 
-		String value1 = xml;
-		value1 = value1.substring(value1.indexOf(openingTag)
-				+ (openingTag.length()) + 1);
-		value1 = value1.substring(0, value1.indexOf(closingTag) - 1);
-		value1 = value1.replace("\"", "\\\\\"");
-		value1 = value1.replaceAll("\t", "");
-		value1 = value1.replaceAll("\n", "");
-		value1 = value1.replaceAll("> *<", "><");
-		value1 = value1.substring(value1.indexOf("<"));
-		value1 = value1.substring(0,value1.lastIndexOf(">")+1);
-		
+		// Remove all the newlines
+		value = value.replaceAll("\n", "");
 
-		return value1;
+		// Extract the wrapping tag name if such name is put as an option of the
+		// value type e.g.
+		String wrappingTag = "";
+		if (value.matches(".*<" + tag + "[^>]*xsi:type=.*?>")) {
+			// (<title.*?>)(.+?)(</title>)
+			wrappingTag = value.replaceAll("(.*<" + tag
+					+ "[^>]*xsi:type=\\\")(.*)(\\\".*)", "$2");
+
+			value = value.replaceFirst("<" + tag + ".*?>", "<" + tag + ">");
+
+		}
+
+		// Extract the value
+		value = value.replaceAll("(.*<" + tag + ".*?>)(.*)(</" + tag
+				+ ".*?>.*)", "$2");
+
+		// Add the wrapping tag if found
+		if (!wrappingTag.isEmpty()) {
+			value = "<" + wrappingTag + ">" + value + "</" + wrappingTag + ">";
+		}
+
+		// Escape the "
+		value = value.replace("\"", "\\\\\"");
+		// Remove tabs
+		value = value.replaceAll("\t", "");
+		// Remove useless spaces between tags
+		value = value.replaceAll("> *<", "><");
+
+		return value;
 	}
 }
