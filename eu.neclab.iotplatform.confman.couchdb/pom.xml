@@ -69,7 +69,6 @@
 		<dependency>
 			<groupId>eu.neclab.iotplatform</groupId>
 			<artifactId>ngsi.api</artifactId>
-			<type>bundle</type>
 			<version>${iotbroker.version}</version>
 		</dependency>
 
@@ -94,7 +93,6 @@
 		<dependency>
 			<groupId>eu.neclab.iotplatform.confman</groupId>
 			<artifactId>commons</artifactId>
-			<type>bundle</type>
 			<version>${confman.version}</version>
 		</dependency>
 
