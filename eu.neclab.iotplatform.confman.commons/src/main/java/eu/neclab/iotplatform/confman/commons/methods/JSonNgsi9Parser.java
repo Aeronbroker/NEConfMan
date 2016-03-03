@@ -576,174 +576,177 @@ public class JSonNgsi9Parser {
 
 	public static void main(String[] args) throws URISyntaxException,
 			JAXBException {
-		for (int i = 0; i < 18; i++) {
-			int value = 3070 + i;
-			String file = "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:"
-					+ value + ".obs";
-			BufferedReader br;
-			StringBuffer sb = new StringBuffer();
-			try {
-				br = new BufferedReader(new FileReader(file));
-				String line;
-				while ((line = br.readLine()) != null) {
-					JsonParser jsonParser = new JsonParser();
-					JsonObject jo = (JsonObject) jsonParser.parse(line);
+//		for (int i = 0; i < 18; i++) {
+//			int value = 3070 + i;
+//			String file = "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:"
+//					+ value + ".obs";
+//			BufferedReader br;
+//			StringBuffer sb = new StringBuffer();
+//			try {
+//				br = new BufferedReader(new FileReader(file));
+//				String line;
+//				while ((line = br.readLine()) != null) {
+//					JsonParser jsonParser = new JsonParser();
+//					JsonObject jo = (JsonObject) jsonParser.parse(line);
+//
+//					JsonObject joValue = jo.get("doc").getAsJsonObject();
+//					joValue.remove("_id");
+//					joValue.remove("_rev");
+//
+//					float lat = 0;
+//					float lng = 0;
+//
+//					JsonArray joAttributes = joValue
+//							.getAsJsonArray("attributes");
+//					Iterator<JsonElement> iter = joAttributes.iterator();
+//					while (iter.hasNext()) {
+//						JsonElement element = iter.next();
+//						String type = element.getAsJsonObject().get("type")
+//								.getAsString();
+//						if ("date".equals(type) || "district".equals(type)
+//								|| "section".equals(type)
+//								|| "count".equals(type)) {
+//							iter.remove();
+//						}
+//						if ("latitude".equals(type)) {
+//							lat = element.getAsJsonObject().get("contextValue")
+//									.getAsFloat();
+//							iter.remove();
+//						}
+//						if ("longitude".equals(type)) {
+//							lng = element.getAsJsonObject().get("contextValue")
+//									.getAsFloat();
+//							iter.remove();
+//						}
+//					}
+//
+//					ContextMetadata simpleGeoLocation = new ContextMetadata();
+//					simpleGeoLocation.setName("SimpleGeoLocation");
+//					simpleGeoLocation.setType(new URI("SimpleGeoLocation"));
+//					simpleGeoLocation.setValue("geoLocationPlaceHolder");
+//
+//					Segment segment = new Segment(String.format("%f,%f", lat,
+//							lng), String.format("%f,%f", lat, lng), null);
+//					JAXBContext jaxbContext = JAXBContext
+//							.newInstance(Segment.class);
+//					Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+//					StringWriter sw = new StringWriter();
+//					jaxbMarshaller.marshal(segment, sw);
+//					String segmentString = sw
+//							.toString()
+//							.replace(
+//									"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
+//									"");
+//
+//					// Circle circle = new Circle(lat,lng,0f);
+//					//
+//					// JAXBContext jaxbContext =
+//					// JAXBContext.newInstance(Circle.class);
+//					// Marshaller jaxbMarshaller =
+//					// jaxbContext.createMarshaller();
+//					// StringWriter sw = new StringWriter();
+//					// jaxbMarshaller.marshal(circle, sw);
+//					// String cicleString =
+//					// sw.toString().replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
+//					// "");
+//
+//					ObjectMapper mapper = new ObjectMapper();
+//
+//					// 2. Convert JSON to Java object
+//					ContextElement contextElement = mapper.readValue(
+//							joValue.toString(), ContextElement.class);
+//					// System.out.println(contextElement);
+//					List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
+//					contextMetadataList.add(simpleGeoLocation);
+//					contextElement.setDomainMetadata(contextMetadataList);
+//
+//					// 1. Convert Java object to JSON format
+//					// System.out.println(mapper.writeValueAsString(contextElement));
+//
+//					// System.out.println(joValue);
+//					// sb.append(mapper.writeValueAsString(contextElement) +
+//					// "\n");
+//
+//					// JAXBContext context;
+//					try {
+//						jaxbContext = JAXBContext
+//								.newInstance(ContextElement.class);
+//						jaxbMarshaller = jaxbContext.createMarshaller();
+//						sw = new StringWriter();
+//						jaxbMarshaller.marshal(contextElement, sw);
+//						String contextElementString = sw.toString();
+//
+//						// String string = contextElement.toString();
+//						contextElementString = contextElementString
+//								.replace(
+//										"<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
+//										"<value>" + segmentString + "</value>");
+//						String finalContextElement = contextElementString
+//								.replace("\n", "");
+//
+//						sb.append(finalContextElement + "\n");
+//
+//						// JAXBContext jaxbContext =
+//						// JAXBContext.newInstance(ContextElement.class);
+//						// Marshaller jaxbMarshaller =
+//						// jaxbContext.createMarshaller();
+//						//
+//						// // output pretty printed
+//						// jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
+//						// true);
+//						//
+//						// contextElement.setDomainMetadata(null);
+//						//
+//						// jaxbMarshaller.marshal(contextElement, System.out);
+//						// System.out.println();
+//						//
+//						//
+//						// Segment segment = new Segment("4,5","5,5",null);
+//						// jaxbContext = JAXBContext.newInstance(Segment.class);
+//						// jaxbMarshaller= jaxbContext.createMarshaller();
+//						// jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT,
+//						// true);
+//						//
+//						// jaxbMarshaller.marshal(contextElement, System.out);
+//						// System.out.println();
+//						//
+//						// XmlFactory xmlf = new XmlFactory();
+//						// System.out.println(xmlf.convertToXml(contextElement,ContextElement.class));
+//
+//						// System.out.println(contextElement.toString());
+//
+//						// context =
+//						// JAXBContext.newInstance(ContextElement.class);
+//						// Marshaller marshaller = context.createMarshaller();
+//						// StringWriter sw = new StringWriter();
+//						// marshaller.marshal(contextElement, sw);
+//
+//						// System.out.println(mapper.writeValueAsString(contextElement)
+//						// + "\n");
+//
+//						// } catch (JAXBException e) {
+//						// // TODO Auto-generated catch block
+//						// e.printStackTrace();
+//					} catch (Exception e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//
+//				}
+//
+//				System.out.println(sb);
+//				PrintWriter writer = new PrintWriter(file + ".cleaned", "UTF-8");
+//				writer.println(sb.toString());
+//				writer.close();
+//				br.close();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//		}
 
-					JsonObject joValue = jo.get("doc").getAsJsonObject();
-					joValue.remove("_id");
-					joValue.remove("_rev");
-
-					float lat = 0;
-					float lng = 0;
-
-					JsonArray joAttributes = joValue
-							.getAsJsonArray("attributes");
-					Iterator<JsonElement> iter = joAttributes.iterator();
-					while (iter.hasNext()) {
-						JsonElement element = iter.next();
-						String type = element.getAsJsonObject().get("type")
-								.getAsString();
-						if ("date".equals(type) || "district".equals(type)
-								|| "section".equals(type)
-								|| "count".equals(type)) {
-							iter.remove();
-						}
-						if ("latitude".equals(type)) {
-							lat = element.getAsJsonObject().get("contextValue")
-									.getAsFloat();
-							iter.remove();
-						}
-						if ("longitude".equals(type)) {
-							lng = element.getAsJsonObject().get("contextValue")
-									.getAsFloat();
-							iter.remove();
-						}
-					}
-
-					ContextMetadata simpleGeoLocation = new ContextMetadata();
-					simpleGeoLocation.setName("SimpleGeoLocation");
-					simpleGeoLocation.setType(new URI("SimpleGeoLocation"));
-					simpleGeoLocation.setValue("geoLocationPlaceHolder");
-
-					Segment segment = new Segment(String.format("%f,%f", lat,
-							lng), String.format("%f,%f", lat, lng), null);
-					JAXBContext jaxbContext = JAXBContext
-							.newInstance(Segment.class);
-					Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-					StringWriter sw = new StringWriter();
-					jaxbMarshaller.marshal(segment, sw);
-					String segmentString = sw
-							.toString()
-							.replace(
-									"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
-									"");
-
-					// Circle circle = new Circle(lat,lng,0f);
-					//
-					// JAXBContext jaxbContext =
-					// JAXBContext.newInstance(Circle.class);
-					// Marshaller jaxbMarshaller =
-					// jaxbContext.createMarshaller();
-					// StringWriter sw = new StringWriter();
-					// jaxbMarshaller.marshal(circle, sw);
-					// String cicleString =
-					// sw.toString().replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
-					// "");
-
-					ObjectMapper mapper = new ObjectMapper();
-
-					// 2. Convert JSON to Java object
-					ContextElement contextElement = mapper.readValue(
-							joValue.toString(), ContextElement.class);
-					// System.out.println(contextElement);
-					List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
-					contextMetadataList.add(simpleGeoLocation);
-					contextElement.setDomainMetadata(contextMetadataList);
-
-					// 1. Convert Java object to JSON format
-					// System.out.println(mapper.writeValueAsString(contextElement));
-
-					// System.out.println(joValue);
-					// sb.append(mapper.writeValueAsString(contextElement) +
-					// "\n");
-
-					// JAXBContext context;
-					try {
-						jaxbContext = JAXBContext
-								.newInstance(ContextElement.class);
-						jaxbMarshaller = jaxbContext.createMarshaller();
-						sw = new StringWriter();
-						jaxbMarshaller.marshal(contextElement, sw);
-						String contextElementString = sw.toString();
-
-						// String string = contextElement.toString();
-						contextElementString = contextElementString
-								.replace(
-										"<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
-										"<value>" + segmentString + "</value>");
-						String finalContextElement = contextElementString
-								.replace("\n", "");
-
-						sb.append(finalContextElement + "\n");
-
-						// JAXBContext jaxbContext =
-						// JAXBContext.newInstance(ContextElement.class);
-						// Marshaller jaxbMarshaller =
-						// jaxbContext.createMarshaller();
-						//
-						// // output pretty printed
-						// jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
-						// true);
-						//
-						// contextElement.setDomainMetadata(null);
-						//
-						// jaxbMarshaller.marshal(contextElement, System.out);
-						// System.out.println();
-						//
-						//
-						// Segment segment = new Segment("4,5","5,5",null);
-						// jaxbContext = JAXBContext.newInstance(Segment.class);
-						// jaxbMarshaller= jaxbContext.createMarshaller();
-						// jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT,
-						// true);
-						//
-						// jaxbMarshaller.marshal(contextElement, System.out);
-						// System.out.println();
-						//
-						// XmlFactory xmlf = new XmlFactory();
-						// System.out.println(xmlf.convertToXml(contextElement,ContextElement.class));
-
-						// System.out.println(contextElement.toString());
-
-						// context =
-						// JAXBContext.newInstance(ContextElement.class);
-						// Marshaller marshaller = context.createMarshaller();
-						// StringWriter sw = new StringWriter();
-						// marshaller.marshal(contextElement, sw);
-
-						// System.out.println(mapper.writeValueAsString(contextElement)
-						// + "\n");
-
-						// } catch (JAXBException e) {
-						// // TODO Auto-generated catch block
-						// e.printStackTrace();
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-				}
-
-				System.out.println(sb);
-				PrintWriter writer = new PrintWriter(file + ".cleaned", "UTF-8");
-				writer.println(sb.toString());
-				writer.close();
-				br.close();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
+		ContextMetadata c = new ContextMetadata("SimpleGeoLocation", new URI("http://SimpleGeoLocation.com#test"), new Segment("10.5,22.12", "1.10,32.15", null));
+		System.out.println(c);
 
 	}
 

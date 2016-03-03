@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>eu.neclab.iotplatform.confman</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.3.3</version>
+		<version>5.2.3</version>
 		<relativePath>../eu.neclab.iotplatform.confman.parent</relativePath>
 	</parent>
 

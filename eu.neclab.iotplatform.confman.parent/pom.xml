@@ -5,13 +5,13 @@
 
 	<groupId>eu.neclab.iotplatform.confman</groupId>
 	<artifactId>parent</artifactId>
-	<version>4.3.3</version>
+	<version>5.2.3</version>
 	<name>eu.neclab.iotplatform.confman.parent</name>
 	<packaging>pom</packaging>
 
 
 	<properties>
-		<confman.version>4.3.3</confman.version>
+		<confman.version>5.2.3</confman.version>
 		<iotbroker.version>5.2.3-SNAPSHOT</iotbroker.version>
 		<spring.version>3.2.3.RELEASE</spring.version>
 		<spring.osgi.version>2.0.0.M1</spring.osgi.version>
