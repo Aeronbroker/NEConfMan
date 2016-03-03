@@ -127,37 +127,20 @@ public class JSonNgsi9Parser {
 				if (jo.get("value").toString().contains("segment")) {
 					Segment segment = new Segment();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value")
-							.getAsJsonObject("segment");
-
-					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
-					}
-
-					segment.setNW_Corner(jsonSegment.get("NW_Corner")
-							.getAsString());
-					segment.setSE_Corner(jsonSegment.get("SE_Corner")
-							.getAsString());
+					segment = (Segment) NgsiStructure.convertStringToXml(
+							"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+									+ jo.get("value").getAsString(),
+							Segment.class);
 
 					contextMetadata.setValue((Segment) segment);
 				} else if (jo.get("value").toString().contains("point")) {
 
 					Point point = new Point();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value").getAsJsonObject("point");
-
-					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
-					}
-
-					point.setLatitude(Float.valueOf(jsonSegment.get("latitude")
-							.getAsString()));
-					point.setLongitude(Float.valueOf(jsonSegment.get(
-							"longitude").getAsString()));
+					point = (Point) NgsiStructure.convertStringToXml(
+							"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+									+ jo.get("value").getAsString(),
+							Point.class);
 
 					contextMetadata.setValue((Point) point);
 
@@ -165,20 +148,10 @@ public class JSonNgsi9Parser {
 
 					Circle circle = new Circle();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value").getAsJsonObject("circle");
-
-					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
-					}
-
-					circle.setCenterLatitude(Float.valueOf(jsonSegment.get(
-							"centerLatitude").getAsString()));
-					circle.setCenterLongitude(Float.valueOf(jsonSegment.get(
-							"centerLongitude").getAsString()));
-					circle.setRadius(Float.valueOf(jsonSegment.get("radius")
-							.getAsString()));
+					circle = (Circle) NgsiStructure.convertStringToXml(
+							"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+									+ jo.get("value").getAsString(),
+							Circle.class);
 
 					contextMetadata.setValue((Circle) circle);
 
@@ -186,30 +159,11 @@ public class JSonNgsi9Parser {
 
 					Polygon polygon = new Polygon();
 
-					JsonObject jsonSegment = jo.getAsJsonObject()
-							.getAsJsonObject("value")
-							.getAsJsonObject("polygon");
+					polygon = (Polygon) NgsiStructure.convertStringToXml(
+							"<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+									+ jo.get("value").getAsString(),
+							Polygon.class);
 
-					if (jsonSegment == null) {
-						jsonSegment = jo.getAsJsonObject().getAsJsonObject(
-								"value");
-					}
-
-					JsonArray vertexList = jsonSegment.getAsJsonObject(
-							"vertexList").getAsJsonArray("vertex");
-					List<Vertex> vertexListXML = new ArrayList<Vertex>();
-
-					for (int i = 0; i < vertexList.size(); i++) {
-						String lat = vertexList.get(i).getAsJsonObject()
-								.get("latitude").getAsString();
-						String lng = vertexList.get(i).getAsJsonObject()
-								.get("longitude").getAsString();
-						Vertex vertex = new Vertex(Float.valueOf(lat),
-								Float.valueOf(lng));
-						vertexListXML.add(vertex);
-					}
-
-					polygon.setVertexList(vertexListXML);
 					contextMetadata.setValue((Polygon) polygon);
 
 				}
@@ -230,10 +184,117 @@ public class JSonNgsi9Parser {
 				}
 				contextMetadata.setValue(string);
 			}
+
+			// if (jo.get("value").toString().contains("segment")) {
+			// Segment segment = new Segment();
+			//
+			// JsonObject jsonSegment = jo.getAsJsonObject()
+			// .getAsJsonObject("value")
+			// .getAsJsonObject("segment");
+			//
+			// if (jsonSegment == null) {
+			// jsonSegment = jo.getAsJsonObject().getAsJsonObject(
+			// "value");
+			// }
+			//
+			// segment.setNW_Corner(jsonSegment.get("NW_Corner")
+			// .getAsString());
+			// segment.setSE_Corner(jsonSegment.get("SE_Corner")
+			// .getAsString());
+			//
+			// contextMetadata.setValue((Segment) segment);
+			// } else if (jo.get("value").toString().contains("point")) {
+			//
+			// Point point = new Point();
+			//
+			// JsonObject jsonSegment = jo.getAsJsonObject()
+			// .getAsJsonObject("value").getAsJsonObject("point");
+			//
+			// if (jsonSegment == null) {
+			// jsonSegment = jo.getAsJsonObject().getAsJsonObject(
+			// "value");
+			// }
+			//
+			// point.setLatitude(Float.valueOf(jsonSegment.get("latitude")
+			// .getAsString()));
+			// point.setLongitude(Float.valueOf(jsonSegment.get(
+			// "longitude").getAsString()));
+			//
+			// contextMetadata.setValue((Point) point);
+			//
+			// } else if (jo.get("value").toString().contains("circle")) {
+			//
+			// Circle circle = new Circle();
+			//
+			// JsonObject jsonSegment = jo.getAsJsonObject()
+			// .getAsJsonObject("value").getAsJsonObject("circle");
+			//
+			// if (jsonSegment == null) {
+			// jsonSegment = jo.getAsJsonObject().getAsJsonObject(
+			// "value");
+			// }
+			//
+			// circle.setCenterLatitude(Float.valueOf(jsonSegment.get(
+			// "centerLatitude").getAsString()));
+			// circle.setCenterLongitude(Float.valueOf(jsonSegment.get(
+			// "centerLongitude").getAsString()));
+			// circle.setRadius(Float.valueOf(jsonSegment.get("radius")
+			// .getAsString()));
+			//
+			// contextMetadata.setValue((Circle) circle);
+			//
+			// } else if (jo.get("value").toString().contains("polygon")) {
+			//
+			// Polygon polygon = new Polygon();
+			//
+			// JsonObject jsonSegment = jo.getAsJsonObject()
+			// .getAsJsonObject("value")
+			// .getAsJsonObject("polygon");
+			//
+			// if (jsonSegment == null) {
+			// jsonSegment = jo.getAsJsonObject().getAsJsonObject(
+			// "value");
+			// }
+			//
+			// JsonArray vertexList = jsonSegment.getAsJsonObject(
+			// "vertexList").getAsJsonArray("vertex");
+			// List<Vertex> vertexListXML = new ArrayList<Vertex>();
+			//
+			// for (int i = 0; i < vertexList.size(); i++) {
+			// String lat = vertexList.get(i).getAsJsonObject()
+			// .get("latitude").getAsString();
+			// String lng = vertexList.get(i).getAsJsonObject()
+			// .get("longitude").getAsString();
+			// Vertex vertex = new Vertex(Float.valueOf(lat),
+			// Float.valueOf(lng));
+			// vertexListXML.add(vertex);
+			// }
+			//
+			// polygon.setVertexList(vertexListXML);
+			// contextMetadata.setValue((Polygon) polygon);
+			//
+			// }
+			// } else {
+			// String string;
+			// if (!jo.getAsJsonObject().get("value").isJsonObject()) {
+			// string = jo.getAsJsonObject().get("value").getAsString();
+			// } else {
+			// // string = jo.getAsJsonObject().getAsJsonObject("value")
+			// // .get("content").getAsString();
+			// // JsonObject jo1 = jo.getAsJsonObject();
+			// // jo1 = jo1.getAsJsonObject("value");
+			// // String str = jo1.toString();
+			//
+			// JSONObject json = new JSONObject(jo.getAsJsonObject()
+			// .getAsJsonObject("value").toString());
+			// string = XML.toString(json);
+			// }
+			// contextMetadata.setValue(string);
+			// }
 		}
 
-		contextMetadata = (ContextMetadata) NgsiStructure.convertStringToXml(
-				contextMetadata.toString(), ContextMetadata.class);
+//		contextMetadata = (ContextMetadata) NgsiStructure.convertStringToXml(
+//				contextMetadata.toString(), ContextMetadata.class);
 
 		return contextMetadata;
 
@@ -434,7 +495,8 @@ public class JSonNgsi9Parser {
 			} else {
 				String string;
 				if (!jo.getAsJsonObject().get("scopeValue").isJsonObject()) {
-					string = jo.getAsJsonObject().get("scopeValue").getAsString();
+					string = jo.getAsJsonObject().get("scopeValue")
+							.getAsString();
 				} else {
 					// string = jo.getAsJsonObject().getAsJsonObject("value")
 					// .get("content").getAsString();
@@ -452,7 +514,7 @@ public class JSonNgsi9Parser {
 
 		operationScope = (OperationScope) NgsiStructure.convertStringToXml(
 				operationScope.toString(), OperationScope.class);
-		
+
 		// String string = jo.getAsJsonObject().get("scopeValue")
 		// .toString();
 		// operationScope.setScopeValue((String) string);
