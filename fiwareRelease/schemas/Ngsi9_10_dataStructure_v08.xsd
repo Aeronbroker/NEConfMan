@@ -16,7 +16,7 @@
 	<xs:element name="contextRegistration" type="ContextRegistration" />
 	<xs:element name="operationScope" type="OperationScope" />
 	<xs:element name="entityId" type="EntityId" />
-	<xs:element name="registrationMetaData" type="RegistrationMetaData" />
+	<xs:element name="registrationMetadata" type="RegistrationMetadata" />
 	<xs:element name="contextElementResponse" type="ContextElementResponse" />
 	<xs:element name="notifyCondition" type="NotifyCondition" />
 	<xs:element name="contextMetadata" type="ContextMetadata" />
@@ -198,43 +198,6 @@
 	</xs:complexType>
 
 
-	<xs:complexType name="circle">
-		<xs:sequence>
-			<xs:element name="centerLatitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="centerLongitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="radius" type="xs:float" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="polygon">
-		<xs:sequence>
-			<xs:element name="vertexList" type="vertexList" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
-		<xs:complexType name="vertexList">
-		<xs:sequence>
-			<xs:element name="vertex" type="vertex" minOccurs="1" maxOccurs="unbounded"/>
-		</xs:sequence>
-	</xs:complexType>
-
-	<xs:complexType name="point">
-		<xs:sequence>
-			<xs:element name="latitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="longitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="vertex">
-		<xs:sequence>
-			<xs:element name="latitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="longitude" type="xs:float" minOccurs="1" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
-	<xs:complexType name="segment">
-		<xs:sequence>
-			<xs:element name="NW_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="SE_Corner" type="xs:string" minOccurs="1" maxOccurs="1"/>
-			<xs:element name="Height" type="xs:double" minOccurs="0" maxOccurs="1"/>
-		</xs:sequence>
-	</xs:complexType>
 	<xs:complexType name="Restriction">
 		<xs:sequence>
 			<xs:element name="attributeExpression" type="xs:string"
@@ -284,7 +247,7 @@
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="contextRegistrationAttributeList" type="ContextRegistrationAttributeList"
 				minOccurs="0" maxOccurs="1" />
-			<xs:element name="registrationMetaData" type="RegistrationMetaData"
+			<xs:element name="registrationMetadata" type="RegistrationMetadata"
 				minOccurs="0" maxOccurs="1" />
 			<xs:element name="providingApplication" type="xs:anyURI"
 				minOccurs="1" maxOccurs="1" />
@@ -292,7 +255,7 @@
 	</xs:complexType>
 
 
-	<xs:complexType name="RegistrationMetaData">
+	<xs:complexType name="RegistrationMetadata">
 		<xs:sequence>
 			<xs:element name="contextMetadata" type="ContextMetadata"
 				minOccurs="0" maxOccurs="unbounded" />
