@@ -59,7 +59,16 @@ Runtime Environment
 --
 A pre-configured runtime environment based on Equinox is included by this release in the folder `ConfMan_Runner`. To start the ConfMan, run one of the two executable scripts `startConfigurationManager.bat` or `startConfigurationManager.sh`, depending on your operating system.
 
-System Configuration
+Automatic System Configuration
+---
+Two scripts are provided for an easy installation, you can find them in the *ConfMan_Runner* folder:
+
+* confman.conf: containing all the configurations variables to be set
+* setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: confman_configini, confman_configxml and confman_configproperties)
+
+After running the setup.sh, the ConfMan can be started with the provided scripts in *ConfMan_Runner* folder. 
+
+Manual System Configuration
 ---
 The NEC ConfMan is configured by means of the following files
 * `ConfMan_Runner/confman/configuration/config.ini` is the configuration file for the Equinox OSGi environment. The most important parameters to set here are
@@ -69,3 +78,8 @@ The NEC ConfMan is configured by means of the following files
  * `config.properties`: Database configuration (including credentials for postgreSQL; see the system requirements section above)
  * `config.xml`: location of xml schema files for message body syntax checking, and path prefix of the exposed FIWARE NGSI-9 REST interface
 *  `fiwareRelease/confmanconfig/bundleConfigurations/services/org.ops4j.pax.logging.properties`: configuration of logger
+
+NGSI bundle issue
+---
+The NEConfMan is using the JAVA NGSI specification of the IoT Broker. This specification is given as a jar archive in the *ConfManTargetPlatform/neclab* folder. 
+It may happen that in such folder there is not the most updated one and it may cause some issue due to incompatibility. In order to get the last one, it is necessary to build the last version from the source code (https://github.com/Aeronbroker/Aeron/tree/master/eu.neclab.iotplatform.ngsi.api) and then position the resulting jar file in the *ConfManTargetPlatform/neclab*.
