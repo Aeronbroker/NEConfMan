@@ -7,6 +7,26 @@ confman_configini='/opt/NEConfMan/ConfMan_Runner/confman/configuration/config.in
 confman_configxml='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManager/config/config.xml'
 confman_configproperties='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManager/config/config.properties'
 
+AUTOSETUP='false'
+PROPAGATEAUTO='false'
+
+while [[ $# > 0 ]]
+do
+key="$1"
+case $key in
+    --auto)
+    AUTOSETUP=true
+    ;;
+    --propagateauto)
+    PROPAGATEAUTO=true
+    ;;
+    *)
+            # unknown option
+    ;;
+esac
+shift # past argument or value
+done
+
 # Functions
 function setPropertyIntoXML {
 	if grep -q "<entry key=\"$1\">.*<\/entry>" "$3"; then
@@ -51,10 +71,65 @@ function setPropertyIntoProperties {
 	fi
 }
 
-# Escape characters
-sed -e 's/[]\/$*.^|[]/\\&/g' ./confman.conf > ./.confman.conf.escaped
-chmod +x .confman.conf.escaped
-. ./.confman.conf.escaped
+function setConfiguration {
+	
+	key=$1
+	key=${key//\./\\\.}
+	key=${key//\//\\/}
+	
+	value=$2
+	value=${value//\./\\\.}
+	value=${value//\//\\/}
+
+	
+	sed -i "s/$key=.*/$key=\'$value\'/g" "$3"
+
+}
+
+
+
+
+
+if [ "$AUTOSETUP" = false ]; 
+then
+	# Escape characters
+	sed -e 's/[]\/$*.^|[]/\\&/g' ./confman.conf.local > ./.confman.conf.escaped
+	chmod +x .confman.conf.escaped
+	. ./.confman.conf.escaped
+else
+
+	# Escape characters
+	sed -e 's/[]\/$*.^|[]/\\&/g' ./confman.conf.default > ./.confman.conf.escaped
+	chmod +x .confman.conf.escaped
+	. ./.confman.conf.escaped
+	
+	confmandir="$(dirname `pwd`)"
+	
+	confman_configini="$confmandir/ConfMan_Runner/confman/configuration/config.ini"
+	confman_configxml="$confmandir/fiwareRelease/confmanconfig/configurationManager/config/config.xml"
+	confman_configproperties="$confmandir/fiwareRelease/confmanconfig/configurationManager/config/config.properties"
+	
+	confman_dirconfig="$confmandir/fiwareRelease"
+	confman_bundlesconfigurationlocation="$confmandir/fiwareRelease/bundleConfigurations"
+	
+	if [ "$PROPAGATEAUTO" = true ];
+	then
+	
+		setConfiguration "confman_dirconfig" "$confman_dirconfig" "confman.conf.local"
+		setConfiguration "confman_bundlesconfigurationlocation" "$confman_bundlesconfigurationlocation" "confman.conf.local"
+		
+		setConfiguration "confman_configini" "$confman_configini" "setup.sh"
+		setConfiguration "confman_configxml" "$confman_configxml" "setup.sh"
+		setConfiguration "confman_configproperties" "$confman_configproperties" "setup.sh"
+
+	fi
+	
+	confman_dirconfig=${confman_dirconfig//\./\\\.}
+	confman_dirconfig=${confman_dirconfig//\//\\/}
+	
+	confman_bundlesconfigurationlocation=${confman_bundlesconfigurationlocation//\./\\\.}
+	confman_bundlesconfigurationlocation=${confman_bundlesconfigurationlocation//\//\\/}
+fi
 
 
 ## START OF AUTOMATIC SCRIPT
