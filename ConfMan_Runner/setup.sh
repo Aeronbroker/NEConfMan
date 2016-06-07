@@ -145,5 +145,6 @@ setPropertyIntoProperties "postgres_user" "$confman_postgresuser" "$confman_conf
 setPropertyIntoProperties "postgres_password" "$confman_postgrespassword" "$confman_configproperties"
 setPropertyIntoProperties "postgres_url" "$confman_postgresurl" "$confman_configproperties"
 setPropertyIntoProperties "postgres_dbName" "$confman_postgresdbname" "$confman_configproperties"
-setPropertyIntoProperties "couchdb_registerContextDbName" "$couchdb_registerContextDbName" "$confman_configproperties"
+setPropertyIntoProperties "couchdb_ip" "$confman_couchdbipandport" "$confman_configproperties"
+setPropertyIntoProperties "couchdb_registerContextDbName" "$confman_couchdbregistercontextdbname" "$confman_configproperties"
 setPropertyIntoProperties "couchdb_subscriptionDbName" "$confman_couchdbsubscriptiondbname" "$confman_configproperties"
