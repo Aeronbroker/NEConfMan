@@ -982,6 +982,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// Subscriber -> Set<ContextRegistration>
 		Multimap<SubscriptionToNotify, ContextRegistration> multimap = HashMultimap
 				.create();
+		
+		if (results == null || results.isEmpty()){
+			return multimap;
+		}
 
 		JsonElement jelement = new JsonParser().parse(results);
 		if (!jelement.isJsonNull()) {
