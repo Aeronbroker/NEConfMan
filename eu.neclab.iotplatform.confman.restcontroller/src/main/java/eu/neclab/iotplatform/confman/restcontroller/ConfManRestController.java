@@ -76,7 +76,11 @@ public class ConfManRestController {
 	private @Value("${schema_ngsi9_operation}")
 	String sNgsi9schema;
 
-	
+	/** String representing json content type. */
+	private final String CONTENT_TYPE_JSON = "application/json";
+
+	/** String representing xml content type. */
+	private final String CONTENT_TYPE_XML = "application/xml";
 	
 	/** The validator for incoming message bodies. */
 	private static XmlValidator validator = new XmlValidator();
@@ -156,7 +160,9 @@ public class ConfManRestController {
 		}
 	}
 
-	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST,  consumes = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<RegisterContextResponse> registerContext(
 			HttpServletRequest requester,
 			@RequestBody RegisterContextRequest request) {
