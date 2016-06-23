@@ -127,7 +127,7 @@ public class ConfManRestController {
 
 		if (check.isCorrect()) {
 
-			logger.info("Discover received : " + request);
+			logger.info("Discovery received : " + request);
 
 			DiscoverContextAvailabilityResponse response = ngsi9
 					.discoverContextAvailability(request);
@@ -142,7 +142,7 @@ public class ConfManRestController {
 						response, HttpStatus.OK);
 			}
 
-			logger.info("Response back:"+response.toString());
+			logger.info("Response:"+response.toString());
 			return new ResponseEntity<DiscoverContextAvailabilityResponse>(
 					response, HttpStatus.OK);
 

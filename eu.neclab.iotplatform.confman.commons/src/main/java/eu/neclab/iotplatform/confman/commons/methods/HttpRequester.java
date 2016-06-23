@@ -123,6 +123,8 @@ public class HttpRequester {
 		// StringBuilder sb = new StringBuilder();
 		// String line = null;
 
+		logger.info("Sending GET to: " + url);
+
 		try {
 			// set up out communications stuff
 			connection = null;
@@ -142,6 +144,8 @@ public class HttpRequester {
 					connection.getResponseMessage());
 
 			if (responseCode > 399 && responseCode < 500) {
+				
+				logger.info("\nResponse Code : " + responseCode + "\n");
 
 				connection.disconnect();
 				return httpResponse;
@@ -271,13 +275,13 @@ public class HttpRequester {
 
 		int responseCode = con.getResponseCode();
 		logger.info("\nResponse Code : " + responseCode + "\n");
-		
+
 		FullHttpResponse httpResponse = new FullHttpResponse(
 				HttpVersion.HTTP_1_0, con.getResponseCode(),
 				con.getResponseMessage());
-		
+
 		con.disconnect();
-		
+
 		return httpResponse;
 
 	}

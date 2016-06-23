@@ -508,13 +508,11 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 
 		logger.info("Subscribe request:" + request.toString());
-		
 
+		// Create a Json Object from the XML
+		// JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
+		// String jsonString = xmlJSONObj.toString();
 
-//		 Create a Json Object from the XML
-//		JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
-//		String jsonString = xmlJSONObj.toString();
-		
 		String jsonString = documentGenerator.generateJsonString(request);
 
 		// Send the request to the Database
@@ -681,8 +679,24 @@ public class CouchDB implements Ngsi9StorageInterface {
 		FullHttpResponse response = executeView(javaScriptView,
 				DocumentType.REGISTER_CONTEXT);
 
-		// Parse the response
-		regIdAndContReg = this.parseDiscoverResponse(response.getBody());
+		if (response.getStatusLine().getStatusCode() > 299) {
+
+			if (response.getBody() != null) {
+				if (response.getBody().matches(
+						".*{\"error\":\"{{badmatch,{error,eacces}}.*")) {
+					logger.warn("Problem with CouchDB. Please check the right accesses of the database folder. They must be owned by couchdb:couchdb. Following is the error: "
+							+ response.getBody());
+				}
+			} else {
+				logger.info(String
+						.format("Problem when querying CouchDB. StatusCode: %d Message: %s",
+								response.getStatusLine().getStatusCode(),
+								response.getStatusLine().getReasonPhrase()));
+			}
+		} else {
+			// Parse the response
+			regIdAndContReg = this.parseDiscoverResponse(response.getBody());
+		}
 
 		return regIdAndContReg;
 
@@ -694,6 +708,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// This map will contain: RegistrationID -> Set<ContextRegistration>
 		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap
 				.create();
+
+		if (response == null || response.isEmpty()) {
+			return regIdAndContReg;
+		}
 
 		JsonElement jelement = new JsonParser().parse(response);
 		if (!jelement.isJsonNull()) {
@@ -771,7 +789,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 			// Execute the view on couchDB server and get the response
 			response = getView(queryName, documentType);
 
-			logger.debug("Results of the view :" + response.getBody());
+			if (logger.isDebugEnabled()) {
+				logger.debug("Results of the view :" + response.getBody());
+			}
 
 			// Remove view from the server
 			remove(queryId, documentType);
@@ -982,8 +1002,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// Subscriber -> Set<ContextRegistration>
 		Multimap<SubscriptionToNotify, ContextRegistration> multimap = HashMultimap
 				.create();
-		
-		if (results == null || results.isEmpty()){
+
+		if (results == null || results.isEmpty()) {
 			return multimap;
 		}
 
