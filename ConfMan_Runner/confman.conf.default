@@ -6,7 +6,7 @@
 # Folders setting
 confman_dirconfig='/opt/NEConfMan/fiwareRelease/'
 confman_bundlesconfigurationlocation='/opt/NEConfMan/fiwareRelease/bundleConfigurations'
-confman_logfile='/opt/NEConfMan/ConfMan_Runner/logs/iotdiscovery.log'
+confman_logfile='logs/iotdiscovery.log'
 
 # XML Schema path
 confman_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'
