@@ -149,7 +149,18 @@ public class DeletionScheduler {
 	 */
 	public void addDeletion(String id, DocumentType type, long millis) {
 
-		timer.schedule(new Deletion(id, type, ngsi9Storage), millis);
+		try {
+			timer.schedule(new Deletion(id, type, ngsi9Storage), millis);
+		} catch (IllegalStateException e) {
+			if (e.getMessage() == "Timer already cancelled.") {
+				logger.info("Timer was canceled. Going to instantiate a new one");
+				timer = new Timer();
+				timer.schedule(new Deletion(id, type, ngsi9Storage), millis);
+			} else {
+				logger.error("Timer schedule error: ");
+				e.printStackTrace();
+			}
+		}
 
 	}
 
