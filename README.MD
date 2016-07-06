@@ -24,7 +24,7 @@ The source code is organized as Maven projects and therefore can be compiled usi
 At compile time, Maven will automatically install the required dependency. One exception is the dependency on package `eu.neclab.iotplatform.ngsi.api`. This package is delivered as part of the **IoT Broker GE reference implementation**. It can be found in the *ConfManTargetPlatform* folder and needs to be installed manually into the local Maven repository. If the IoT Broker GEri has been previously compiled on the same system, this step can be skipped. Otherwise, navigate into the `ConfManTargetPlatform/neclab` folder and type
 
 ```
-mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpclient -Dversion=4.2.0-osgi -Dfile=ngsi.api-4.4.3.jar -Dpackaging=jar -DgeneratePom=true
+mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpclient -Dversion=4.2.0-osgi -Dfile=ngsi.api-5.3.3.jar -Dpackaging=jar -DgeneratePom=true
 ```
 
 To compile the ConfMan sources, first compile the ConfMan parent project. Navigate into the folder `eu.neclab.iotplatform.confman.parent` and type
