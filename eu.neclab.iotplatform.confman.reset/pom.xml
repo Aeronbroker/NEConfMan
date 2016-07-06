@@ -1,0 +1,55 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>eu.neclab.iotplatform.confman</groupId>
+		<artifactId>parent</artifactId>
+		<version>5.4.1-SNAPSHOT</version>
+		<relativePath>../eu.neclab.iotplatform.confman.parent</relativePath>
+	</parent>
+
+	<artifactId>reset</artifactId>
+	<name>eu.neclab.iotplatform.confman.reset</name>
+	<packaging>bundle</packaging>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>.</directory>
+				<includes>
+					<include>META-INF/**</include>
+				</includes>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<extensions>true</extensions>
+				<configuration>
+					<manifestLocation>META-INF</manifestLocation>
+					<instructions>
+						<Private-Package>eu.neclab.iotplatform.confman.reset.*</Private-Package>
+						<Import-Package>
+						eu.neclab.iotplatform.confman.commons.interfaces;version="0.0.3"
+						</Import-Package>
+					</instructions>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	
+	<dependencies>
+	
+		<dependency>
+			<groupId>eu.neclab.iotplatform.confman</groupId>
+			<artifactId>commons</artifactId>
+			<version>${confman.version}</version>
+		</dependency>
+
+	</dependencies>
+</project>
