@@ -59,14 +59,56 @@ Runtime Environment
 --
 A pre-configured runtime environment based on Equinox is included by this release in the folder `ConfMan_Runner`. To start the ConfMan, run one of the two executable scripts `startConfigurationManager.bat` or `startConfigurationManager.sh`, depending on your operating system.
 
-Automatic System Configuration
+
+Configure the NEC ConfMan with setup scripts
 ---
-Two scripts are provided for an easy installation, you can find them in the *ConfMan_Runner* folder:
+NEConfMan configuration variables are spread among several files. For this reason is highly recommended the usage of the *setup.sh* script (only for Bash shell in UNIX system) available in the *ConfMan-Runner* folder (please note it is important that the structure of the folder needs to be the same as the one in the github repository https://github.com/Aeronbroker/NEConfMan).
 
-* confman.conf: containing all the configurations variables to be set
-* setup.sh: setup script to be run in a linux shell (three paths need to be set at the very beginning of this script: confman_configini, confman_configxml and confman_configproperties)
+First we have to enter in the *ConfMan-Runner* folder:
+```
+cd ConfMan-Runner
+```
 
-After running the setup.sh, the ConfMan can be started with the provided scripts in *ConfMan_Runner* folder. 
+For a very quick configuration of the NEConfMan the following command needs to be run (please make sure the setup.sh has the execute rights with a *chmod +x setup.sh*):
+```
+./setup.sh --auto
+```
+
+The setup script will look at the default configurations in the *confman.conf.default* file and it will manage to automatically figure out the necessary path for the configuration.
+
+The paths will be configured only to the NEConfMan configuration files and not in these setup files. In order to run in the future the *setup.sh* script without specifying the *--auto* option, the following command needs to be run:
+```
+./setup.sh --auto --propagateauto
+```
+
+The *--propagateauto* instructs the setup script to create a local configuration file, *confman.conf.local*, with the right path configurations. From now on the next setup action can be done simply by the following command:
+```
+./setup.sh
+```
+
+In order to setup the NEConfMan differently from the default configuration, it is necessary to specify the custom preference in the *confman.conf.local*. If the latter file has not yet been created by the --propagateauto options, it needs to be manually created. There are two possibilities:
+* Create and empty file called *confman.conf.local*, add at the first line *#!/bin/bash* and give the execute permissions.
+* Copy the *confman.conf.default* into *confman.conf.local* and give the execute permissions.
+
+No differences between the two options, since the setup script will first look into the *confman.conf.default* file and then all the variables will be overwritten by the *confman.conf.local* file.
+Now the custom preferences can be set.
+
+Please note: if a *./setup.sh --auto --propagateauto* has not yet been run once, also the setup.sh needs to have the following 4 paths set at the beginning of the script:
+```
+confman_configini='/opt/NEConfMan/ConfMan_Runner/confman/configuration/config.ini'
+confman_configxml='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManager/config/config.xml'
+confman_configproperties='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManager/config/config.properties'
+confman_launcher="/opt/NEConfMan/ConfMan_Runner/startConfigurationManager.sh"
+confman_launcherasdaemon="/opt/NEConfMan/ConfMan_Runner/startConfigurationManager_as_daemon.sh"
+
+```
+
+For having the custom preferences set it is necessary to simply run:
+```
+./setup.sh
+```
+
+After running the setup.sh, the NEConfMan can be started with the provided scripts in *ConfMand-Runner* folder.
 
 Manual System Configuration
 ---
