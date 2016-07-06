@@ -74,11 +74,7 @@
 		<module>../eu.neclab.iotplatform.confman.coreextensible</module>
 		<module>../eu.neclab.iotplatform.confman.restcontroller</module>
 		<module>../eu.neclab.iotplatform.confman.serverconf</module>
-		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.geoindexer</module>
-		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsi9geoextension</module>	
-		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchyextension</module>
-		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchystorage</module>
-		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.postgis</module>		
+		<module>../eu.neclab.iotplatform.confman.reset</module>
 	</modules>
 
 
