@@ -74,6 +74,7 @@
 		<module>../eu.neclab.iotplatform.confman.coreextensible</module>
 		<module>../eu.neclab.iotplatform.confman.restcontroller</module>
 		<module>../eu.neclab.iotplatform.confman.serverconf</module>
+		<module>../eu.neclab.iotplatform.confman.reset</module>
 	</modules>
 
 
