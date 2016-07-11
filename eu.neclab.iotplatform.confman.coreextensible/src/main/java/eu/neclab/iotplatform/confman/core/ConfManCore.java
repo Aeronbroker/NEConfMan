@@ -1227,6 +1227,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		return null;
 	}
 
+	@Override
 	public void reset() {
 		ngsi9Storage.reset();
 		utilityStorage.reset();

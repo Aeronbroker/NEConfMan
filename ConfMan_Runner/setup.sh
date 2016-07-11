@@ -38,6 +38,14 @@ then
 	. ./.confman.conf.local.escaped
 fi
 
+if [ -e .confman.conf.runtime ];
+then
+	echo "Reading runtime preferences from .confman.conf.runtime"
+	sed -e 's/[]\/$*.^|[]/\\&/g' ./.confman.conf.runtime > ./.confman.conf.runtime.escaped
+	chmod +x .confman.conf.runtime.escaped
+	. ./.confman.conf.runtime.escaped
+fi
+
 
 if [ "$AUTOSETUP" = true ]; 
 then

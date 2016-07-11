@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # PLEASE SET THE FOLLOWING FILE PATH BEFORE TO RUN
 #Configuration files to setup
 

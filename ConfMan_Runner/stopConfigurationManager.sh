@@ -1,2 +1,9 @@
 #!/bin/bash
-pkill -f 'java -jar confman/org.eclipse.osgi-3.7.0.v20110221.jar'
+PID=`cat pid.file 2> /dev/null`
+if [ -z "$PID" ];
+then
+	echo "IoT Discovery is not running"
+else
+	kill -9 $PID
+	rm pid.file
+fi
