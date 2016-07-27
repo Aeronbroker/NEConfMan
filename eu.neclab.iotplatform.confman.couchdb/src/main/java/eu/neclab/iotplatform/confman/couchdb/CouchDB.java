@@ -67,12 +67,16 @@ import eu.neclab.iotplatform.confman.commons.methods.HttpRequester;
 import eu.neclab.iotplatform.confman.commons.methods.JSonNgsi9Parser;
 import eu.neclab.iotplatform.confman.commons.methods.UniqueIDGenerator;
 import eu.neclab.iotplatform.confman.couchdb.datamodel.ObjectId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 
 /**
  * An Ngsi9StorageInterface implementation that supports connection to CouchDB.

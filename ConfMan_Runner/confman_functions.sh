@@ -56,6 +56,19 @@ function setPropertyIntoProperties {
 	fi
 }
 
+
+function setFirstPropertyValueOverMultipleValuesIntoProperties {
+	
+	key=$1
+	key=${key//\./\\\.}
+	key=${key//\//\\/}
+
+	
+	sed -i "s/$key=[^,]*/$key=$2/g" "$3"
+
+	
+}
+
 function setConfiguration {
 	
 	key=$1

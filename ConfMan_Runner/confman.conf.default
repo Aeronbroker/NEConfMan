@@ -6,7 +6,11 @@
 # Folders setting
 confman_dirconfig='/opt/NEConfMan/fiwareRelease/'
 confman_bundlesconfigurationlocation='/opt/NEConfMan/fiwareRelease/bundleConfigurations'
+
+# Logging configuration
+# Logging level ALL, DEBUG, ERROR, FATAL, INFO, OFF, WARN (https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/Level.html)
 confman_logfile='logs/iotdiscovery.log'
+confman_loglevel='INFO'
 
 # XML Schema path
 confman_schemangsi9operation='${dir.config}/xmlSchema/Ngsi9_Operations_v08.xsd'

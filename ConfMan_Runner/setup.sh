@@ -139,6 +139,7 @@ setPropertyIntoProperties "couchdb_registerContextDbName" "$confman_couchdbregis
 setPropertyIntoProperties "couchdb_subscriptionDbName" "$confman_couchdbsubscriptiondbname" "$confman_configproperties"
 
 setPropertyIntoProperties "log4j.appender.ReportFileAppender.File" "$confman_logfile" "$confman_loggerproperties"
+setFirstPropertyValueOverMultipleValuesIntoProperties "log4j.rootLogger" "$confman_loglevel" "$confman_loggerproperties"
 
 setConfiguration "configProperties" "$confman_configproperties" "$confman_launcher"
 setConfiguration "configProperties" "$confman_configproperties" "$confman_launcherasdaemon"
