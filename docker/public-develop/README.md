@@ -23,12 +23,12 @@ In order to run the NEConfMan please do the following:
 docker run -p 8065:8065 nle/neconfman:dev
 ```
 
-If you want to run the IoTBroker docker container in background use the following:
+If you want to run the NEConfMan docker container in background use the following:
 ```
 docker run -p 8065:8065 nle/neconfman:dev > /dev/null &
 ```
 
-Possibility to access to the CouchDB server
+Possibility to access also to the CouchDB server
 ```
 docker run -t -p 8065:8065 -p 5987:5984 nle/neconfman:dev
 ```
