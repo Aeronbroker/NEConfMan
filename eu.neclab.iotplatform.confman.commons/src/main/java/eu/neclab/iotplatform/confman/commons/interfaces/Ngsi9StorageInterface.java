@@ -34,6 +34,7 @@
 
 package eu.neclab.iotplatform.confman.commons.interfaces;
 
+import java.net.URI;
 import java.util.Set;
 
 import com.google.common.collect.Multimap;
@@ -139,6 +140,22 @@ public interface Ngsi9StorageInterface {
 	Multimap<String, ContextRegistration> discover(
 			DiscoverContextAvailabilityRequest request,
 			Set<String> registrationIdList);
+
+	/**
+	 * Issue a discovery with a pre-filtering of the registrationId based on the
+	 * registrationIdList. If the registrationIdList is null, the pre-filtering
+	 * of the RegisterContextRequest based on their registrationId does not take
+	 * place. Furthermore also the subtypes specified in the subtypesMap will be
+	 * taken into consideration.
+	 * 
+	 * @param request
+	 * @param registrationIdList
+	 * @param subtypesMap
+	 * @return
+	 */
+	Multimap<String, ContextRegistration> discover(
+			DiscoverContextAvailabilityRequest request,
+			Set<String> registrationIdList, Multimap<URI, URI> subtypesMap);
 
 	/**
 	 * The Ngsi9Storage will find which subscription shall be notified about a

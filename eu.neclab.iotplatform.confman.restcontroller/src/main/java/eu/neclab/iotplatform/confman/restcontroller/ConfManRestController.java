@@ -70,8 +70,6 @@ public class ConfManRestController {
 	private static Logger logger = Logger
 			.getLogger(ConfManRestController.class);
 
-	
-	
 	/** String representing the xml schema for NGSI 9. */
 	private @Value("${schema_ngsi9_operation}")
 	String sNgsi9schema;
@@ -81,12 +79,10 @@ public class ConfManRestController {
 
 	/** String representing xml content type. */
 	private final String CONTENT_TYPE_XML = "application/xml";
-	
+
 	/** The validator for incoming message bodies. */
 	private static XmlValidator validator = new XmlValidator();
-	
-	
-	
+
 	private Ngsi9Interface ngsi9;
 
 	public Ngsi9Interface getNgsi9() {
@@ -121,7 +117,7 @@ public class ConfManRestController {
 
 		// Validate the request
 		// boolean xmlError = validator.xmlValidation(request, sNgsi9schema);
-//		boolean xmlError = false;
+		// boolean xmlError = false;
 		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
 		logger.info("STATUS XML VALIDATOR: " + check.isCorrect());
 
@@ -142,7 +138,7 @@ public class ConfManRestController {
 						response, HttpStatus.OK);
 			}
 
-			logger.info("Response:"+response.toString());
+			logger.info("Response:" + response.toString());
 			return new ResponseEntity<DiscoverContextAvailabilityResponse>(
 					response, HttpStatus.OK);
 
@@ -151,7 +147,8 @@ public class ConfManRestController {
 			DiscoverContextAvailabilityResponse response = new DiscoverContextAvailabilityResponse();
 			StatusCode statusCode = new StatusCode(
 					Code.BADREQUEST_400.getCode(),
-					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error! Errors:"+check.getCausesOfErrors());
+					ReasonPhrase.BADREQUEST_400.toString(),
+					"XML syntax Error! Errors:" + check.getCausesOfErrors());
 
 			response.setErrorCode(statusCode);
 
@@ -160,7 +157,7 @@ public class ConfManRestController {
 		}
 	}
 
-	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST,  consumes = {
+	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<RegisterContextResponse> registerContext(
@@ -171,8 +168,10 @@ public class ConfManRestController {
 
 		// Validate the request
 		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-//		boolean status = false;
-		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		// boolean status = false;
+		if (logger.isDebugEnabled()) {
+			logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		}
 
 		if (check.isCorrect()) {
 
@@ -201,7 +200,8 @@ public class ConfManRestController {
 			RegisterContextResponse response = new RegisterContextResponse();
 			StatusCode statusCode = new StatusCode(
 					Code.BADREQUEST_400.getCode(),
-					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error! Errors:"+check.getCausesOfErrors());
+					ReasonPhrase.BADREQUEST_400.toString(),
+					"XML syntax Error! Errors:" + check.getCausesOfErrors());
 
 			response.setErrorCode(statusCode);
 
@@ -216,28 +216,29 @@ public class ConfManRestController {
 	public ResponseEntity<SubscribeContextAvailabilityResponse> subscribeContextAvailability(
 			HttpServletRequest requester,
 			@RequestBody SubscribeContextAvailabilityRequest request) {
-		
+
 		// Validate the request
 		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-//		boolean status = false;
+		// boolean status = false;
 		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
 
 		if (check.isCorrect()) {
 
-			SubscribeContextAvailabilityResponse response = ngsi9.subscribeContextAvailability(request);
+			SubscribeContextAvailabilityResponse response = ngsi9
+					.subscribeContextAvailability(request);
 
 			StatusCode statusCode = response.getErrorCode();
 			if (statusCode == null) {
-				return new ResponseEntity<SubscribeContextAvailabilityResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<SubscribeContextAvailabilityResponse>(
+						response, HttpStatus.OK);
 			} else {
 				int code = statusCode.getCode();
 				if (code >= 399 && code < 500) {
 					return new ResponseEntity<SubscribeContextAvailabilityResponse>(
 							response, HttpStatus.OK);
 				}
-				return new ResponseEntity<SubscribeContextAvailabilityResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<SubscribeContextAvailabilityResponse>(
+						response, HttpStatus.OK);
 			}
 
 			// return new ResponseEntity<RegisterContextResponse>(response,
@@ -249,12 +250,13 @@ public class ConfManRestController {
 			SubscribeContextAvailabilityResponse response = new SubscribeContextAvailabilityResponse();
 			StatusCode statusCode = new StatusCode(
 					Code.BADREQUEST_400.getCode(),
-					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error! Errors:"+check.getCausesOfErrors());
+					ReasonPhrase.BADREQUEST_400.toString(),
+					"XML syntax Error! Errors:" + check.getCausesOfErrors());
 
 			response.setErrorCode(statusCode);
 
-			return new ResponseEntity<SubscribeContextAvailabilityResponse>(response,
-					HttpStatus.OK);
+			return new ResponseEntity<SubscribeContextAvailabilityResponse>(
+					response, HttpStatus.OK);
 
 		}
 
@@ -262,31 +264,32 @@ public class ConfManRestController {
 
 	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, headers = "Accept=*/*")
 	public @ResponseBody
-	ResponseEntity<UpdateContextAvailabilitySubscriptionResponse> updateContextAvailabilitySubscription(HttpServletRequest requester,
+	ResponseEntity<UpdateContextAvailabilitySubscriptionResponse> updateContextAvailabilitySubscription(
+			HttpServletRequest requester,
 			@RequestBody UpdateContextAvailabilitySubscriptionRequest request) {
 
 		// Validate the request
 		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-//		boolean status = false;
+		// boolean status = false;
 		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
-		
-		
+
 		if (check.isCorrect()) {
 
-			UpdateContextAvailabilitySubscriptionResponse response = ngsi9.updateContextAvailabilitySubscription(request);
+			UpdateContextAvailabilitySubscriptionResponse response = ngsi9
+					.updateContextAvailabilitySubscription(request);
 
 			StatusCode statusCode = response.getErrorCode();
 			if (statusCode == null) {
-				return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(
+						response, HttpStatus.OK);
 			} else {
 				int code = statusCode.getCode();
 				if (code >= 399 && code < 500) {
 					return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(
 							response, HttpStatus.OK);
 				}
-				return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(
+						response, HttpStatus.OK);
 			}
 
 		} else {
@@ -294,43 +297,45 @@ public class ConfManRestController {
 			UpdateContextAvailabilitySubscriptionResponse response = new UpdateContextAvailabilitySubscriptionResponse();
 			StatusCode statusCode = new StatusCode(
 					Code.BADREQUEST_400.getCode(),
-					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error! Errors:"+check.getCausesOfErrors());
+					ReasonPhrase.BADREQUEST_400.toString(),
+					"XML syntax Error! Errors:" + check.getCausesOfErrors());
 
 			response.setErrorCode(statusCode);
 
-			return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(response,
-					HttpStatus.OK);
+			return new ResponseEntity<UpdateContextAvailabilitySubscriptionResponse>(
+					response, HttpStatus.OK);
 
 		}
 	}
 
 	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
 	public @ResponseBody
-	ResponseEntity<UnsubscribeContextAvailabilityResponse> unsubscribeContextAvailability(HttpServletRequest requester,
+	ResponseEntity<UnsubscribeContextAvailabilityResponse> unsubscribeContextAvailability(
+			HttpServletRequest requester,
 			@RequestBody UnsubscribeContextAvailabilityRequest request) {
 
 		// Validate the request
 		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-//		boolean status = false;
+		// boolean status = false;
 		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
-		
-		
+
 		if (check.isCorrect()) {
 
-			UnsubscribeContextAvailabilityResponse response = ngsi9.unsubscribeContextAvailability(request);
+			UnsubscribeContextAvailabilityResponse response = ngsi9
+					.unsubscribeContextAvailability(request);
 
 			StatusCode statusCode = response.getStatusCode();
 			if (statusCode == null) {
-				return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(
+						response, HttpStatus.OK);
 			} else {
 				int code = statusCode.getCode();
 				if (code >= 399 && code < 500) {
 					return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(
 							response, HttpStatus.OK);
 				}
-				return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(response,
-						HttpStatus.OK);
+				return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(
+						response, HttpStatus.OK);
 			}
 
 			// return new ResponseEntity<RegisterContextResponse>(response,
@@ -342,12 +347,13 @@ public class ConfManRestController {
 			UnsubscribeContextAvailabilityResponse response = new UnsubscribeContextAvailabilityResponse();
 			StatusCode statusCode = new StatusCode(
 					Code.BADREQUEST_400.getCode(),
-					ReasonPhrase.BADREQUEST_400.toString(), "XML syntax Error! Errors:"+check.getCausesOfErrors());
+					ReasonPhrase.BADREQUEST_400.toString(),
+					"XML syntax Error! Errors:" + check.getCausesOfErrors());
 
 			response.setStatusCode(statusCode);
 
-			return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(response,
-					HttpStatus.OK);
+			return new ResponseEntity<UnsubscribeContextAvailabilityResponse>(
+					response, HttpStatus.OK);
 
 		}
 

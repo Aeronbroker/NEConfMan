@@ -34,6 +34,7 @@
 
 package eu.neclab.iotplatform.confman.core;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.GregorianCalendar;
@@ -43,6 +44,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
+import org.eclipse.osgi.framework.internal.core.BundleURLConnection;
+import org.osgi.framework.Bundle;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -52,10 +55,12 @@ import eu.neclab.iotplatform.confman.commons.datatype.Pair;
 import eu.neclab.iotplatform.confman.commons.datatype.RestrictionAppliedFromDiscovery;
 import eu.neclab.iotplatform.confman.commons.datatype.SubscriptionToNotify;
 import eu.neclab.iotplatform.confman.commons.exceptions.NotExistingInDatabase;
+import eu.neclab.iotplatform.confman.commons.interfaces.KnowledgeBaseInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9ExtensionManagerInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.Resettable;
 import eu.neclab.iotplatform.confman.commons.interfaces.UtilityStorageInterface;
+import eu.neclab.iotplatform.confman.commons.methods.BundleUtils;
 import eu.neclab.iotplatform.confman.core.utils.NotificationUtils;
 import eu.neclab.iotplatform.confman.scheduler.DeletionScheduler;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
@@ -109,6 +114,12 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	 */
 	private UtilityStorageInterface utilityStorage;
 
+	/*
+	 * Auxiliary storage that keeps the status of on going subscriptions and
+	 * notifications sent
+	 */
+	private KnowledgeBaseInterface knowledgeBase;
+
 	/* Manager for extensions (e.g. ngsiGeoExtension) */
 	private Ngsi9ExtensionManagerInterface ngsi9ExtensionManager;
 
@@ -118,6 +129,14 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	/*
 	 * Start section with getters and setters of interfaces
 	 */
+	public KnowledgeBaseInterface getKnowledgeBase() {
+		return knowledgeBase;
+	}
+
+	public void setKnowledgeBase(KnowledgeBaseInterface knowledgeBase) {
+		this.knowledgeBase = knowledgeBase;
+	}
+
 	public Ngsi9ExtensionManagerInterface getNgsi9ExtensionManager() {
 		return ngsi9ExtensionManager;
 	}
@@ -201,7 +220,9 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	public RegisterContextResponse registerContext(
 			RegisterContextRequest request) {
 
-		logger.debug("Register Context received:\n" + request);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Register Context received:\n" + request);
+		}
 
 		// This object will contain the response to be returned back
 		RegisterContextResponse response = new RegisterContextResponse();
@@ -582,8 +603,9 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 									.isEmpty()
 							&& contextRegToNotifyAsDeleted.get(subscriber)
 									.contains(contReg)) {
-						
-						Collection<ContextRegistration> coll = contextRegToNotifyAsDeleted.get(subscriber);
+
+						Collection<ContextRegistration> coll = contextRegToNotifyAsDeleted
+								.get(subscriber);
 						boolean bool = coll.contains(contReg);
 
 						// Remove from the map of not-anymore-available
@@ -704,6 +726,12 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		Multimap<String, ContextRegistrationResponse> regIdAndContReg = HashMultimap
 				.create();
 
+		// Get the subtypeMap
+		Multimap<URI, URI> subtypesMap = null;
+		if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
+			subtypesMap = getSubtypesMap(request);
+		}
+
 		// Check that if there are Restrictions in the DiscoveryRequest
 		if (request.getRestriction() != null
 				&& request.getRestriction().getOperationScope() != null
@@ -757,11 +785,11 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 					// RegisterContextRequest and check the other parameters of
 					// the Discovery such as EntityId and Attribute
 					response = ngsi9Storage.discover(request,
-							fullyMetadataCompliantRegIdSet);
+							fullyMetadataCompliantRegIdSet, subtypesMap);
 				}
 
 			} else {
-				response = ngsi9Storage.discover(request, null);
+				response = ngsi9Storage.discover(request, null, subtypesMap);
 			}
 
 			// Filter out the ContextMetadata of each ContextRegistration not
@@ -772,13 +800,39 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		} else {
 
 			Multimap<String, ContextRegistration> response = ngsi9Storage
-					.discover(request, null);
+					.discover(request, null, subtypesMap);
 
 			regIdAndContReg = applyRestrictionToDiscoveryResponse(response,
 					null);
 		}
 
 		return regIdAndContReg;
+
+	}
+
+	/**
+	 * This method create a multimap containing all the needed subtypes for a
+	 * discovery
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private Multimap<URI, URI> getSubtypesMap(
+			DiscoverContextAvailabilityRequest request) {
+
+		Multimap<URI, URI> subtypesMap = HashMultimap.create();
+
+		for (EntityId entityId : request.getEntityIdList()) {
+			URI type = entityId.getType();
+			if (type != null && !type.toString().isEmpty()) {
+				Set<URI> subtypes = knowledgeBase.getSubTypes(type);
+				if (subtypes != null) {
+					subtypesMap.putAll(type, subtypes);
+				}
+			}
+		}
+
+		return subtypesMap;
 
 	}
 

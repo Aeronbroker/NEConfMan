@@ -142,7 +142,7 @@ public class XmlValidator {
 			validator.setErrorHandler(errorHandler);
 
 			
-			logger.info("Validator:\nRequest:"+request.toString()+"\nSchema"+xmlSchema);
+			logger.info("Validator:\nRequest:"+request.toString()+"\nSchema "+xmlSchema);
 			
 			// now finally validate.
 			validator.validate(source);

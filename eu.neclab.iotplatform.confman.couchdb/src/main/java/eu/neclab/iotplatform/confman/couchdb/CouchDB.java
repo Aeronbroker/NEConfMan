@@ -38,6 +38,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -670,13 +671,22 @@ public class CouchDB implements Ngsi9StorageInterface {
 			DiscoverContextAvailabilityRequest request,
 			Set<String> registrationIdList) {
 
+		return discover(request, registrationIdList, null);
+
+	}
+
+	@Override
+	public Multimap<String, ContextRegistration> discover(
+			DiscoverContextAvailabilityRequest request,
+			Set<String> registrationIdList, Multimap<URI, URI> subtypesMap) {
+
 		// This map will contain: RegistrationID -> Set<ContextRegistration>
 		Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap
 				.create();
 
 		// Create the javaScriptView to query couchDB
 		String javaScriptView = JavascriptGenerator.createJavaScriptView(
-				request, registrationIdList);
+				request, registrationIdList, subtypesMap);
 		logger.info("Creating view : " + javaScriptView);
 
 		// Execute the javascriptView and get the response

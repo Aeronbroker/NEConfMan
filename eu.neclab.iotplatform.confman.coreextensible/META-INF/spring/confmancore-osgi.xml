@@ -22,5 +22,8 @@
 	<osgi:reference id="UtilityStorage"
 		interface="eu.neclab.iotplatform.confman.commons.interfaces.UtilityStorageInterface"></osgi:reference>
 
+	<osgi:reference id="KnowledgeBase"
+		interface="eu.neclab.iotplatform.confman.commons.interfaces.KnowledgeBaseInterface"></osgi:reference>
+
 
 </beans>

@@ -50,6 +50,7 @@
 							org.junit;version="4.11.0",
 							org.apache.http,
 							org.apache.http.message,
+							org.osgi.framework;version="1.5",
 							org.json;version="1.0.0"</Import-Package>
 						<Export-Package>
 							eu.neclab.iotplatform.confman.commons.exceptions;version=${confman.version},
