@@ -43,7 +43,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 			// Read properties from file
 			input = new FileInputStream(
 					System.getProperty("dir.config")
-							+ "/confmanconfig/configurationManager/config/config.properties");
+							+ "/confmanconfig/knowledgeBase/knowledgeBase.properties");
 
 			// Load the properties file
 			prop.load(input);
