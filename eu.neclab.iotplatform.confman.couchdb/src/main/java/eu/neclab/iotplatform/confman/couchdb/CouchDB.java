@@ -47,6 +47,7 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
+import org.apache.commons.collections.MultiMap;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -54,6 +55,7 @@ import org.json.XML;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -788,11 +790,17 @@ public class CouchDB implements Ngsi9StorageInterface {
 				response = sendView(queryName, view.toString(), documentType);
 
 				// If still the same problem, give up and report the error
-				if (response.getStatusLine().getStatusCode() == 404) {
+				if (response.getStatusLine().getStatusCode() > 299) {
 					logger.error("Impossible to store view in "
 							+ documentType.getDb_name());
 					return response;
 				}
+			}
+			
+			if (response.getStatusLine().getStatusCode() > 299) {
+				logger.error("Impossible to store view in "
+						+ documentType.getDb_name());
+				return response;
 			}
 
 			logger.info("Response code:" + response.getStatusLine());
@@ -983,9 +991,38 @@ public class CouchDB implements Ngsi9StorageInterface {
 			Multimap<String, String> metadataToSubscriptionMap,
 			Set<String> otherRestrictiveMetadata) {
 
+		// String jsView = JavascriptGenerator.createJavaScriptView(
+		// contextRegistration, metadataToSubscriptionMap,
+		// otherRestrictiveMetadata);
+		// logger.info("View from contextRegistration created:" + jsView);
+		//
+		// FullHttpResponse viewResult = executeView(jsView,
+		// DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+		//
+		// logger.info("Result of the contextRegistration in the "
+		// + DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+		// + ": \n" + viewResult.getBody());
+		//
+		// Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
+		// .generateNotificationsMap(viewResult.getBody());
+		//
+		// return multimap;
+
+		return checkSubscriptions(contextRegistration, hasMetadataRestriction,
+				metadataToSubscriptionMap, otherRestrictiveMetadata, null);
+	}
+
+	@Override
+	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+			ContextRegistration contextRegistration,
+			boolean hasMetadataRestriction,
+			Multimap<String, String> metadataToSubscriptionMap,
+			Set<String> otherRestrictiveMetadata,
+			Multimap<URI, URI> superTypesMap) {
+
 		String jsView = JavascriptGenerator.createJavaScriptView(
 				contextRegistration, metadataToSubscriptionMap,
-				otherRestrictiveMetadata);
+				otherRestrictiveMetadata, superTypesMap);
 		logger.info("View from contextRegistration created:" + jsView);
 
 		FullHttpResponse viewResult = executeView(jsView,

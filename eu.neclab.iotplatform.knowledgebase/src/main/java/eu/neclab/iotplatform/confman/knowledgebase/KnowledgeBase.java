@@ -77,7 +77,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 	public Set<URI> getSubTypes(URI type) {
 
 		// Example:
-		// http://localhost:8080/query?request=getSubTypes&entityType=MovingSensor
+		// http://localhost:8080/query?request=getSubTypes&entityType=Node
 		
 		Set<URI> subtypes = null;
 
@@ -98,7 +98,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
 				
-				subtypes = parseSubtypes(fullHttpResponse.getBody());
+				subtypes = parseTypes(fullHttpResponse.getBody());
 
 			} else {
 				logger.info(String
@@ -116,7 +116,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		return subtypes;
 	}
 
-	private Set<URI> parseSubtypes(String body) {
+	private Set<URI> parseTypes(String body) {
 
 		JsonParser jsonParser = new JsonParser();
 		JsonObject jo = (JsonObject) jsonParser.parse(body);
@@ -180,8 +180,46 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 	@Override
 	public Set<URI> getSuperTypes(URI type) {
-		// TODO Auto-generated method stub
-		return null;
+		
+		// Example:
+		// http://localhost:8080/query?request=getSuperTypes&entityType=BusSensor
+
+		
+		Set<URI> superTypes = null;
+
+		// Lets create the query string
+		String queryString = "request=getSuperTypes&";
+		String[] namespaceAndType = type.toString().split("#");
+		if (namespaceAndType.length == 1) {
+			queryString += "entityType=" + namespaceAndType[0];
+		} else {
+			queryString += "entityType=" + namespaceAndType[1];
+		}
+
+		URL fullUrl;
+		try {
+			fullUrl = new URL(url + "/query?" + queryString);
+
+			FullHttpResponse fullHttpResponse = HttpRequester.sendGet(fullUrl);
+
+			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
+				
+				superTypes = parseTypes(fullHttpResponse.getBody());
+
+			} else {
+				logger.warn(String
+						.format("Problem when contacting the KnowledgeBase server. StatusCode: %s. ReasonPhrase: %s.",
+								fullHttpResponse.getStatusLine()
+										.getStatusCode(), fullHttpResponse
+										.getStatusLine().getReasonPhrase()));
+			}
+
+		} catch (MalformedURLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return superTypes;
 	}
 
 }

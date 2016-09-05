@@ -158,7 +158,8 @@ public class JavascriptGenerator {
 				+ "if (entityId.isPattern){"
 				+ "if("
 
-				+ createEntityCondition(request.getEntityIdList(), true, subtypesMap)
+				+ createEntityCondition(request.getEntityIdList(), true,
+						subtypesMap)
 
 				+ "){"
 				+ "entityIds[entityIds.length] = entityId;"
@@ -166,7 +167,8 @@ public class JavascriptGenerator {
 				+ "} else {"
 				+ "if("
 
-				+ createEntityCondition(request.getEntityIdList(), false, subtypesMap)
+				+ createEntityCondition(request.getEntityIdList(), false,
+						subtypesMap)
 
 				+ "){"
 				+ "entityIds[entityIds.length] = entityId;"
@@ -178,7 +180,8 @@ public class JavascriptGenerator {
 				+ "if (entityId.isPattern){"
 				+ "if("
 
-				+ createEntityCondition(request.getEntityIdList(), true, subtypesMap)
+				+ createEntityCondition(request.getEntityIdList(), true,
+						subtypesMap)
 
 				+ "){"
 				+ "entityIds[entityIds.length] = entityId;"
@@ -186,7 +189,8 @@ public class JavascriptGenerator {
 				+ "} else {"
 				+ "if("
 
-				+ createEntityCondition(request.getEntityIdList(), false, subtypesMap)
+				+ createEntityCondition(request.getEntityIdList(), false,
+						subtypesMap)
 
 				+ "){"
 				+ "entityIds[entityIds.length] = entityId;"
@@ -380,10 +384,10 @@ public class JavascriptGenerator {
 				// + "entityIds[entityIds.length] = entityId;"
 				// + "}" + "}");
 
-				if (checkIdAgainstPattern){
+				if (checkIdAgainstPattern) {
 					entityIdCondition = entityIdCondition
-							.append("new RegExp(entityId.id).test(\\\"" + entityId.getId()
-									+ "\\\")");
+							.append("new RegExp(entityId.id).test(\\\""
+									+ entityId.getId() + "\\\")");
 				} else {
 					entityIdCondition = entityIdCondition
 							.append("entityId.id == \\\"" + entityId.getId()
@@ -431,242 +435,666 @@ public class JavascriptGenerator {
 
 	}
 
+//	public static String createJavaScriptView(
+//			ContextRegistration contextRegistration,
+//			Set<String> subscriptionIdList, boolean isGeo) {
+//
+//		// @formatter:off
+//
+//		String jsView = "function(doc) {";
+//
+//		if (isGeo) {
+//			jsView = jsView
+//					+ "var isGeo = false;"
+//					+ "if (doc.subscribeContextAvailabilityRequest != null && doc.subscribeContextAvailabilityRequest.restriction != null"
+//					+ "&& doc.subscribeContextAvailabilityRequest.restriction.scope != null"
+//					+ "&& doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope != null){"
+//					+ "var scopeLength = doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.length;"
+//					+ "if (scopeLength){"
+//					+ "for (k = 0; k < scopeLength; k++) {"
+//					+ "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType == \\\"SimpleGeoLocation\\\"){"
+//					+ "isGeo = true;"
+//					+ "break;"
+//					+ "}"
+//					+ "}"
+//					+ "} else {"
+//					+ "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType == \\\"SimpleGeoLocation\\\"){"
+//					+ "isGeo = true;" + "}" + "}" + "}";
+//
+//			if (subscriptionIdList != null && subscriptionIdList.size() != 0) {
+//				jsView = jsView + "if (!isGeo || "
+//						+ createIdCondition(subscriptionIdList) + "){";
+//			} else {
+//				jsView = jsView + "if (!isGeo){";
+//			}
+//		}
+//		jsView = jsView
+//				+ "var emitCondition = true;"
+//				+ "var entityIds = [];"
+//				+ "var attributes = [];"
+//				+ "var metadata;"
+//				+ "var providingApplication;"
+//				+ "var subscribeContextAvailabilityRequest = doc.subscribeContextAvailabilityRequest;"
+//				+ "var contextRegistration ="
+//				+ XML.toJSONObject(contextRegistration.toString()).toString()
+//						.replace("\"", "\\\"") + ".contextRegistration;";
+//
+//		if (contextRegistration.getListEntityId() != null
+//				&& contextRegistration.getListEntityId().size() != 0) {
+//
+//			jsView = jsView
+//					+ "if (subscribeContextAvailabilityRequest.entityIdList) {"
+//					+ "var subEntityIdList = subscribeContextAvailabilityRequest.entityIdList;"
+//					+ "var subEntityIdLength = subEntityIdList.entityId.length;"
+//					+ "if (subEntityIdLength == null) {"
+//					+ "var subEntityId = subEntityIdList.entityId;";
+//
+//			if (contextRegistration.getListEntityId().size() != 1) {
+//				// Remove the iteration if there is only one conEntityId
+//				jsView = jsView
+//						+ "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
+//						+ "for (k = 0; k < conEntityIdLength; k++) {"
+//						+ "var conEntityId = contextRegistration.entityIdList.entityId[k];";
+//			} else {
+//				jsView = jsView
+//						+ "var conEntityId = contextRegistration.entityIdList.entityId;";
+//			}
+//
+//			jsView = jsView
+//					+ "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
+//					+ "var pattern = new RegExp(subEntityId.id);"
+//					+ "if (pattern.test(conEntityId.id)) {"
+//					+ "var subType = subEntityId.type;"
+//					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+//					+ "entityIds[entityIds.length] = conEntityId;"
+//					+ "};"
+//					+ "};"
+//					+ "} else {"
+//					+ "if (subEntityId.id == conEntityId.id) {"
+//					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+//					+ "entityIds[entityIds.length] = conEntityId;" + "};"
+//					+ "};" + "};";
+//			if (contextRegistration.getListEntityId().size() != 1) {
+//				jsView = jsView + "};";
+//			}
+//
+//			jsView = jsView + "} else {";
+//
+//			if (contextRegistration.getListEntityId().size() != 1) {
+//				// Remove the iteration if there is only one conEntityId
+//				jsView = jsView
+//						+ "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
+//						+ "for (k = 0; k < conEntityIdLength; k++) {"
+//						+ "var conEntityId = contextRegistration.entityIdList.entityId[k];";
+//			} else {
+//				jsView = jsView
+//						+ "var conEntityId = contextRegistration.entityIdList.entityId;";
+//			}
+//
+//			jsView = jsView
+//					+ "for (j = 0; j < subEntityIdLength; j++) {"
+//					+ "var subEntityId = subEntityIdList.entityId[j];"
+//					+ "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
+//					+ "var pattern = new RegExp(subEntityId.id);"
+//					+ "if (pattern.test(conEntityId.id)) {"
+//					+ "var subType = subEntityId.type;"
+//					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+//					+ "entityIds[entityIds.length] = conEntityId;"
+//					+ "break;"
+//					+ "};"
+//					+ "};"
+//					+ "} else {"
+//					+ "if (subEntityId.id == conEntityId.id) {"
+//					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+//					+ "entityIds[entityIds.length] = conEntityId;" + "break;"
+//					+ "};" + "};" + "};" + "};";
+//
+//			if (contextRegistration.getListEntityId().size() != 1) {
+//				jsView = jsView + "};";
+//			}
+//
+//			jsView = jsView + "};" + "emitCondition = (entityIds.length != 0);"
+//					+ "};";
+//		}
+//
+//		if (contextRegistration.getContextRegistrationAttribute() != null
+//				&& contextRegistration.getContextRegistrationAttribute().size() != 0) {
+//			jsView = jsView
+//					+ "if (emitCondition && subscribeContextAvailabilityRequest.attributeList) {"
+//					+ "var subAttributeList = subscribeContextAvailabilityRequest.attributeList;"
+//					+ "if (typeof subAttributeList.attribute === \\\"string\\\") {"
+//					+ "var subAttribute = subAttributeList.attribute;";
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				// remove this if attribute length of contextRegistration is
+//				// only one
+//				jsView = jsView
+//						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+//						+ "for (g = 0; g < conAttributeLength; g++) {"
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+//			} else {
+//				jsView = jsView
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+//			}
+//
+//			jsView = jsView + "if (subAttribute == conAttribute.name) {"
+//					+ "attributes[attributes.length] = conAttribute;" + "};";
+//
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				jsView = jsView + "};";
+//			}
+//
+//			jsView = jsView
+//					+ "} else {"
+//					+ "var subAttributeListLength = subAttributeList.attribute.length;"
+//					+ "for (k = 0; k < subAttributeListLength; k++) {"
+//					+ "var subAttribute = subAttributeList.attribute[k];";
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				// remove this if attribute length of contextRegistration is
+//				// only one
+//				jsView = jsView
+//						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+//						+ "for (g = 0; g < conAttributeLength; g++) {"
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+//			} else {
+//				jsView = jsView
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+//			}
+//			jsView = jsView + "if (subAttribute == conAttribute.name) {"
+//					+ "attributes[attributes.length] = conAttribute;" + "}";
+//
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				jsView = jsView + "};";
+//			}
+//			jsView = jsView
+//					+ "};"
+//					+ "};"
+//					+ "emitCondition = (emitCondition && attributes.length != 0);"
+//					+ "} else {";
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				// remove this if attribute length of contextRegistration is
+//				// only one
+//				jsView = jsView
+//						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+//						+ "for (g = 0; g < conAttributeLength; g++) {"
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+//			} else {
+//				jsView = jsView
+//						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+//			}
+//			jsView = jsView + "attributes[attributes.length] = conAttribute;";
+//			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
+//				jsView = jsView + "};";
+//			}
+//			jsView = jsView + "};";
+//		}
+//
+//		jsView = jsView
+//				+ "if (emitCondition) {"
+//				+ "providingApplication = contextRegistration.providingApplication;"
+//				+ "var registrationMetadataResult;"
+//				+ "if (contextRegistration.registrationMetadata) {"
+//				+ "registrationMetadataResult = contextRegistration.registrationMetadata;"
+//				+ "};"
+//				+ "if (contextRegistration.registrationMetadata) {"
+//				+ "metadata = contextRegistration.registrationMetadata;"
+//				+ "};"
+//				+ "var contextRegistrationAttributeListResult;"
+//				+ "if (attributes.length != 0){"
+//				+ "contextRegistrationAttributeListResult = {\\\"contextRegistrationAttribute\\\": attributes};"
+//				+ "}"
+//				+ "var entityIdListResult;"
+//				+ "if (entityIds.length != 0){"
+//				+ "entityIdListResult = {\\\"entityId\\\": entityIds};"
+//				+ "}"
+//				+ "value = {\\\"providingApplication\\\": providingApplication,"
+//				+ "\\\"registrationMetadata\\\": registrationMetadataResult,"
+//				+ "\\\"contextRegistrationAttributeList\\\": contextRegistrationAttributeListResult,"
+//				+ "\\\"entityIdList\\\": entityIdListResult"
+//				+ "};"
+//				+ "key = {\\\"id\\\": doc._id,"
+//				+ "\\\"rev\\\": doc._rev,"
+//				+ "\\\"reference\\\": doc.subscribeContextAvailabilityRequest.reference"
+//				+ "};" + "emit(key, value);" + "};" + "emitCondition = true;"
+//				+ "entityIds = [];";
+//		if (isGeo) {
+//			jsView = jsView + "};";
+//		}
+//		jsView = jsView + "};";
+//
+//		return jsView;
+//
+//		// @formatter:on
+//
+//	}
+
 	public static String createJavaScriptView(
 			ContextRegistration contextRegistration,
-			Set<String> subscriptionIdList, boolean isGeo) {
+			Multimap<String, String> metadataToSubscriptionMap,
+			Set<String> otherRestrictiveMetadataSet) {
 
-		// @formatter:off
+		// // @formatter:off
+		//
+		// String jsView = "function(doc) {";
+		//
+		// jsView = jsView
+		// +
+		// createOtherRestrictiveMetadataControlString(otherRestrictiveMetadataSet);
+		//
+		// /*
+		// * var metadataName = ["SimpleGeoLocation", "Department"]; var
+		// * isMetadataCompliant = [false, false]; var subId = [
+		// * ["84407-8A68e-dF701-35162-43296-3788ecf11eec6b826cb"], ["234234",
+		// * "434"] ];
+		// */
+		// jsView = jsView
+		// + createMetadataControlString(metadataToSubscriptionMap);
+		//
+		// jsView = jsView
+		// + "if (doc.subscribeContextAvailabilityRequest != null && "
+		// + "doc.subscribeContextAvailabilityRequest.restriction != null && "
+		// +
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope != null && "
+		// +
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope != null) {"
+		// +
+		// "var scopeLength = doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.length;"
+		// + "if (scopeLength) {"
+		// + "for (k = 0; k < scopeLength; k++) {"
+		// +
+		// "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType) > -1 ) {"
+		// + "moreRestrictive = false;"
+		// + "} else {"
+		// +
+		// "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType);"
+		// + "if (index > -1) {"
+		// + "isMetadataCompliant[index] = true;"
+		// + "}"
+		// + "}"
+		// + "}"
+		// + "} else {"
+		// +
+		// "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType) > -1 ) {"
+		// + "moreRestrictive = false;"
+		// + "} else {"
+		// +
+		// "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType);"
+		// + "if (index > -1) {"
+		// + "isMetadataCompliant[index] = true;"
+		// + "}"
+		// + "}"
+		// + "}"
+		// + "}"
+		// + "var toCheck = true;"
+		// + "var takeAllMetadata = false;"
+		// + "if (doc.subscribeContextAvailabilityRequest != null && "
+		// + "(doc.subscribeContextAvailabilityRequest.restriction == null || "
+		// +
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope == null || "
+		// +
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope == null)) {"
+		// + "takeAllMetadata = true;"
+		// + "toCheck = true;"
+		// + "} else if (moreRestrictive){"
+		// + "toCheck = false;"
+		// + "} else {"
+		// + "var isCompliantWithSth = false;"
+		// + "for (j = 0; j < metadataName.length; j++) {"
+		// + "if (isMetadataCompliant[j]){"
+		// + "isCompliantWithSth = true;"
+		// + "if (subId[j].indexOf(doc._id) < 0){"
+		// + "toCheck = false;"
+		// + "break;"
+		// + "}"
+		// + "}"
+		// + "}"
+		// + "if (!isCompliantWithSth){"
+		// + "takeAllMetadata = true;"
+		// + "}"
+		// + "}"
+		// +
+		//
+		// // "if (doc.subscribeContextAvailabilityRequest != null && " +
+		// // "doc.subscribeContextAvailabilityRequest.restriction != null &&"
+		// // +
+		// //
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope != null &&"
+		// // +
+		// //
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope != null) {"
+		// // +
+		// //
+		// "var scopeLength = doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.length;"
+		// // +
+		// // "if (scopeLength) {" +
+		// // "for (j = 0; j < metadataName.length; j++) {" +
+		// // "for (k = 0; k < scopeLength; k++) {" +
+		// //
+		// "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType == metadataName[j]) {"
+		// // +
+		// // "isMetadataCompliant[j] = true;" +
+		// // "break;" +
+		// // "}"+
+		// // "}" +
+		// // "}" +
+		// // "} else {" +
+		// // "for (j = 0; j < metadataName.length; j++) {" +
+		// //
+		// "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType == metadataName[j]) {"+
+		// // "isMetadataCompliant[j] = true;" +
+		// // "}"+
+		// // "}" +
+		// // "}" +
+		// // "}" +
+		// //
+		// // "var toCheck = true;"+
+		// // "var takeAllMetadata = false;" +
+		// // "if (doc.subscribeContextAvailabilityRequest != null && "+
+		// //
+		// "(doc.subscribeContextAvailabilityRequest.restriction == null || "+
+		// //
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope == null || "+
+		// //
+		// "doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope == null)){"
+		// // +
+		// // "takeAllMetadata = true" +
+		// // " } else {" +
+		// // "for (j = 0; j < isMetadataCompliant.length; j++) {" +
+		// // "if (isMetadataCompliant[j]) {" +
+		// // "toCheck = false;" +
+		// // "takeAllMetadata = true;" +
+		// // "break;" +
+		// // "}" +
+		// // "}" +
+		// // "}" +
+		// // "if (!toCheck) {" +
+		// // "toCheck = true;"+
+		// // "for (j = 0; j < metadataName.length; j++) {" +
+		// // "if (isMetadataCompliant[j] && subId[j].indexOf(doc._id) < 0) {"+
+		// // "toCheck = false;"+
+		// // "break;" +
+		// // "}" +
+		// // "}" +
+		// // "}" +
+		//
+		// "if (toCheck) {"
+		// + "var emitCondition = true;"
+		// + "var entityIds = [];"
+		// + "var attributes = [];"
+		// + "var providingApplication;"
+		// +
+		// "var subscribeContextAvailabilityRequest = doc.subscribeContextAvailabilityRequest;"
+		// + "var contextRegistration ="
+		// + XML.toJSONObject(contextRegistration.toString()).toString()
+		// .replace("\"", "\\\"") + ".contextRegistration;";
+		//
+		// if (contextRegistration.getListEntityId() != null
+		// && contextRegistration.getListEntityId().size() != 0) {
+		//
+		// jsView = jsView
+		// + "if (subscribeContextAvailabilityRequest.entityIdList) {"
+		// +
+		// "var subEntityIdList = subscribeContextAvailabilityRequest.entityIdList;"
+		// + "var subEntityIdLength = subEntityIdList.entityId.length;"
+		// + "if (subEntityIdLength == null) {"
+		// + "var subEntityId = subEntityIdList.entityId;";
+		//
+		// if (contextRegistration.getListEntityId().size() != 1) {
+		// // Remove the iteration if there is only one conEntityId
+		// jsView = jsView
+		// +
+		// "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
+		// + "for (k = 0; k < conEntityIdLength; k++) {"
+		// + "var conEntityId = contextRegistration.entityIdList.entityId[k];";
+		// } else {
+		// jsView = jsView
+		// + "var conEntityId = contextRegistration.entityIdList.entityId;";
+		// }
+		// jsView = jsView
+		// +
+		// //
+		// "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
+		// // +
+		// // "for (k = 0; k < conEntityIdLength; k++) {" +
+		// // "var conEntityId = contextRegistration.entityIdList.entityId[k];"
+		// // +
+		// "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
+		// + "var pattern = new RegExp(subEntityId.id);"
+		// + "if (pattern.test(conEntityId.id)) {"
+		// + "var subType = subEntityId.type;"
+		// +
+		// "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+		// + "entityIds[entityIds.length] = conEntityId;"
+		// + "};"
+		// + "};"
+		// + "} else {"
+		// + "if (subEntityId.id == conEntityId.id) {"
+		// +
+		// "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+		// + "entityIds[entityIds.length] = conEntityId;" + "};"
+		// + "};" + "};";
+		// if (contextRegistration.getListEntityId().size() != 1) {
+		// jsView = jsView + "};";
+		// }
+		//
+		// jsView = jsView + "} else {";
+		//
+		// if (contextRegistration.getListEntityId().size() != 1) {
+		// // Remove the iteration if there is only one conEntityId
+		// jsView = jsView
+		// +
+		// "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
+		// + "for (k = 0; k < conEntityIdLength; k++) {"
+		// + "var conEntityId = contextRegistration.entityIdList.entityId[k];";
+		// } else {
+		// jsView = jsView
+		// + "var conEntityId = contextRegistration.entityIdList.entityId;";
+		// }
+		//
+		// jsView = jsView
+		// + "for (j = 0; j < subEntityIdLength; j++) {"
+		// + "var subEntityId = subEntityIdList.entityId[j];"
+		// + "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
+		// + "var pattern = new RegExp(subEntityId.id);"
+		// + "if (pattern.test(conEntityId.id)) {"
+		// + "var subType = subEntityId.type;"
+		// +
+		// "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+		// + "entityIds[entityIds.length] = conEntityId;"
+		// + "break;"
+		// + "};"
+		// + "};"
+		// + "} else {"
+		// + "if (subEntityId.id == conEntityId.id) {"
+		// +
+		// "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+		// + "entityIds[entityIds.length] = conEntityId;" + "break;"
+		// + "};" + "};" + "};" + "};";
+		// if (contextRegistration.getListEntityId().size() != 1) {
+		// jsView = jsView + "};";
+		// }
+		//
+		// jsView = jsView
+		// + "};"
+		// + "emitCondition = (emitCondition && entityIds.length != 0);"
+		// + "};";
+		// }
+		//
+		// if (contextRegistration.getContextRegistrationAttribute() != null
+		// && contextRegistration.getContextRegistrationAttribute().size() != 0)
+		// {
+		// jsView = jsView
+		// +
+		// "if (emitCondition && subscribeContextAvailabilityRequest.attributeList) {"
+		// +
+		// "var subAttributeList = subscribeContextAvailabilityRequest.attributeList;"
+		// + "if (typeof subAttributeList.attribute === \\\"string\\\") {"
+		// + "var subAttribute = subAttributeList.attribute;";
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// // remove this if attribute length of contextRegistration is
+		// // only one
+		// jsView = jsView
+		// +
+		// "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+		// + "for (g = 0; g < conAttributeLength; g++) {"
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+		// } else {
+		// jsView = jsView
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+		// }
+		//
+		// jsView = jsView + "if (subAttribute == conAttribute.name) {"
+		// + "attributes[attributes.length] = conAttribute;" + "};";
+		//
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// jsView = jsView + "};";
+		// }
+		//
+		// jsView = jsView
+		// + "} else {"
+		// + "var subAttributeListLength = subAttributeList.attribute.length;"
+		// + "for (k = 0; k < subAttributeListLength; k++) {"
+		// + "var subAttribute = subAttributeList.attribute[k];";
+		//
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// // remove this if attribute length of contextRegistration is
+		// // only one
+		// jsView = jsView
+		// +
+		// "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+		// + "for (g = 0; g < conAttributeLength; g++) {"
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+		// } else {
+		// jsView = jsView
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+		// }
+		// jsView = jsView + "if (subAttribute == conAttribute.name) {"
+		// + "attributes[attributes.length] = conAttribute;" + "}";
+		//
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// jsView = jsView + "};";
+		// }
+		// jsView = jsView
+		// + "};"
+		// + "};"
+		// + "emitCondition = (emitCondition && attributes.length != 0);"
+		// + "} else {";
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// // remove this if attribute length of contextRegistration is
+		// // only one
+		// jsView = jsView
+		// +
+		// "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
+		// + "for (g = 0; g < conAttributeLength; g++) {"
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
+		// } else {
+		// jsView = jsView
+		// +
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
+		// }
+		// jsView = jsView + "attributes[attributes.length] = conAttribute;";
+		// if (contextRegistration.getContextRegistrationAttribute().size() !=
+		// 1) {
+		// jsView = jsView + "};";
+		// }
+		// jsView = jsView + "};";
+		// }
+		// //
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;"
+		// // +
+		// // "if (subAttribute == conAttribute.name) {" +
+		// // "attributes[attributes.length] = conAttribute;" +
+		// // "};" +
+		// // "};" +
+		// // "};" +
+		// // "emitCondition = (emitCondition && attributes.length != 0);" +
+		// // "} else {" +
+		// //
+		// "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;"
+		// // +
+		// // "attributes[attributes.length] = conAttribute;" +
+		// // "};" +
+		// jsView = jsView
+		// + "if (emitCondition) {"
+		// + "providingApplication = contextRegistration.providingApplication;"
+		// + "var contextMetadataResult = []; "
+		// + "if (contextRegistration.registrationMetadata) {"
+		// + "if (takeAllMetadata) {"
+		// +
+		// "contextMetadataResult = contextRegistration.registrationMetadata.contextMetadata;"
+		// + "} else {"
+		// + "for (h = 0; h < isMetadataCompliant.length; h++) {"
+		// + "if (isMetadataCompliant[h]) {"
+		// +
+		// "var registrationMetadataLength = contextRegistration.registrationMetadata.contextMetadata.length;"
+		// + "if (registrationMetadataLength) {"
+		// + "for (q = 0; q < registrationMetadataLength; q++) {"
+		// +
+		// "var registrationMetadata = contextRegistration.registrationMetadata.contextMetadata[q];"
+		// + "if (registrationMetadata.name = metadataName[h]) {"
+		// +
+		// "contextMetadataResult[contextMetadataResult.length] = registrationMetadata;"
+		// + "};"
+		// + "};"
+		// + "} else {"
+		// +
+		// "var registrationMetadata = contextRegistration.registrationMetadata.contextMetadata;"
+		// + "if (registrationMetadata.name = metadataName[h]) {"
+		// + "contextMetadataResult = registrationMetadata;"
+		// + "};"
+		// + "};"
+		// + "break;"
+		// + "};"
+		// + "};"
+		// + "};"
+		// + "};"
+		// + "var registrationMetadataResult = {"
+		// + "\\\"contextMetadata\\\": contextMetadataResult"
+		// + "};"
+		// + "var contextRegistrationAttributeListResult = {"
+		// + "\\\"contextRegistrationAttribute\\\": attributes"
+		// + "};"
+		// + "var entityIdListResult = {"
+		// + "\\\"entityId\\\": entityIds"
+		// + "};"
+		// + "value = {"
+		// + "\\\"providingApplication\\\": providingApplication,"
+		// + "\\\"registrationMetadata\\\": registrationMetadataResult,"
+		// +
+		// "\\\"contextRegistrationAttributeList\\\": contextRegistrationAttributeListResult,"
+		// + "\\\"entityIdList\\\": entityIdListResult"
+		// + "};"
+		// + "key = {"
+		// + "\\\"id\\\": doc._id,"
+		// + "\\\"rev\\\": doc._rev,"
+		// +
+		// "\\\"reference\\\": doc.subscribeContextAvailabilityRequest.reference"
+		// + "};" + "emit(key, value);" + "};" + "emitCondition = true;"
+		// + "entityIds = []; " + "};" + "};";
+		//
+		// // @formatter:on
+		//
+		// return jsView.toString();
 
-		String jsView = "function(doc) {";
-
-		if (isGeo) {
-			jsView = jsView
-					+ "var isGeo = false;"
-					+ "if (doc.subscribeContextAvailabilityRequest != null && doc.subscribeContextAvailabilityRequest.restriction != null"
-					+ "&& doc.subscribeContextAvailabilityRequest.restriction.scope != null"
-					+ "&& doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope != null){"
-					+ "var scopeLength = doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.length;"
-					+ "if (scopeLength){"
-					+ "for (k = 0; k < scopeLength; k++) {"
-					+ "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType == \\\"SimpleGeoLocation\\\"){"
-					+ "isGeo = true;"
-					+ "break;"
-					+ "}"
-					+ "}"
-					+ "} else {"
-					+ "if (doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType == \\\"SimpleGeoLocation\\\"){"
-					+ "isGeo = true;" + "}" + "}" + "}";
-
-			if (subscriptionIdList != null && subscriptionIdList.size() != 0) {
-				jsView = jsView + "if (!isGeo || "
-						+ createIdCondition(subscriptionIdList) + "){";
-			} else {
-				jsView = jsView + "if (!isGeo){";
-			}
-		}
-		jsView = jsView
-				+ "var emitCondition = true;"
-				+ "var entityIds = [];"
-				+ "var attributes = [];"
-				+ "var metadata;"
-				+ "var providingApplication;"
-				+ "var subscribeContextAvailabilityRequest = doc.subscribeContextAvailabilityRequest;"
-				+ "var contextRegistration ="
-				+ XML.toJSONObject(contextRegistration.toString()).toString()
-						.replace("\"", "\\\"") + ".contextRegistration;";
-
-		if (contextRegistration.getListEntityId() != null
-				&& contextRegistration.getListEntityId().size() != 0) {
-
-			jsView = jsView
-					+ "if (subscribeContextAvailabilityRequest.entityIdList) {"
-					+ "var subEntityIdList = subscribeContextAvailabilityRequest.entityIdList;"
-					+ "var subEntityIdLength = subEntityIdList.entityId.length;"
-					+ "if (subEntityIdLength == null) {"
-					+ "var subEntityId = subEntityIdList.entityId;";
-
-			if (contextRegistration.getListEntityId().size() != 1) {
-				// Remove the iteration if there is only one conEntityId
-				jsView = jsView
-						+ "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
-						+ "for (k = 0; k < conEntityIdLength; k++) {"
-						+ "var conEntityId = contextRegistration.entityIdList.entityId[k];";
-			} else {
-				jsView = jsView
-						+ "var conEntityId = contextRegistration.entityIdList.entityId;";
-			}
-
-			jsView = jsView
-					+ "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
-					+ "var pattern = new RegExp(subEntityId.id);"
-					+ "if (pattern.test(conEntityId.id)) {"
-					+ "var subType = subEntityId.type;"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
-					+ "entityIds[entityIds.length] = conEntityId;"
-					+ "};"
-					+ "};"
-					+ "} else {"
-					+ "if (subEntityId.id == conEntityId.id) {"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
-					+ "entityIds[entityIds.length] = conEntityId;" + "};"
-					+ "};" + "};";
-			if (contextRegistration.getListEntityId().size() != 1) {
-				jsView = jsView + "};";
-			}
-
-			jsView = jsView + "} else {";
-
-			if (contextRegistration.getListEntityId().size() != 1) {
-				// Remove the iteration if there is only one conEntityId
-				jsView = jsView
-						+ "var conEntityIdLength = contextRegistration.entityIdList.entityId.length;"
-						+ "for (k = 0; k < conEntityIdLength; k++) {"
-						+ "var conEntityId = contextRegistration.entityIdList.entityId[k];";
-			} else {
-				jsView = jsView
-						+ "var conEntityId = contextRegistration.entityIdList.entityId;";
-			}
-
-			jsView = jsView
-					+ "for (j = 0; j < subEntityIdLength; j++) {"
-					+ "var subEntityId = subEntityIdList.entityId[j];"
-					+ "if (subEntityId.isPattern && subEntityId.isPattern == true) {"
-					+ "var pattern = new RegExp(subEntityId.id);"
-					+ "if (pattern.test(conEntityId.id)) {"
-					+ "var subType = subEntityId.type;"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
-					+ "entityIds[entityIds.length] = conEntityId;"
-					+ "break;"
-					+ "};"
-					+ "};"
-					+ "} else {"
-					+ "if (subEntityId.id == conEntityId.id) {"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
-					+ "entityIds[entityIds.length] = conEntityId;" + "break;"
-					+ "};" + "};" + "};" + "};";
-
-			if (contextRegistration.getListEntityId().size() != 1) {
-				jsView = jsView + "};";
-			}
-
-			jsView = jsView + "};" + "emitCondition = (entityIds.length != 0);"
-					+ "};";
-		}
-
-		if (contextRegistration.getContextRegistrationAttribute() != null
-				&& contextRegistration.getContextRegistrationAttribute().size() != 0) {
-			jsView = jsView
-					+ "if (emitCondition && subscribeContextAvailabilityRequest.attributeList) {"
-					+ "var subAttributeList = subscribeContextAvailabilityRequest.attributeList;"
-					+ "if (typeof subAttributeList.attribute === \\\"string\\\") {"
-					+ "var subAttribute = subAttributeList.attribute;";
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				// remove this if attribute length of contextRegistration is
-				// only one
-				jsView = jsView
-						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
-						+ "for (g = 0; g < conAttributeLength; g++) {"
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
-			} else {
-				jsView = jsView
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
-			}
-
-			jsView = jsView + "if (subAttribute == conAttribute.name) {"
-					+ "attributes[attributes.length] = conAttribute;" + "};";
-
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				jsView = jsView + "};";
-			}
-
-			jsView = jsView
-					+ "} else {"
-					+ "var subAttributeListLength = subAttributeList.attribute.length;"
-					+ "for (k = 0; k < subAttributeListLength; k++) {"
-					+ "var subAttribute = subAttributeList.attribute[k];";
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				// remove this if attribute length of contextRegistration is
-				// only one
-				jsView = jsView
-						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
-						+ "for (g = 0; g < conAttributeLength; g++) {"
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
-			} else {
-				jsView = jsView
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
-			}
-			jsView = jsView + "if (subAttribute == conAttribute.name) {"
-					+ "attributes[attributes.length] = conAttribute;" + "}";
-
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				jsView = jsView + "};";
-			}
-			jsView = jsView
-					+ "};"
-					+ "};"
-					+ "emitCondition = (emitCondition && attributes.length != 0);"
-					+ "} else {";
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				// remove this if attribute length of contextRegistration is
-				// only one
-				jsView = jsView
-						+ "var conAttributeLength = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute.length;"
-						+ "for (g = 0; g < conAttributeLength; g++) {"
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute[g];";
-			} else {
-				jsView = jsView
-						+ "var conAttribute = contextRegistration.contextRegistrationAttributeList.contextRegistrationAttribute;";
-			}
-			jsView = jsView + "attributes[attributes.length] = conAttribute;";
-			if (contextRegistration.getContextRegistrationAttribute().size() != 1) {
-				jsView = jsView + "};";
-			}
-			jsView = jsView + "};";
-		}
-
-		jsView = jsView
-				+ "if (emitCondition) {"
-				+ "providingApplication = contextRegistration.providingApplication;"
-				+ "var registrationMetadataResult;"
-				+ "if (contextRegistration.registrationMetadata) {"
-				+ "registrationMetadataResult = contextRegistration.registrationMetadata;"
-				+ "};"
-				+ "if (contextRegistration.registrationMetadata) {"
-				+ "metadata = contextRegistration.registrationMetadata;"
-				+ "};"
-				+ "var contextRegistrationAttributeListResult;"
-				+ "if (attributes.length != 0){"
-				+ "contextRegistrationAttributeListResult = {\\\"contextRegistrationAttribute\\\": attributes};"
-				+ "}"
-				+ "var entityIdListResult;"
-				+ "if (entityIds.length != 0){"
-				+ "entityIdListResult = {\\\"entityId\\\": entityIds};"
-				+ "}"
-				+ "value = {\\\"providingApplication\\\": providingApplication,"
-				+ "\\\"registrationMetadata\\\": registrationMetadataResult,"
-				+ "\\\"contextRegistrationAttributeList\\\": contextRegistrationAttributeListResult,"
-				+ "\\\"entityIdList\\\": entityIdListResult"
-				+ "};"
-				+ "key = {\\\"id\\\": doc._id,"
-				+ "\\\"rev\\\": doc._rev,"
-				+ "\\\"reference\\\": doc.subscribeContextAvailabilityRequest.reference"
-				+ "};" + "emit(key, value);" + "};" + "emitCondition = true;"
-				+ "entityIds = [];";
-		if (isGeo) {
-			jsView = jsView + "};";
-		}
-		jsView = jsView + "};";
-
-		return jsView;
-
-		// @formatter:on
+		return createJavaScriptView(contextRegistration,
+				metadataToSubscriptionMap, otherRestrictiveMetadataSet, null);
 
 	}
 
 	public static String createJavaScriptView(
 			ContextRegistration contextRegistration,
 			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadataSet) {
+			Set<String> otherRestrictiveMetadataSet,
+			Multimap<URI, URI> superTypesMap) {
 
 		// @formatter:off
 
@@ -802,7 +1230,8 @@ public class JavascriptGenerator {
 				+ "var subscribeContextAvailabilityRequest = doc.subscribeContextAvailabilityRequest;"
 				+ "var contextRegistration ="
 				+ XML.toJSONObject(contextRegistration.toString()).toString()
-						.replace("\"", "\\\"") + ".contextRegistration;";
+						.replace("\"", "\\\"") + ".contextRegistration;"
+				+ "var superTypes =" + multimapToJson(superTypesMap)+";";
 
 		if (contextRegistration.getListEntityId() != null
 				&& contextRegistration.getListEntityId().size() != 0) {
@@ -835,13 +1264,14 @@ public class JavascriptGenerator {
 					+ "var pattern = new RegExp(subEntityId.id);"
 					+ "if (pattern.test(conEntityId.id)) {"
 					+ "var subType = subEntityId.type;"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type || subType == conEntityId.type || (superTypes[conEntityId.type] && superTypes[conEntityId.type].indexOf(subType) > -1)) {"
 					+ "entityIds[entityIds.length] = conEntityId;"
 					+ "};"
 					+ "};"
 					+ "} else {"
 					+ "if (subEntityId.id == conEntityId.id) {"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+					+ "var subType = subEntityId.type;"
+					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type || subType == conEntityId.type || (superTypes[conEntityId.type] && superTypes[conEntityId.type].indexOf(subType) > -1)) {"
 					+ "entityIds[entityIds.length] = conEntityId;" + "};"
 					+ "};" + "};";
 			if (contextRegistration.getListEntityId().size() != 1) {
@@ -868,14 +1298,15 @@ public class JavascriptGenerator {
 					+ "var pattern = new RegExp(subEntityId.id);"
 					+ "if (pattern.test(conEntityId.id)) {"
 					+ "var subType = subEntityId.type;"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type || subType == conEntityId.type || (superTypes[conEntityId.type] && superTypes[conEntityId.type].indexOf(subType) > -1)) {"
 					+ "entityIds[entityIds.length] = conEntityId;"
 					+ "break;"
 					+ "};"
 					+ "};"
 					+ "} else {"
 					+ "if (subEntityId.id == conEntityId.id) {"
-					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type) {"
+					+ "var subType = subEntityId.type;"
+					+ "if (conEntityId.type == null || subType == null || subType == conEntityId.type || subType == conEntityId.type || (superTypes[conEntityId.type] && superTypes[conEntityId.type].indexOf(subType) > -1)) {"
 					+ "entityIds[entityIds.length] = conEntityId;" + "break;"
 					+ "};" + "};" + "};" + "};";
 			if (contextRegistration.getListEntityId().size() != 1) {
@@ -1026,6 +1457,37 @@ public class JavascriptGenerator {
 		// @formatter:on
 
 		return jsView.toString();
+
+	}
+
+	private static String multimapToJson(Multimap<URI, URI> multimap) {
+
+		if (multimap != null && !multimap.isEmpty()) {
+			StringBuffer sb = new StringBuffer();
+			sb.append("{");
+			boolean firstType = true;
+			for (URI type : multimap.keySet()) {
+				if (!firstType) {
+					sb.append(",");
+				}
+				sb.append("\\\"" + type.toString() + "\\\":[");
+				boolean firstSupertype = true;
+				for (URI superType : multimap.get(type)) {
+					if (!firstSupertype) {
+						sb.append(",");
+					}
+					sb.append("\\\"" + superType.toString() + "\\\"");
+					firstSupertype = false;
+				}
+				sb.append("]");
+				firstType = false;
+			}
+			sb.append("}");
+
+			return sb.toString();
+		} else {
+			return "{}";
+		}
 
 	}
 

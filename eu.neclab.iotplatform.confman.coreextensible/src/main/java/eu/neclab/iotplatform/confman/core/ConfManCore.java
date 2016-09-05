@@ -477,13 +477,20 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				otherRestrictiveMetadata.removeAll(metadataToSubscriptionMap
 						.keySet());
 
+				// Generate the multimap containing the SuperType
+				Multimap<URI, URI> superTypesMap = null;
+				if (BundleUtils.isServiceRegistered(this, knowledgeBase)) {
+					superTypesMap = getSuperTypesMap(contReg);
+				}
+
 				// Then finally check the subscription on Ngsi9Storage
 				// specifying
 				// the previous map and whether the Ngsi9Storage must care about
 				// metadataRestriction
 				multimap.putAll(ngsi9Storage.checkSubscriptions(contReg,
 						!metadataToSubscriptionMap.isEmpty(),
-						metadataToSubscriptionMap, otherRestrictiveMetadata));
+						metadataToSubscriptionMap, otherRestrictiveMetadata,
+						superTypesMap));
 
 			}
 			logger.info("Resulting notification multimap:" + multimap);
@@ -833,6 +840,32 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		}
 
 		return subtypesMap;
+
+	}
+
+	/**
+	 * This method create a multimap containing all the needed supertypes for a
+	 * registration (to be checked against the subscription)
+	 * 
+	 * @param request
+	 * @return
+	 */
+	private Multimap<URI, URI> getSuperTypesMap(
+			ContextRegistration contextRegistration) {
+
+		Multimap<URI, URI> superTypesMap = HashMultimap.create();
+
+		for (EntityId entityId : contextRegistration.getListEntityId()) {
+			URI type = entityId.getType();
+			if (type != null && !type.toString().isEmpty()) {
+				Set<URI> superTypes = knowledgeBase.getSuperTypes(type);
+				if (superTypes != null && !superTypes.isEmpty()) {
+					superTypesMap.putAll(type, superTypes);
+				}
+			}
+		}
+
+		return superTypesMap;
 
 	}
 

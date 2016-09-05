@@ -184,6 +184,37 @@ public interface Ngsi9StorageInterface {
 			boolean hasMetadataRestriction,
 			Multimap<String, String> metadataToSubscriptionMap,
 			Set<String> otherRestrictiveMetadata);
+	
+	/**
+	 * The Ngsi9Storage will find which subscription shall be notified about a
+	 * contextRegistration because a match is found. The Ngsi9Storage must check
+	 * that the contextRegistration is matching against the EntityIdList and
+	 * AttributeList.
+	 * 
+	 * If the flag hasMetadataRestrition is TRUE, the Ngsi9Storage must filter
+	 * out the subscription that has the same metadataTypes specified by the
+	 * contextRegistration but it has a subscriptionId that is not contained in
+	 * the map given as input.
+	 * 
+	 * @param contextRegistration
+	 *            The ContextRegistration to be checked against Subscription
+	 * @param metadataToSubscriptionMap
+	 *            The map that maps MetadataType->Set(SubscriptionId)
+	 * @param hasMetadataRestriction
+	 *            Flag that indicates the further filtering
+	 * @param otherRestrictiveMetadata
+	 *            Set of other MetadataName that are restrictive but that are
+	 *            not in the metadataToSubscriptionMap
+	 * @param supertTypesMap
+	 * 			  Map between type and its super types in an ontology
+	 * @return
+	 */
+	Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+			ContextRegistration contextRegistration,
+			boolean hasMetadataRestriction,
+			Multimap<String, String> metadataToSubscriptionMap,
+			Set<String> otherRestrictiveMetadata,
+			Multimap<URI, URI> superTypesMap);
 
 	/**
 	 * It will fetch the required RegisterContextRequest from the storage
@@ -209,5 +240,7 @@ public interface Ngsi9StorageInterface {
 	 * This method reset the databases of the Ngsi9Storage
 	 */
 	void reset();
+
+
 
 }
