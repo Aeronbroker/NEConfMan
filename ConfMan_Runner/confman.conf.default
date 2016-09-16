@@ -1,6 +1,11 @@
 #!/bin/bash
 
 ##############################
+# NEC IoTDiscovery feature selection
+##############################
+confman_semantic="enabled"
+
+##############################
 # NEC IoTDiscovery configurations
 ##############################
 # Folders setting
@@ -32,3 +37,8 @@ confman_postgresdbname='confman'
 confman_couchdbipandport='http://127.0.0.1:5984'
 confman_couchdbregistercontextdbname='iotdiscovery_registercontext'
 confman_couchdbsubscriptiondbname='iotdiscovery_subscribecontextavailability'
+
+# Knowledge Base configuration
+confman_knowledgebaseaddress='http://127.0.0.1'
+confman_knowledgebaseport=8015
+

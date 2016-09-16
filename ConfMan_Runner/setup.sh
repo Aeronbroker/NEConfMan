@@ -63,6 +63,7 @@ then
 	confman_launcher_auto="$confmandir/ConfMan_Runner/startConfigurationManager.sh"
 	confman_launcherasdaemon_auto="$confmandir/ConfMan_Runner/startConfigurationManager_as_daemon.sh"
 	confman_loggerproperties_auto="$confman_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
+	confman_knowledgebaseproperties_auto="$confmandir/fiwareRelease/confmanconfig/knowledgeBase/knowledgeBase.properties"
 
 	confman_version_auto=`grep -m1 "<version>" $confmandir/eu.neclab.iotplatform.confman.builder/pom.xml`;
 	if [ -z "$confman_version_auto" ];
@@ -94,6 +95,7 @@ then
 		setConfiguration "confman_launcher" "$confman_launcher_auto" "confman_functions.sh"
 		setConfiguration "confman_launcherasdaemon" "$confman_launcherasdaemon_auto" "confman_functions.sh"
 		setConfiguration "confman_loggerproperties" "$confman_loggerproperties_auto" "confman_functions.sh"
+		setConfiguration "confman_knowledgebaseproperties" "$confman_knowledgebaseproperties_auto" "confman_functions.sh"
 		
 		if [ -n "$confman_version_auto" ];
 		then
@@ -108,6 +110,7 @@ then
 	confman_launcher=$confman_launcher_auto
 	confman_launcherasdaemon=$confman_launcherasdaemon_auto
 	confman_loggerproperties=$confman_loggerproperties_auto
+	confman_knowledgebaseproperties=$confman_knowledgebaseproperties_auto
 	
 	confman_dirconfig=${confman_dirconfig//\./\\\.}
 	confman_dirconfig=${confman_dirconfig//\//\\/}
@@ -144,6 +147,8 @@ setFirstPropertyValueOverMultipleValuesIntoProperties "log4j.rootLogger" "$confm
 setConfiguration "configProperties" "$confman_configproperties" "$confman_launcher"
 setConfiguration "configProperties" "$confman_configproperties" "$confman_launcherasdaemon"
 
+setPropertyIntoProperties "knowledgebase_address" "$confman_knowledgebaseaddress" "$confman_knowledgebaseproperties"
+setPropertyIntoProperties "knowledgebase_port" "$confman_knowledgebaseport" "$confman_knowledgebaseproperties"
 
 ##ENABLE BASIC BUNDLE
 enableBundle commons
@@ -155,5 +160,13 @@ enableBundle restcontroller
 enableBundle serverconf nostart
 enableBundle utilitystorage
 enableBundle extensionmanager
+
+##ENABLE SEMANTIC BUNDLES
+if [ "$confman_semantic" == "enabled" ]
+then
+	enableBundle knowledgebase
+else
+	disableBundle knowledgebase
+fi
 
 correctConfigIni

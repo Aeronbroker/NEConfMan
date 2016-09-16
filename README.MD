@@ -1,7 +1,7 @@
 NEC ConfMan
 ==
 
-The **NEC Configuration Management** or **NEC ConfMan** is an implementation of the **FIWARE IoT Discovery Generic Enabler** by NEC. This implementation is specifically designed to interwork with the **IoT Broker GE** FIWARE reference implementation, serving as the registry of FIWARE NGSI context providers.
+The **NEC Configuration Management** or **NEC ConfMan** is an implementation of the **FIWARE IoT Discovery Generic Enabler** done by NEC. This implementation is specifically designed to interwork with the **IoT Broker GE** FIWARE reference implementation, serving as the registry of FIWARE NGSI context providers.
 
 The NEC ConfMan APIs are fully based on FIWARE NGSI-9. ConfMan supports the following operations for exchanging context availability information:
 * The *registerContext* operation is available to register information about data sources in the ConfMan's database.
@@ -53,7 +53,7 @@ The NEC ConfMan is implemented in Java and packaged as a set of OSGi bundles. It
 The following software additionally needs to be installed:
 * Java 1.7 or higher
 * PostgreSQL server (version 9.2 or higher recommended). Please note that the credentials for access by ConfMan need to be set consistent to the access credentials configured in the ConfMan config file.
-* CouchDB (version 1.5.1. or higher recommended).
+* CouchDB (version 1.6 or higher recommended).
 
 Runtime Environment
 --

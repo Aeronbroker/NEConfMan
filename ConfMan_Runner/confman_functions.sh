@@ -8,10 +8,11 @@ confman_configxml='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManag
 confman_configproperties='/opt/NEConfMan/fiwareRelease/confmanconfig/configurationManager/config/config.properties'
 confman_launcher="/opt/NEConfMan/ConfMan_Runner/startConfigurationManager.sh"
 confman_launcherasdaemon="/opt/NEConfMan/ConfMan_Runner/startConfigurationManager_as_daemon.sh"
-confman_loggerproperties="$confman_bundlesconfigurationlocation/services/org.ops4j.pax.logging.properties"
+confman_loggerproperties="/opt/NEConfMan/fiwareRelease/bundleConfigurations/services/org.ops4j.pax.logging.properties"
+confman_knowledgebaseproperties="/opt/NEConfMan/fiwareRelease/confmanconfig/knowledgeBase/knowledgeBase.properties"
 
 
-confman_version="5.1.3"
+confman_version="5.4.3"
 
 # Functions
 function setPropertyIntoXML {
