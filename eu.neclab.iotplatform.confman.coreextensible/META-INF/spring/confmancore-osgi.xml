@@ -10,7 +10,7 @@
 		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
 
 	<osgi:service id="Resettable" ref="confmancore"
-		interface="eu.neclab.iotplatform.confman.commons.interfaces.Resettable" />
+		interface="eu.neclab.iotplatform.confman.commons.interfaces.Resettable"/>
 
 	<osgi:reference id="Ngsi9Storage"
 		interface="eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface"></osgi:reference>
@@ -23,7 +23,8 @@
 		interface="eu.neclab.iotplatform.confman.commons.interfaces.UtilityStorageInterface"></osgi:reference>
 
 	<osgi:reference id="KnowledgeBase"
-		interface="eu.neclab.iotplatform.confman.commons.interfaces.KnowledgeBaseInterface"></osgi:reference>
+		interface="eu.neclab.iotplatform.confman.commons.interfaces.KnowledgeBaseInterface"
+		cardinality="0..1" timeout="0"></osgi:reference>
 
 
 </beans>

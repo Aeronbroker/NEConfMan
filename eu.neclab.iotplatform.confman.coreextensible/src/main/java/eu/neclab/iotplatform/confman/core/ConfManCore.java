@@ -710,7 +710,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	@Override
 	public DiscoverContextAvailabilityResponse discoverContextAvailability(
 			DiscoverContextAvailabilityRequest request) {
-
+		
 		DiscoverContextAvailabilityResponse output = new DiscoverContextAvailabilityResponse();
 
 		// Sanify wrong regular expression. e.g. "*" should become ".*"
@@ -719,7 +719,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		// Excute the discovery and create the List of
 		// ContextRegistrationResponses
 		List<ContextRegistrationResponse> contextRegistrationResponseList = new ArrayList<ContextRegistrationResponse>(
-				executeDiscover(request).values());
+				this.executeDiscover(request).values());
 		output.setContextRegistrationResponse(contextRegistrationResponseList);
 
 		// Set the StatusCode as 200 OK

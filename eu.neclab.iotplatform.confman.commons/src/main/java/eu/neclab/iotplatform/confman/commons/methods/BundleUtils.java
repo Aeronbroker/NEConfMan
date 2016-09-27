@@ -83,6 +83,8 @@ public class BundleUtils {
 		ServiceReference service = bundleContext.getServiceReference(clazzes[0]
 				.getName());
 
+		logger.info("Interface Object: "+interfaceObject.getClass().toString());
+		
 		// if (interfaceObject instanceof com.sun.Proxy) {
 		/* Getting the bundleContext of the clazz */
 		if (!interfaceObject.getClass().toString().matches(".*com.sun.proxy.*")) {

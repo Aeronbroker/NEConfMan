@@ -136,9 +136,10 @@ public class ConfManRestController {
 
 			logger.info("Discovery received : " + request);
 
+			
 			DiscoverContextAvailabilityResponse response = ngsi9
 					.discoverContextAvailability(request);
-
+			
 			if (response.getContextRegistrationResponse().size() == 0) {
 				StatusCode statusCode = new StatusCode(
 						Code.CONTEXTELEMENTNOTFOUND_404.getCode(),
