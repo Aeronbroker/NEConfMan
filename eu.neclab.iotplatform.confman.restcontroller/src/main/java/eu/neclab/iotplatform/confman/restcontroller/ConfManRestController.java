@@ -42,12 +42,13 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.restcontroller;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -59,6 +60,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import eu.neclab.iotplatform.confman.commons.methods.XmlValidator;
 import eu.neclab.iotplatform.confman.commons.methods.XmlValidatorCheck;
+import eu.neclab.iotplatform.confman.restcontroller.datamodel.SanityCheck;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
@@ -112,6 +114,25 @@ public class ConfManRestController {
 
 	}
 
+	/**
+	 * Executes the Sanity Check Procedure of the IoT Broker.
+	 *
+	 * @return the response entity
+	 */
+	@RequestMapping(value = { "/sanityCheck", "/ngsi9/sanityCheck" }, method = RequestMethod.GET, consumes = { "*/*" }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
+	public ResponseEntity<SanityCheck> sanityCheck() {
+
+		BundleContext bc = FrameworkUtil
+				.getBundle(ConfManRestController.class).getBundleContext();
+
+		SanityCheck response = new SanityCheck("NEConfMan", "Sanity Check",
+				"Version: " + bc.getBundle().getVersion());
+
+		return new ResponseEntity<SanityCheck>(response, HttpStatus.OK);
+
+	}
+
 	// @RequestMapping(value = "/discoverContextAvailability", method =
 	// RequestMethod.POST, headers = "Accept=*/*")
 	// public @ResponseBody
@@ -136,10 +157,9 @@ public class ConfManRestController {
 
 			logger.info("Discovery received : " + request);
 
-			
 			DiscoverContextAvailabilityResponse response = ngsi9
 					.discoverContextAvailability(request);
-			
+
 			if (response.getContextRegistrationResponse().size() == 0) {
 				StatusCode statusCode = new StatusCode(
 						Code.CONTEXTELEMENTNOTFOUND_404.getCode(),
