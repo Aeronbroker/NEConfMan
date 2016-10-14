@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.core;
 
 import java.net.URI;
@@ -52,11 +51,18 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
 import org.apache.log4j.Logger;
-import org.eclipse.osgi.framework.internal.core.BundleURLConnection;
-import org.osgi.framework.Bundle;
+import org.w3c.dom.Document;
+import org.w3c.dom.NodeList;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -72,6 +78,7 @@ import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.Resettable;
 import eu.neclab.iotplatform.confman.commons.interfaces.UtilityStorageInterface;
 import eu.neclab.iotplatform.confman.commons.methods.BundleUtils;
+import eu.neclab.iotplatform.confman.commons.methods.XmlFactory;
 import eu.neclab.iotplatform.confman.core.utils.NotificationUtils;
 import eu.neclab.iotplatform.confman.scheduler.DeletionScheduler;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
@@ -710,7 +717,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	@Override
 	public DiscoverContextAvailabilityResponse discoverContextAvailability(
 			DiscoverContextAvailabilityRequest request) {
-		
+
 		DiscoverContextAvailabilityResponse output = new DiscoverContextAvailabilityResponse();
 
 		// Sanify wrong regular expression. e.g. "*" should become ".*"
@@ -822,6 +829,23 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 			regIdAndContReg = applyRestrictionToDiscoveryResponse(response,
 					null);
+		}
+
+		if (request.getRestriction() != null
+				&& request.getRestriction().getAttributeExpression() != null
+				&& !request.getRestriction().getAttributeExpression().isEmpty()) {
+
+			String attributeExpression = request.getRestriction()
+					.getAttributeExpression();
+
+			for (Entry<String, ContextRegistrationResponse> entry : regIdAndContReg
+					.entries()) {
+				if (!checkAttributeExpression(attributeExpression, entry
+						.getValue().getContextRegistration())) {
+					regIdAndContReg.remove(entry.getKey(), entry.getValue());
+				}
+
+			}
 		}
 
 		return regIdAndContReg;
@@ -986,6 +1010,35 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 		}
 		return regIdAndContReg;
+	}
+
+	public boolean checkAttributeExpression(String attributeExpr,
+			ContextRegistration contextRegistration) {
+
+		boolean check = false;
+		
+		// Apply the Restriction
+		XPath xpath = XPathFactory.newInstance().newXPath();
+
+		try {
+			XPathExpression expr = xpath.compile(attributeExpr);
+
+			Document doc = XmlFactory.stringToDocument(contextRegistration
+					.toString());
+			Object result = expr.evaluate(doc, XPathConstants.NODESET);
+
+			NodeList nodes = (NodeList) result;
+
+			if (nodes.getLength() != 0){
+				check = true;
+			}
+
+		} catch (XPathExpressionException e) {
+			logger.debug("XPathExpressionException", e);
+		}
+
+		return check;
+
 	}
 
 	@Override
