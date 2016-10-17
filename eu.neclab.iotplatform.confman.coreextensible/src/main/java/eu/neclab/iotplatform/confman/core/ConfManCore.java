@@ -505,10 +505,17 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				// specifying
 				// the previous map and whether the Ngsi9Storage must care about
 				// metadataRestriction
-				multimap.putAll(ngsi9Storage.checkSubscriptions(contReg,
-						!metadataToSubscriptionMap.isEmpty(),
-						metadataToSubscriptionMap, otherRestrictiveMetadata,
-						superTypesMap));
+				Multimap<SubscriptionToNotify, ContextRegistration> ngsi9StorageResponse = ngsi9Storage
+						.checkSubscriptions(contReg,
+								!metadataToSubscriptionMap.isEmpty(),
+								metadataToSubscriptionMap,
+								otherRestrictiveMetadata, superTypesMap);
+
+				// We then apply the attribute Expressions (if present)
+				applyAttributeExpression(ngsi9StorageResponse);
+
+				// Finally we add them
+				multimap.putAll(ngsi9StorageResponse);
 
 			}
 			logger.info("Resulting notification multimap:" + multimap);
@@ -547,6 +554,33 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 		// Send back the response
 		return response;
+	}
+
+	private void applyAttributeExpression(
+			Multimap<SubscriptionToNotify, ContextRegistration> multimap) {
+
+		Iterator<Entry<SubscriptionToNotify, ContextRegistration>> iterator = multimap
+				.entries().iterator();
+		while (iterator.hasNext()) {
+
+			Entry<SubscriptionToNotify, ContextRegistration> pair = iterator
+					.next();
+
+			if (pair.getKey().getAttributeExpression() != null
+					&& !pair.getKey().getAttributeExpression().isEmpty()) {
+
+				if (!checkAttributeExpression(pair.getKey()
+						.getAttributeExpression(), pair.getValue())) {
+					logger.info("Removing Context Registration "
+							+ pair.getValue()
+							+ " Because of attribute expression: "
+							+ pair.getKey().getAttributeExpression());
+					iterator.remove();
+				}
+
+			}
+
+		}
 	}
 
 	/**
@@ -838,11 +872,14 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 			String attributeExpression = request.getRestriction()
 					.getAttributeExpression();
 
-			for (Entry<String, ContextRegistrationResponse> entry : regIdAndContReg
-					.entries()) {
+			Iterator<Entry<String, ContextRegistrationResponse>> iterator = regIdAndContReg
+					.entries().iterator();
+			while (iterator.hasNext()) {
+				Entry<String, ContextRegistrationResponse> entry = iterator
+						.next();
 				if (!checkAttributeExpression(attributeExpression, entry
 						.getValue().getContextRegistration())) {
-					regIdAndContReg.remove(entry.getKey(), entry.getValue());
+					iterator.remove();
 				}
 
 			}
@@ -1012,11 +1049,11 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		return regIdAndContReg;
 	}
 
-	public boolean checkAttributeExpression(String attributeExpr,
+	private boolean checkAttributeExpression(String attributeExpr,
 			ContextRegistration contextRegistration) {
 
 		boolean check = false;
-		
+
 		// Apply the Restriction
 		XPath xpath = XPathFactory.newInstance().newXPath();
 
@@ -1029,7 +1066,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 			NodeList nodes = (NodeList) result;
 
-			if (nodes.getLength() != 0){
+			if (nodes.getLength() != 0) {
 				check = true;
 			}
 

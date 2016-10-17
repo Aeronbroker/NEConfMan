@@ -51,6 +51,7 @@ public class SubscriptionToNotify {
 
 	private String reference;
 	private String subscriptionId;
+	private String attributeExpression;
 	
 	
 	public SubscriptionToNotify() {
@@ -78,11 +79,25 @@ public class SubscriptionToNotify {
 	public void setSubscriptionId(String subscriptionId) {
 		this.subscriptionId = subscriptionId;
 	}
+	
+	
+
+	public String getAttributeExpression() {
+		return attributeExpression;
+	}
+
+	public void setAttributeExpression(String attributeExpression) {
+		this.attributeExpression = attributeExpression;
+	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		result = prime
+				* result
+				+ ((attributeExpression == null) ? 0 : attributeExpression
+						.hashCode());
 		result = prime * result
 				+ ((reference == null) ? 0 : reference.hashCode());
 		result = prime * result
@@ -99,6 +114,11 @@ public class SubscriptionToNotify {
 		if (getClass() != obj.getClass())
 			return false;
 		SubscriptionToNotify other = (SubscriptionToNotify) obj;
+		if (attributeExpression == null) {
+			if (other.attributeExpression != null)
+				return false;
+		} else if (!attributeExpression.equals(other.attributeExpression))
+			return false;
 		if (reference == null) {
 			if (other.reference != null)
 				return false;
@@ -115,8 +135,11 @@ public class SubscriptionToNotify {
 	@Override
 	public String toString() {
 		return "SubscriptionToNotify [reference=" + reference
-				+ ", subscriptionId=" + subscriptionId + "]";
+				+ ", subscriptionId=" + subscriptionId
+				+ ", attributeExpression=" + attributeExpression + "]";
 	}
+
+
 	
 	
 	

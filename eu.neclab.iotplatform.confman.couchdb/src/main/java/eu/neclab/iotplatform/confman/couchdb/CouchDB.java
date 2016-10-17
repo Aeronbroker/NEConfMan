@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.couchdb;
 
 import java.io.FileInputStream;
@@ -807,7 +806,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 					return response;
 				}
 			}
-			
+
 			if (response.getStatusLine().getStatusCode() > 299) {
 				logger.error("Impossible to store view in "
 						+ documentType.getDb_name());
@@ -1092,6 +1091,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				subscriptionToNotify.setReference(row.getAsJsonObject("key")
 						.get("reference").getAsString());
+				
+				subscriptionToNotify.setAttributeExpression(row.getAsJsonObject("key")
+						.get("restrictionattributeexpression").getAsString());
 
 				// Parse the ContextRegistration
 				ContextRegistration contextRegAv = JSonNgsi9Parser
