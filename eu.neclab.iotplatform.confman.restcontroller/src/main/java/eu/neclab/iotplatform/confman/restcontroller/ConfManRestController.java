@@ -44,6 +44,8 @@
 
 package eu.neclab.iotplatform.confman.restcontroller;
 
+import java.io.BufferedReader;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
@@ -58,8 +60,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import eu.neclab.iotplatform.confman.commons.methods.JsonValidator;
 import eu.neclab.iotplatform.confman.commons.methods.XmlValidator;
-import eu.neclab.iotplatform.confman.commons.methods.XmlValidatorCheck;
+import eu.neclab.iotplatform.confman.commons.methods.ValidatorCheck;
 import eu.neclab.iotplatform.confman.restcontroller.datamodel.SanityCheck;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
@@ -116,15 +119,15 @@ public class ConfManRestController {
 
 	/**
 	 * Executes the Sanity Check Procedure of the IoT Broker.
-	 *
+	 * 
 	 * @return the response entity
 	 */
 	@RequestMapping(value = { "/sanityCheck", "/ngsi9/sanityCheck" }, method = RequestMethod.GET, consumes = { "*/*" }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<SanityCheck> sanityCheck() {
 
-		BundleContext bc = FrameworkUtil
-				.getBundle(ConfManRestController.class).getBundleContext();
+		BundleContext bc = FrameworkUtil.getBundle(ConfManRestController.class)
+				.getBundleContext();
 
 		SanityCheck response = new SanityCheck("NEConfMan", "Sanity Check",
 				"Version: " + bc.getBundle().getVersion());
@@ -150,8 +153,15 @@ public class ConfManRestController {
 		// Validate the request
 		// boolean xmlError = validator.xmlValidation(request, sNgsi9schema);
 		// boolean xmlError = false;
-		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-		logger.info("STATUS XML VALIDATOR: " + check.isCorrect());
+
+		// XmlValidatorCheck check = validator.xmlValidate(request,
+		// sNgsi9schema);
+		// logger.info("STATUS XML VALIDATOR: " + check.isCorrect());
+		//
+		// if (check.isCorrect()) {
+
+		ValidatorCheck check = validateMessageBody(requester, request,
+				sNgsi9schema);
 
 		if (check.isCorrect()) {
 
@@ -189,6 +199,47 @@ public class ConfManRestController {
 		}
 	}
 
+	/**
+	 * Executes a syntax check of incoming messages. Currently supported formats
+	 * are XML and JSON.
+	 */
+	private ValidatorCheck validateMessageBody(HttpServletRequest request,
+			Object objRequest, String schema) {
+
+		ValidatorCheck check = new ValidatorCheck();
+
+		logger.info("ContentType: " + request.getContentType());
+
+		if (request.getContentType().contains("application/xml")) {
+			check = validator.xmlValidate(objRequest, sNgsi9schema);
+			// status = validator.xmlValidation(objRequest, schema);
+
+		} else if (request.getContentType().contains("application/json")) {
+
+			// StringBuffer jb = new StringBuffer();
+			// String line = null;
+			// try {
+			// BufferedReader reader = request.getReader();
+			// while ((line = reader.readLine()) != null) {
+			// jb.append(line);
+			// }
+			// } catch (Exception e) {
+			// logger.info("Impossible to get the Json Request! Please check the error using debug mode.");
+			// if (logger.isDebugEnabled()) {
+			// logger.debug("Impossible to get the Json Request", e);
+			// }
+			// }
+
+			// check = JsonValidator.validateJSON(request.toString());
+
+		}
+
+		logger.info("Incoming request Valid:" + check.isCorrect());
+
+		return check;
+
+	}
+
 	@RequestMapping(value = "/ngsi9/registerContext", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
@@ -199,11 +250,15 @@ public class ConfManRestController {
 		// logger.info("NGSI9 Schema :" + sNgsi9schema);
 
 		// Validate the request
-		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-		// boolean status = false;
-		if (logger.isDebugEnabled()) {
-			logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
-		}
+		// ValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
+		// // boolean status = false;
+		// if (logger.isDebugEnabled()) {
+		// logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		// }
+		//
+		// if (check.isCorrect()) {
+		ValidatorCheck check = validateMessageBody(requester, request,
+				sNgsi9schema);
 
 		if (check.isCorrect()) {
 
@@ -249,10 +304,15 @@ public class ConfManRestController {
 			HttpServletRequest requester,
 			@RequestBody SubscribeContextAvailabilityRequest request) {
 
-		// Validate the request
-		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-		// boolean status = false;
-		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		// // Validate the request
+		// ValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
+		// // boolean status = false;
+		// logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		//
+		// if (check.isCorrect()) {
+		//
+		ValidatorCheck check = validateMessageBody(requester, request,
+				sNgsi9schema);
 
 		if (check.isCorrect()) {
 
@@ -300,10 +360,15 @@ public class ConfManRestController {
 			HttpServletRequest requester,
 			@RequestBody UpdateContextAvailabilitySubscriptionRequest request) {
 
-		// Validate the request
-		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-		// boolean status = false;
-		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		// // Validate the request
+		// ValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
+		// // boolean status = false;
+		// logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		//
+		// if (check.isCorrect()) {
+
+		ValidatorCheck check = validateMessageBody(requester, request,
+				sNgsi9schema);
 
 		if (check.isCorrect()) {
 
@@ -346,10 +411,15 @@ public class ConfManRestController {
 			HttpServletRequest requester,
 			@RequestBody UnsubscribeContextAvailabilityRequest request) {
 
-		// Validate the request
-		XmlValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
-		// boolean status = false;
-		logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		// // Validate the request
+		// ValidatorCheck check = validator.xmlValidate(request, sNgsi9schema);
+		// // boolean status = false;
+		// logger.debug("STATUS XML VALIDATOR" + check.isCorrect());
+		//
+		// if (check.isCorrect()) {
+
+		ValidatorCheck check = validateMessageBody(requester, request,
+				sNgsi9schema);
 
 		if (check.isCorrect()) {
 

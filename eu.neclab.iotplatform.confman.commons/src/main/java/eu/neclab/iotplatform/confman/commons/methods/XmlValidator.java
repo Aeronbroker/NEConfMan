@@ -124,9 +124,9 @@ public class XmlValidator {
 
 	}
 	
-	public XmlValidatorCheck xmlValidate(Object request, String xmlSchema) {
+	public ValidatorCheck xmlValidate(Object request, String xmlSchema) {
 
-		XmlValidatorCheck check = new XmlValidatorCheck();
+		ValidatorCheck check = new ValidatorCheck();
 		
 		try {
 
@@ -171,9 +171,9 @@ public class XmlValidator {
 	private class MyErrorHandler implements ErrorHandler {
 		
 		private int errorCount = 0;
-		private XmlValidatorCheck check = null;
+		private ValidatorCheck check = null;
 		
-		public void setXmlValidatorCheck(XmlValidatorCheck check){
+		public void setXmlValidatorCheck(ValidatorCheck check){
 			this.check = check;
 		}
 

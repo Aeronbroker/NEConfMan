@@ -42,35 +42,62 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.methods;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
 
-public class XmlValidatorCheck {
+import org.apache.log4j.Logger;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.JsonParser;
+import org.codehaus.jackson.map.ObjectMapper;
 
-	private List<String> causesOfErrors = new ArrayList<String>();
+/**
+ *  Validates the JSON syntax of a String. Only the JSON syntax is changed
+ *  for correctness; the String is not validated against a JSON schema
+ *  file.
+ */
+public class JsonValidator {
 
-	private boolean isCorrect = true;
+	private static Logger logger = Logger.getLogger(JsonValidator.class);
 
-	public boolean isCorrect() {
-		if (causesOfErrors.size() > 0) {
-			isCorrect = false;
+	public static boolean isValidJSON(final String json) {
+		boolean valid = false;
+		try {
+			final JsonParser parser = new ObjectMapper().getJsonFactory()
+					.createJsonParser(json);
+			while (parser.nextToken() != null) {
+			}
+			valid = true;
+		} catch (JsonParseException jpe) {
+			logger.info("JsonParseException: Json Message is not Valid!");
+			logger.debug("JsonParseException",jpe);
+		} catch (IOException ioe) {
+			logger.info("IOException in the Json Validator!");
+			logger.debug("IOException",ioe);
 		}
-		return isCorrect;
+
+		return valid;
+	}
+	
+	public static ValidatorCheck validateJSON(final String json) {
+		ValidatorCheck check = new ValidatorCheck();
+		try {
+			final JsonParser parser = new ObjectMapper().getJsonFactory()
+					.createJsonParser(json);
+			while (parser.nextToken() != null) {
+			}
+		} catch (JsonParseException jpe) {
+			logger.info("JsonParseException: Json Message is not Valid!");
+			check.addCauseOfError(jpe.getMessage());
+			logger.debug("JsonParseException",jpe);
+		} catch (IOException ioe) {
+			logger.info("IOException in the Json Validator!");
+			check.addCauseOfError(ioe.getMessage());
+			logger.debug("IOException",ioe);
+		}
+
+		return check;
 	}
 
-	public void setCorrect(boolean isCorrect) {
-		this.isCorrect = isCorrect;
-	}
-
-	public List<String> getCausesOfErrors() {
-		return causesOfErrors;
-	}
-
-	public void addCauseOfError(String causeOfError) {
-		this.causesOfErrors.add(causeOfError);
-	}
 
 }
