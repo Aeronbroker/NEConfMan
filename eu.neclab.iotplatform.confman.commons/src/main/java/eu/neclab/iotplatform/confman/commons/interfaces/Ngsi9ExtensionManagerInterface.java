@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.interfaces;
 
 import java.util.Collection;
@@ -57,6 +56,7 @@ import eu.neclab.iotplatform.confman.commons.datatype.RestrictionAppliedFromDisc
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
@@ -81,7 +81,7 @@ public interface Ngsi9ExtensionManagerInterface {
 	 * 
 	 * @return
 	 */
-	Set<String> getExtensionNames();
+	Set<MetadataTypes> getExtensionNames();
 
 	/**
 	 * It returns the set of Scope Types currently supported by this extensions
@@ -91,7 +91,7 @@ public interface Ngsi9ExtensionManagerInterface {
 	 * 
 	 * @return
 	 */
-	Set<String> getHardRestrictions();
+	Set<MetadataTypes> getHardRestrictions();
 
 	/**
 	 * Method used by an extension in order to inform the extension manager to
@@ -105,8 +105,8 @@ public interface Ngsi9ExtensionManagerInterface {
 	 *            Associations is not a strict criteria, but a way to get more
 	 *            information)
 	 */
-	void registerExtension(String scopeType, Ngsi9ExtensionInterface extension,
-			boolean isHardRestriction);
+	void registerExtension(MetadataTypes metadataTypes,
+			Ngsi9ExtensionInterface extension, boolean isHardRestriction);
 
 	/**
 	 * Method used by an extension to ask the extension manager to be deleted
@@ -134,7 +134,7 @@ public interface Ngsi9ExtensionManagerInterface {
 	 * @param contextRegistration
 	 * @return Map containing MetadataName/ScopeType -> Set<Subscriber>
 	 */
-	Multimap<String, String> dispatchCheckSubscriptions(
+	Multimap<MetadataTypes, String> dispatchCheckSubscriptions(
 			ContextRegistration contextRegistration);
 
 	/**

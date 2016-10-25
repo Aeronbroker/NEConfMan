@@ -42,10 +42,9 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.datatype;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -53,6 +52,8 @@ import java.util.Set;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
+
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 
 /**
  * This object encapsulate the output of the Ngsi9ExtensionManager when a it is
@@ -79,7 +80,8 @@ public class RestrictionAppliedFromDiscovery {
 	 * : [<metadataHashValue2.1>, <metadataHashValue2.2>, ..] ]
 	 */
 
-	private Map<String, Multimap<String, String>> restrictionAppliedToDiscoveryMap = new HashMap<String, Multimap<String, String>>();
+	private Map<MetadataTypes, Multimap<String, String>> restrictionAppliedToDiscoveryMap = new EnumMap<MetadataTypes, Multimap<String, String>>(
+			MetadataTypes.class);
 
 	private boolean restrictionApplied = true;
 
@@ -99,7 +101,7 @@ public class RestrictionAppliedFromDiscovery {
 		this.restrictionApplied = restrictionApplied;
 	}
 
-	public void put(String metadataName, String registrationId,
+	public void put(MetadataTypes metadataName, String registrationId,
 			Iterable<String> metadataValueHashed) {
 
 		Multimap<String, String> regIdToValueHashedMap = restrictionAppliedToDiscoveryMap
@@ -113,7 +115,7 @@ public class RestrictionAppliedFromDiscovery {
 		regIdToValueHashedMap.putAll(registrationId, metadataValueHashed);
 	}
 
-	public void put(String metadataName, String registrationId,
+	public void put(MetadataTypes metadataName, String registrationId,
 			String metadataValueHashed) {
 
 		Multimap<String, String> regIdToValueHashedMap = restrictionAppliedToDiscoveryMap
@@ -127,7 +129,7 @@ public class RestrictionAppliedFromDiscovery {
 		regIdToValueHashedMap.put(registrationId, metadataValueHashed);
 	}
 
-	public void put(String metadataName,
+	public void put(MetadataTypes metadataName,
 			Multimap<String, String> regIdToValueHashedMap) {
 
 		if (restrictionAppliedToDiscoveryMap.containsKey(metadataName)) {
@@ -144,14 +146,14 @@ public class RestrictionAppliedFromDiscovery {
 		return restrictionAppliedToDiscoveryMap.isEmpty();
 	}
 
-	public Multimap<String, String> getMetadataNameToRegistrationIdRestrictedMap() {
-		Multimap<String, String> metadataNameToRegistraionIdRestrictedMap = HashMultimap
+	public Multimap<MetadataTypes, String> getMetadataNameToRegistrationIdRestrictedMap() {
+		Multimap<MetadataTypes, String> metadataNameToRegistraionIdRestrictedMap = HashMultimap
 				.create();
 
-		Iterator<String> metadataNameIterator = restrictionAppliedToDiscoveryMap
+		Iterator<MetadataTypes> metadataNameIterator = restrictionAppliedToDiscoveryMap
 				.keySet().iterator();
 		while (metadataNameIterator.hasNext()) {
-			String metadataName = metadataNameIterator.next();
+			MetadataTypes metadataName = metadataNameIterator.next();
 
 			metadataNameToRegistraionIdRestrictedMap
 					.putAll(metadataName,
@@ -163,7 +165,7 @@ public class RestrictionAppliedFromDiscovery {
 
 	}
 
-	public boolean checkMetadataValueHashes(String metadataName,
+	public boolean checkMetadataValueHashes(MetadataTypes metadataName,
 			String registrationId, String metadataValueHashToCheck) {
 
 		if (restrictionAppliedToDiscoveryMap.containsKey(metadataName)

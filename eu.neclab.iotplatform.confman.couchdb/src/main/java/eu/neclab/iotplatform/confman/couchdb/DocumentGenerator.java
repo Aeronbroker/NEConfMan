@@ -49,11 +49,11 @@ package eu.neclab.iotplatform.confman.couchdb;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import org.json.JSONObject;
 import org.json.XML;
 
-import eu.neclab.iotplatform.confman.commons.methods.UniqueIDGenerator;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
@@ -67,11 +67,11 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequ
  */
 public class DocumentGenerator {
 
-	private UniqueIDGenerator randomGenerator;
+	// private UniqueIDGenerator randomGenerator;
 
-	public DocumentGenerator(UniqueIDGenerator randomGenerator) {
-		this.randomGenerator = randomGenerator;
-	}
+	// public DocumentGenerator(UniqueIDGenerator randomGenerator) {
+	// this.randomGenerator = randomGenerator;
+	// }
 
 	/**
 	 * This class is mainly a structure used to encapsulate information for the
@@ -81,7 +81,7 @@ public class DocumentGenerator {
 	 * @author Flavio Cirillo (flavio.cirillo@neclab.eu)
 	 * 
 	 */
-	private class ValueAsJsonData {
+	private static class ValueAsJsonData {
 		String placeholder;
 		String valueString;
 
@@ -93,6 +93,70 @@ public class DocumentGenerator {
 
 	}
 
+	private static ContextRegistration handleContextRegistration(
+			ContextRegistration contextRegistration,
+			List<ValueAsJsonData> valueAsJsonList) {
+
+		Random rand = new Random();
+
+		ContextRegistration newContextRegistration;
+
+		if (contextRegistration.getListContextMetadata() != null
+				&& !contextRegistration.getListContextMetadata().isEmpty()) {
+
+			// This will contain the ContextMetadata where the values
+			// has been changed to the placeholders
+			List<ContextMetadata> newContextMetadataList = new ArrayList<ContextMetadata>();
+
+			// Creating the new ContextRegistration with new
+			// ContextMetadataList
+			newContextRegistration = new ContextRegistration(
+					contextRegistration.getListEntityId(),
+					contextRegistration.getContextRegistrationAttribute(),
+					newContextMetadataList,
+					contextRegistration.getProvidingApplication());
+
+			// Apply the placeholder fix and compute the pure xml string
+			for (ContextMetadata contextMetadata : contextRegistration
+					.getListContextMetadata()) {
+
+				// In order to extract the string we are going to
+				// compute
+				// the
+				// full ContextMetadata xml string (using the toString
+				// method of
+				// NgsiStructure that is mainly using JAXB) and then
+				// manually
+				// removing the not need tags
+				String xml = contextMetadata.toString();
+				String value = extractAndStringifyFromXML(xml, "value");
+
+				// Create the placeholder randomly (in order to prevent
+				// unwanted
+				// ambiguity in the string)
+				String placeholder = ""+rand.nextInt();
+
+				// Set the placeholder
+				ContextMetadata newContextMetadata = new ContextMetadata(
+						contextMetadata.getName(), contextMetadata.getType(),
+						(String)placeholder);
+				newContextMetadataList.add(newContextMetadata);
+
+				// Add the structure to the list
+				valueAsJsonList.add(new ValueAsJsonData(placeholder, value));
+
+			}
+		} else {
+
+			// If there are no ContextMetadata in the
+			// ContextRegistration just put the original
+			// ContextRegistration
+			newContextRegistration = contextRegistration;
+		}
+
+		return newContextRegistration;
+	}
+
 	/**
 	 * This function will generate JSON document of the NGSI-10
 	 * RegisterContextRequest, correctly handling the ContextMetadata.value i.e.
@@ -101,7 +165,7 @@ public class DocumentGenerator {
 	 * @param registerContextRequest
 	 * @return
 	 */
-	public String generateJsonString(Object request) {
+	public static String generateJsonString(Object object) {
 
 		/*
 		 * In this method we are going to create a new RegisterContextRequest
@@ -126,10 +190,22 @@ public class DocumentGenerator {
 		List<ValueAsJsonData> valueAsJsonList = new ArrayList<ValueAsJsonData>();
 
 		String jsonString;
+		
+		Random rand = new Random();
 
-		if (request instanceof RegisterContextRequest) {
 
-			RegisterContextRequest registerContextRequest = (RegisterContextRequest) request;
+		if (object instanceof ContextRegistration) {
+
+			ContextRegistration newContextRegistration = handleContextRegistration(
+					(ContextRegistration) object, valueAsJsonList);
+
+			JSONObject xmlJSONObj = XML.toJSONObject(newContextRegistration
+					.toString());
+			jsonString = xmlJSONObj.toString();
+
+		} else if (object instanceof RegisterContextRequest) {
+
+			RegisterContextRequest registerContextRequest = (RegisterContextRequest) object;
 
 			// This list will contain the new ContextRegistrationList (the rest
 			// of
@@ -142,63 +218,69 @@ public class DocumentGenerator {
 			for (ContextRegistration contextRegistration : registerContextRequest
 					.getContextRegistrationList()) {
 
-				if (contextRegistration.getListContextMetadata() != null
-						&& !contextRegistration.getListContextMetadata()
-								.isEmpty()) {
+				// if (contextRegistration.getListContextMetadata() != null
+				// && !contextRegistration.getListContextMetadata()
+				// .isEmpty()) {
+				//
+				// // This will contain the ContextMetadata where the values
+				// // has been changed to the placeholders
+				// List<ContextMetadata> newContextMetadataList = new
+				// ArrayList<ContextMetadata>();
+				//
+				// // Creating the new ContextRegistration with new
+				// // ContextMetadataList
+				// ContextRegistration newContextRegistration = new
+				// ContextRegistration(
+				// contextRegistration.getListEntityId(),
+				// contextRegistration
+				// .getContextRegistrationAttribute(),
+				// newContextMetadataList,
+				// contextRegistration.getProvidingApplication());
+				//
+				// newContextRegistrationList.add(newContextRegistration);
+				//
+				// // Apply the placeholder fix and compute the pure xml string
+				// for (ContextMetadata contextMetadata : contextRegistration
+				// .getListContextMetadata()) {
+				//
+				// // In order to extract the string we are going to
+				// // compute
+				// // the
+				// // full ContextMetadata xml string (using the toString
+				// // method of
+				// // NgsiStructure that is mainly using JAXB) and then
+				// // manually
+				// // removing the not need tags
+				// String xml = contextMetadata.toString();
+				// String value = extractAndStringifyFromXML(xml, "value");
+				//
+				// // Create the placeholder randomly (in order to prevent
+				// // unwanted
+				// // ambiguity in the string)
+				// String placeholder = randomGenerator.getNextUniqueId();
+				//
+				// // Set the placeholder
+				// ContextMetadata newContextMetadata = new ContextMetadata(
+				// contextMetadata.getName(),
+				// contextMetadata.getType(), placeholder);
+				// newContextMetadataList.add(newContextMetadata);
+				//
+				// // Add the structure to the list
+				// valueAsJsonList.add(new ValueAsJsonData(placeholder,
+				// value));
+				//
+				// }
+				// } else {
+				//
+				// // If there are no ContextMetadata in the
+				// // ContextRegistration just put the original
+				// // ContextRegistration
+				// newContextRegistrationList.add(contextRegistration);
+				// }
 
-					// This will contain the ContextMetadata where the values
-					// has been changed to the placeholders
-					List<ContextMetadata> newContextMetadataList = new ArrayList<ContextMetadata>();
+				newContextRegistrationList.add(handleContextRegistration(
+						contextRegistration, valueAsJsonList));
 
-					// Creating the new ContextRegistration with new
-					// ContextMetadataList
-					ContextRegistration newContextRegistration = new ContextRegistration(
-							contextRegistration.getListEntityId(),
-							contextRegistration
-									.getContextRegistrationAttribute(),
-							newContextMetadataList,
-							contextRegistration.getProvidingApplication());
-
-					newContextRegistrationList.add(newContextRegistration);
-
-					// Apply the placeholder fix and compute the pure xml string
-					for (ContextMetadata contextMetadata : contextRegistration
-							.getListContextMetadata()) {
-
-						// In order to extract the string we are going to
-						// compute
-						// the
-						// full ContextMetadata xml string (using the toString
-						// method of
-						// NgsiStructure that is mainly using JAXB) and then
-						// manually
-						// removing the not need tags
-						String xml = contextMetadata.toString();
-						String value = extractAndStringifyFromXML(xml, "value");
-
-						// Create the placeholder randomly (in order to prevent
-						// unwanted
-						// ambiguity in the string)
-						String placeholder = randomGenerator.getNextUniqueId();
-
-						// Set the placeholder
-						ContextMetadata newContextMetadata = new ContextMetadata(
-								contextMetadata.getName(),
-								contextMetadata.getType(), placeholder);
-						newContextMetadataList.add(newContextMetadata);
-
-						// Add the structure to the list
-						valueAsJsonList.add(new ValueAsJsonData(placeholder,
-								value));
-
-					}
-				} else {
-
-					// If there are no ContextMetadata in the
-					// ContextRegistration just put the original
-					// ContextRegistration
-					newContextRegistrationList.add(contextRegistration);
-				}
 			}
 
 			// Create the new RegisterContextRequest using the original
@@ -215,9 +297,9 @@ public class DocumentGenerator {
 					.toString());
 			jsonString = xmlJSONObj.toString();
 
-		} else if (request instanceof SubscribeContextAvailabilityRequest) {
+		} else if (object instanceof SubscribeContextAvailabilityRequest) {
 
-			SubscribeContextAvailabilityRequest subscribeContextAvailabilityRequest = (SubscribeContextAvailabilityRequest) request;
+			SubscribeContextAvailabilityRequest subscribeContextAvailabilityRequest = (SubscribeContextAvailabilityRequest) object;
 
 			Restriction newRestriction = null;
 
@@ -259,7 +341,7 @@ public class DocumentGenerator {
 					// Create the placeholder randomly (in order to prevent
 					// unwanted
 					// ambiguity in the string)
-					String placeholder = randomGenerator.getNextUniqueId();
+					String placeholder = ""+rand.nextInt();
 
 					// Set the placeholder
 					OperationScope newOperationScope = new OperationScope(
@@ -299,6 +381,10 @@ public class DocumentGenerator {
 
 		// Replace all the placeholders
 		for (ValueAsJsonData jsonMetadataValue : valueAsJsonList) {
+			
+			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
+					"\""+jsonMetadataValue.placeholder + "\"");
+			
 			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
 					jsonMetadataValue.valueString);
 		}
@@ -306,7 +392,7 @@ public class DocumentGenerator {
 		return jsonString;
 	}
 
-	private String extractAndStringifyFromXML(String xml, String tag) {
+	private static String extractAndStringifyFromXML(String xml, String tag) {
 
 		String value = xml;
 

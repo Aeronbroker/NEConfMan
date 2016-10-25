@@ -58,6 +58,7 @@ import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 
 public class JavascriptGenerator {
 
@@ -706,8 +707,8 @@ public class JavascriptGenerator {
 
 	public static String createJavaScriptView(
 			ContextRegistration contextRegistration,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadataSet) {
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadataSet) {
 
 		// // @formatter:off
 		//
@@ -1129,9 +1130,12 @@ public class JavascriptGenerator {
 
 	public static String createJavaScriptView(
 			ContextRegistration contextRegistration,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadataSet,
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadataSet,
 			Multimap<URI, URI> superTypesMap) {
+
+		// DocumentGenerator documentGenerator = new
+		// DocumentGenerator(randomGenerator)
 
 		// @formatter:off
 
@@ -1157,20 +1161,20 @@ public class JavascriptGenerator {
 				+ "var scopeLength = doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.length;"
 				+ "if (scopeLength) {"
 				+ "for (k = 0; k < scopeLength; k++) {"
-				+ "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType) > -1 ) {"
+				+ "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType.toLowerCase()) > -1 ) {"
 				+ "moreRestrictive = false;"
 				+ "} else {"
-				+ "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType);"
+				+ "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope[k].scopeType.toLowerCase());"
 				+ "if (index > -1) {"
 				+ "isMetadataCompliant[index] = true;"
 				+ "}"
 				+ "}"
 				+ "}"
 				+ "} else {"
-				+ "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType) > -1 ) {"
+				+ "if (otherRestrictiveMetadata.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType.toLowerCase()) > -1 ) {"
 				+ "moreRestrictive = false;"
 				+ "} else {"
-				+ "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType);"
+				+ "var index = metadataName.indexOf(doc.subscribeContextAvailabilityRequest.restriction.scope.operationScope.scopeType.toLowerCase());"
 				+ "if (index > -1) {"
 				+ "isMetadataCompliant[index] = true;"
 				+ "}"
@@ -1266,7 +1270,9 @@ public class JavascriptGenerator {
 				+ "var providingApplication;"
 				+ "var subscribeContextAvailabilityRequest = doc.subscribeContextAvailabilityRequest;"
 				+ "var contextRegistration ="
-				+ XML.toJSONObject(contextRegistration.toString()).toString()
+				// + XML.toJSONObject(contextRegistration.toString()).toString()
+				// .replace("\"", "\\\"") + ".contextRegistration;"
+				+ DocumentGenerator.generateJsonString(contextRegistration)
 						.replace("\"", "\\\"") + ".contextRegistration;"
 				+ "var superTypes =" + multimapToJson(superTypesMap) + ";";
 
@@ -1539,20 +1545,21 @@ public class JavascriptGenerator {
 	 *         "434"] ];
 	 */
 	private static String createMetadataControlString(
-			Multimap<String, String> metadataToSubscriptionMap) {
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap) {
 
-		Set<String> metadataSet = metadataToSubscriptionMap.keySet();
+		Set<MetadataTypes> metadataSet = metadataToSubscriptionMap.keySet();
 
 		StringBuffer metadataNameSB = new StringBuffer();
 		StringBuffer isMetadataCompliantSB = new StringBuffer();
 		StringBuffer subscriptionIdPerMetadataMatrixSB = new StringBuffer();
 
-		Iterator<String> metadataIter = metadataSet.iterator();
+		Iterator<MetadataTypes> metadataIter = metadataSet.iterator();
 		while (metadataIter.hasNext()) {
 
-			String metadataName = metadataIter.next();
+			MetadataTypes metadataName = metadataIter.next();
 
-			metadataNameSB.append(String.format("\\\"%s\\\"", metadataName));
+			metadataNameSB.append(String.format("\\\"%s\\\"", metadataName
+					.getName().toLowerCase()));
 
 			isMetadataCompliantSB.append("false");
 
@@ -1590,15 +1597,16 @@ public class JavascriptGenerator {
 	}
 
 	private static String createOtherRestrictiveMetadataControlString(
-			Set<String> otherRestrictiveMetadataSet) {
+			Set<MetadataTypes> otherRestrictiveMetadataSet) {
 		StringBuffer otherMetadataNameSB = new StringBuffer();
 
-		Iterator<String> otherMetadataIterator = otherRestrictiveMetadataSet
+		Iterator<MetadataTypes> otherMetadataIterator = otherRestrictiveMetadataSet
 				.iterator();
 		while (otherMetadataIterator.hasNext()) {
-			String metadata = otherMetadataIterator.next();
+			MetadataTypes metadata = otherMetadataIterator.next();
 
-			otherMetadataNameSB.append(String.format("\\\"%s\\\"", metadata));
+			otherMetadataNameSB.append(String.format("\\\"%s\\\"", metadata
+					.getName().toLowerCase()));
 
 			if (otherMetadataIterator.hasNext()) {
 				otherMetadataNameSB.append(",");

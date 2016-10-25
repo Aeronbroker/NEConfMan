@@ -122,7 +122,7 @@ public class JSonNgsi9Parser {
 		 * Parse ContextMetadata.Value
 		 */
 		if (jo.get("value") != null) {
-			if (contextMetadata.getName().equals("SimpleGeoLocation")) {
+			if ("simplegeolocation".equals(contextMetadata.getName().toLowerCase())) {
 
 				if (jo.get("value").toString().contains("segment")) {
 					Segment segment = new Segment();
@@ -789,17 +789,17 @@ public class JSonNgsi9Parser {
 		/*
 		 * Parse ContextRegistrationAttribute.Metadata
 		 */
-		if (jo.get("metaData") != null
-				&& jo.getAsJsonObject("metaData").get("contextMetadata") != null) {
+		if (jo.get("metadata") != null && jo.get("metadata").isJsonObject()
+				&& jo.getAsJsonObject("metadata").get("contextMetadata") != null) {
 
 			JsonArray jsonContextMetadataList;
-			if (jo.getAsJsonObject("metaData").get("contextMetadata")
+			if (jo.getAsJsonObject("metadata").get("contextMetadata")
 					.isJsonArray()) {
-				jsonContextMetadataList = jo.getAsJsonObject("metaData")
+				jsonContextMetadataList = jo.getAsJsonObject("metadata")
 						.getAsJsonArray("contextMetadata");
 			} else {
 				jsonContextMetadataList = new JsonArray();
-				jsonContextMetadataList.add(jo.getAsJsonObject("metaData")
+				jsonContextMetadataList.add(jo.getAsJsonObject("metadata")
 						.getAsJsonObject("contextMetadata"));
 			}
 

@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.extensionmanager;
 
 import java.util.ArrayList;
@@ -68,6 +67,7 @@ import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9ExtensionManagerInt
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
@@ -79,15 +79,15 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 			.getLogger(Ngsi9ExtensionManager.class);
 
 	// Catalogue of supported Scopes with the associated extension
-	Map<String, Ngsi9ExtensionInterface> extensionCatalogue = new HashMap<String, Ngsi9ExtensionInterface>();
+	Map<MetadataTypes, Ngsi9ExtensionInterface> extensionCatalogue = new HashMap<MetadataTypes, Ngsi9ExtensionInterface>();
 
 	// List of Scopes that specifies also a restriction on a discovery (e.g.
 	// SimpleGeoLocation is HardRestriction; Association is not a
 	// HardRestriction)
-	Set<String> hardRestrictionTypes = new HashSet<String>();
+	Set<MetadataTypes> hardRestrictionTypes = new HashSet<MetadataTypes>();
 
 	@Override
-	public void registerExtension(String name,
+	public void registerExtension(MetadataTypes name,
 			Ngsi9ExtensionInterface extension, boolean isHardRestriction) {
 
 		if (extension != null) {
@@ -123,7 +123,7 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 		extensionCatalogue.values().removeAll(Collections.singleton(extension));
 
 		// Remove from the hardRestriction list
-		hardRestrictionTypes.remove(extension.getMetadataName());
+		hardRestrictionTypes.remove(extension.getMetadataName().getName());
 
 	}
 
@@ -185,13 +185,14 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				&& contextMetadata.getValue() != null) {
 
 			// Extract the ContextMetadata name
-			String name = contextMetadata.getName().replaceAll("\\s+", "");
+			MetadataTypes metadataType = MetadataTypes
+					.fromString(contextMetadata.getName());
 
-			if (extensionCatalogue.keySet().contains(name)) {
+			if (extensionCatalogue.keySet().contains(metadataType)) {
 
 				// Find the Ngsi9Extension responsible
 				Ngsi9ExtensionInterface extension = extensionCatalogue
-						.get(name);
+						.get(metadataType);
 
 				logger.info("ContextMetadata to be sent to extension: "
 						+ extension + "\n" + contextMetadata);
@@ -277,14 +278,14 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				if (operationScope.getScopeType() != null) {
 
 					// Check the ScopeType
-					String name = operationScope.getScopeType().replaceAll(
-							"\\s+", "");
+					MetadataTypes metadataType = MetadataTypes
+							.fromString(operationScope.getScopeType());
 
-					if (extensionCatalogue.keySet().contains(name)) {
+					if (extensionCatalogue.keySet().contains(metadataType)) {
 
 						// Find the responsible
 						Ngsi9ExtensionInterface extension = extensionCatalogue
-								.get(name);
+								.get(metadataType);
 
 						logger.info("OperationScope to be sent to extension: "
 								+ extension.getDescription() + "\n"
@@ -329,13 +330,13 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 	}
 
 	@Override
-	public Set<String> getExtensionNames() {
+	public Set<MetadataTypes> getExtensionNames() {
 		return extensionCatalogue.keySet();
 	}
-	
+
 	@Override
-	public Set<String> getHardRestrictions() {
-		return new HashSet<String>(hardRestrictionTypes);
+	public Set<MetadataTypes> getHardRestrictions() {
+		return new HashSet<MetadataTypes>(hardRestrictionTypes);
 	}
 
 	@Override
@@ -412,7 +413,8 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				.iterator();
 		while (operationScopeIterator.hasNext()) {
 			OperationScope operationScope = operationScopeIterator.next();
-			if (hardRestrictionTypes.contains(operationScope.getScopeType())) {
+			if (hardRestrictionTypes.contains(MetadataTypes
+					.fromString(operationScope.getScopeType()))) {
 				return true;
 			}
 		}
@@ -424,11 +426,14 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 		if (contextMetadata != null && contextMetadata.getName() != null
 				&& !contextMetadata.getName().isEmpty()
 				&& contextMetadata.getValue() != null) {
-			
-			if (extensionCatalogue.containsKey(contextMetadata.getName())) {
-				
+
+			MetadataTypes metadataType = MetadataTypes
+					.fromString(contextMetadata.getName());
+
+			if (extensionCatalogue.containsKey(metadataType)) {
+
 				// Forward the hash calculation to the right extension
-				return extensionCatalogue.get(contextMetadata.getName())
+				return extensionCatalogue.get(metadataType)
 						.getMetadataValueHash(contextMetadata);
 			}
 		}
@@ -437,11 +442,11 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 	}
 
 	@Override
-	public Multimap<String, String> dispatchCheckSubscriptions(
+	public Multimap<MetadataTypes, String> dispatchCheckSubscriptions(
 			ContextRegistration contextRegistration) {
 
 		// Create the Multimap
-		Multimap<String, String> metadataNameToSubscriptionIdMap = HashMultimap
+		Multimap<MetadataTypes, String> metadataNameToSubscriptionIdMap = HashMultimap
 				.create();
 
 		// Get the dispatcherMap where carry information about which extension
@@ -515,7 +520,6 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				List<OperationScope> operationScopeList = new ArrayList<OperationScope>(
 						operationScopeDispatch.get(extension));
 
-				
 				extension.storeSubscription(subscription.getSubscriptionId(),
 						operationScopeList);
 
@@ -545,8 +549,7 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 			while (extIterator.hasNext()) {
 				Ngsi9ExtensionInterface extension = extIterator.next();
 
-				extension.deleteSubscription(subscription
-						.getSubscriptionId());
+				extension.deleteSubscription(subscription.getSubscriptionId());
 
 			}
 		}
@@ -677,7 +680,8 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 	public boolean isSupported(ContextMetadata contextMetadata) {
 		if (contextMetadata != null && contextMetadata.getName() != null
 				&& !contextMetadata.getName().isEmpty()) {
-			if (extensionCatalogue.keySet().contains(contextMetadata.getName())) {
+			if (extensionCatalogue.keySet().contains(
+					MetadataTypes.fromString(contextMetadata.getName()))) {
 				return true;
 			}
 		}
@@ -690,7 +694,7 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 		if (operationScope != null && operationScope.getScopeType() != null
 				&& !operationScope.getScopeType().isEmpty()) {
 			if (extensionCatalogue.keySet().contains(
-					operationScope.getScopeType())) {
+					MetadataTypes.fromString(operationScope.getScopeType()))) {
 				return true;
 			}
 		}

@@ -55,6 +55,7 @@ import eu.neclab.iotplatform.confman.commons.datatype.SubscriptionToNotify;
 import eu.neclab.iotplatform.confman.commons.exceptions.NotExistingInDatabase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
@@ -193,8 +194,8 @@ public interface Ngsi9StorageInterface {
 	Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
 			boolean hasMetadataRestriction,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadata);
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata);
 	
 	/**
 	 * The Ngsi9Storage will find which subscription shall be notified about a
@@ -223,8 +224,8 @@ public interface Ngsi9StorageInterface {
 	Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
 			boolean hasMetadataRestriction,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadata,
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata,
 			Multimap<URI, URI> superTypesMap);
 
 	/**

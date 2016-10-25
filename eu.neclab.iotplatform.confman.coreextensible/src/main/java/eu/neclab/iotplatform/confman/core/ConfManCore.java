@@ -88,6 +88,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
@@ -482,7 +483,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				// for
 				// metadataType (specified by the contextRegistration) which
 				// subscription is matching
-				Multimap<String, String> metadataToSubscriptionMap = ngsi9ExtensionManager
+				Multimap<MetadataTypes, String> metadataToSubscriptionMap = ngsi9ExtensionManager
 						.dispatchCheckSubscriptions(contReg);
 
 				// Generate the list of other metadata name that are restrictive
@@ -490,7 +491,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				// This is necessary because some subscription in the database
 				// could have other restriction that are not specified by the
 				// registration here made.
-				Set<String> otherRestrictiveMetadata = ngsi9ExtensionManager
+				Set<MetadataTypes> otherRestrictiveMetadata = ngsi9ExtensionManager
 						.getHardRestrictions();
 				otherRestrictiveMetadata.removeAll(metadataToSubscriptionMap
 						.keySet());
@@ -767,7 +768,9 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		output.setErrorCode(new StatusCode(Code.OK_200.getCode(),
 				ReasonPhrase.OK_200.toString(), ""));
 
-		logger.debug("Sending back discovery reponse:" + output);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending back discovery reponse:" + output);
+		}
 
 		return output;
 
@@ -825,7 +828,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				 */
 
 				// Calculate which RegisterContextRequest contains a
-				// ContextRegistration that are fully compliant with all the
+				// ContextRegistration that is fully compliant with all the
 				// Restrictions
 				Set<String> fullyMetadataCompliantRegIdSet = restrictionAppliedFromDiscovery
 						.getFullyMetadataCompliantRegIdSet();
@@ -1015,16 +1018,16 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 							if (restrictionAppliedFromDiscovery
 									.checkMetadataValueHashes(
-											contextMetadata.getName(),
+											MetadataTypes
+													.fromString(contextMetadata
+															.getName()),
 											regId,
 											ngsi9ExtensionManager
 													.getMetadataValueHash(contextMetadata))) {
 
 								matched = true;
+								break;
 
-							} else {
-
-								iterContextMetadata.remove();
 							}
 
 						}
@@ -1071,11 +1074,38 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 			}
 
 		} catch (XPathExpressionException e) {
-			logger.debug("XPathExpressionException", e);
+			if (logger.isDebugEnabled()) {
+				logger.debug("XPathExpressionException", e);
+			}
 		}
 
 		return check;
 
+	}
+
+	public static void main(String[] args) {
+		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><contextRegistration>  <entityIdList>    <entityId type=\"PowerPanel\" isPattern=\"false\">      <id>powerpanel001</id>    </entityId>  </entityIdList>  <contextRegistrationAttributeList>    <contextRegistrationAttribute>      <name>temperature</name>      <type>degree</type>      <isDomain>false</isDomain>    </contextRegistrationAttribute>  </contextRegistrationAttributeList>  <registrationMetadata>    <contextMetadata>      <name>category</name>      <type>string</type>      <value>stream</value>    </contextMetadata>  </registrationMetadata>  <providingApplication>http://192.168.100.7:7777/application7</providingApplication></contextRegistration>";
+		// Apply the Restriction
+		XPath xpath = XPathFactory.newInstance().newXPath();
+
+		boolean check = false;
+		try {
+			XPathExpression expr = xpath.compile("//contextMetadata[value=stream]/value");
+
+			Document doc = XmlFactory.stringToDocument(xml);
+			Object result = expr.evaluate(doc, XPathConstants.NODESET);
+
+			NodeList nodes = (NodeList) result;
+
+			if (nodes.getLength() != 0) {
+				check = true;
+			}
+
+		} catch (XPathExpressionException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("XPathExpressionException", e);
+			}
+		}
 	}
 
 	@Override

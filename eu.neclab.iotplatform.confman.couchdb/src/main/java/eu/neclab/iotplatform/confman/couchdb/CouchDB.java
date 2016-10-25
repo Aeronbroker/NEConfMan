@@ -57,7 +57,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import org.apache.commons.collections.MultiMap;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -65,7 +64,6 @@ import org.json.XML;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -80,16 +78,13 @@ import eu.neclab.iotplatform.confman.commons.methods.HttpRequester;
 import eu.neclab.iotplatform.confman.commons.methods.JSonNgsi9Parser;
 import eu.neclab.iotplatform.confman.commons.methods.UniqueIDGenerator;
 import eu.neclab.iotplatform.confman.couchdb.datamodel.ObjectId;
-import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.StatusCode;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
-import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextResponse;
 
 /**
  * An Ngsi9StorageInterface implementation that supports connection to CouchDB.
@@ -115,8 +110,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// registrationId
 	private UniqueIDGenerator idGenerator = new UniqueIDGenerator();
 
-	private DocumentGenerator documentGenerator = new DocumentGenerator(
-			idGenerator);
+//	private DocumentGenerator documentGenerator = new DocumentGenerator(
+//			idGenerator);
 
 	public CouchDB() {
 
@@ -453,7 +448,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		logger.info("Register request:" + request.toString());
 
 		// String jsonString = generateJsonString(request);
-		String jsonString = documentGenerator.generateJsonString(request);
+		String jsonString = DocumentGenerator.generateJsonString(request);
 
 		/*
 		 * To be reliable on hot deletion:
@@ -530,7 +525,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
 		// String jsonString = xmlJSONObj.toString();
 
-		String jsonString = documentGenerator.generateJsonString(request);
+		String jsonString = DocumentGenerator.generateJsonString(request);
 
 		// Send the request to the Database
 		FullHttpResponse response = sendData(id, jsonString,
@@ -998,8 +993,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
 			boolean hasMetadataRestriction,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadata) {
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata) {
 
 		// String jsView = JavascriptGenerator.createJavaScriptView(
 		// contextRegistration, metadataToSubscriptionMap,
@@ -1026,8 +1021,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
 			boolean hasMetadataRestriction,
-			Multimap<String, String> metadataToSubscriptionMap,
-			Set<String> otherRestrictiveMetadata,
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata,
 			Multimap<URI, URI> superTypesMap) {
 
 		String jsView = JavascriptGenerator.createJavaScriptView(

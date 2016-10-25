@@ -53,6 +53,7 @@ import com.google.common.collect.Multimap;
 
 import eu.neclab.iotplatform.confman.commons.datatype.DocumentType;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
+import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
 import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 
 /**
@@ -128,7 +129,7 @@ public interface Ngsi9ExtensionInterface {
 	 * 
 	 * @return
 	 */
-	String getMetadataName();
+	MetadataTypes getMetadataName();
 
 	/**
 	 * Get a String containing a description of this extension
