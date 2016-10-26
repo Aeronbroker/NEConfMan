@@ -155,9 +155,9 @@ public class ContextRegistrationAttributeComparator implements
 		// }
 		// }
 
-		if (o1.getMetaData() != o2.getMetaData()) {
-			List<ContextMetadata> o1List = new ArrayList<ContextMetadata>(o1.getMetaData());
-			List<ContextMetadata> o2List = new ArrayList<ContextMetadata>(o2.getMetaData());
+		if (o1.getMetadata() != o2.getMetadata()) {
+			List<ContextMetadata> o1List = new ArrayList<ContextMetadata>(o1.getMetadata());
+			List<ContextMetadata> o2List = new ArrayList<ContextMetadata>(o2.getMetadata());
 			ContextMetadataComparator contextMetadataComparator = new ContextMetadataComparator();
 			Collections.sort(o1List,contextMetadataComparator);
 			Collections.sort(o2List,contextMetadataComparator);

@@ -810,7 +810,7 @@ public class JSonNgsi9Parser {
 						.get(j).toString());
 				contextMetadataList.add(contextMetadata);
 			}
-			contRegAtt.setMetaData(contextMetadataList);
+			contRegAtt.setMetadata(contextMetadataList);
 		}
 
 		return contRegAtt;

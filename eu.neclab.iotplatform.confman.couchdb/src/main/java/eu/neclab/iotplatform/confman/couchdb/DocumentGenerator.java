@@ -382,11 +382,11 @@ public class DocumentGenerator {
 		// Replace all the placeholders
 		for (ValueAsJsonData jsonMetadataValue : valueAsJsonList) {
 			
-			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
-					"\""+jsonMetadataValue.placeholder + "\"");
+//			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
+//					"\""+jsonMetadataValue.placeholder + "\"");
 			
 			jsonString = jsonString.replaceAll(jsonMetadataValue.placeholder,
-					jsonMetadataValue.valueString);
+					"\""+jsonMetadataValue.valueString + "\"");
 		}
 
 		return jsonString;

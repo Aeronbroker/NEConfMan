@@ -308,7 +308,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(segment1);
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -332,7 +332,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(segment1);
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -347,7 +347,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2a.setValue(segment2);
 			contextMetadataList2 = new ArrayList<ContextMetadata>();
 			contextMetadataList2.add(contextMetadata2a);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) == 0);
 			assertTrue(condition);
@@ -366,7 +366,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(segment1);
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -381,7 +381,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2a.setValue(segment2);
 			contextMetadataList2 = new ArrayList<ContextMetadata>();
 			contextMetadataList2.add(contextMetadata2a);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) < 0);
 			assertTrue(condition);
@@ -401,7 +401,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(segment1);
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -412,7 +412,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2a.setValue(new String("simple"));
 			contextMetadataList2 = new ArrayList<ContextMetadata>();
 			contextMetadataList2.add(contextMetadata2a);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) < 0);
 			assertTrue(condition);
@@ -428,7 +428,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(new String("simple"));
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -443,7 +443,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2a.setValue(segment2);
 			contextMetadataList2 = new ArrayList<ContextMetadata>();
 			contextMetadataList2.add(contextMetadata2a);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) > 0);
 			assertTrue(condition);
@@ -458,7 +458,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1a.setValue(new String("simple"));
 			contextMetadataList1 = new ArrayList<ContextMetadata>();
 			contextMetadataList1.add(contextMetadata1a);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -474,7 +474,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2b.setType(new URI("http://SimpleGeoLocation.com#test"));
 			contextMetadata2b.setValue(new String("easy"));
 			contextMetadataList2.add(contextMetadata2b);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) > 0);
 			assertTrue(condition);
@@ -494,8 +494,8 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1b.setType(new URI("http://SimpleGeoLocation.com#test"));
 			contextMetadata1b.setValue(new String("easy"));
 			contextMetadataList1.add(contextMetadata1b);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -511,7 +511,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2b.setType(new URI("http://SimpleGeoLocation.com#test"));
 			contextMetadata2b.setValue(new String("easy"));
 			contextMetadataList2.add(contextMetadata2b);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) == 0);
 			assertTrue(condition);
@@ -531,8 +531,8 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata1b.setType(new URI("http://SimpleGeoLocation.com#test"));
 			contextMetadata1b.setValue(new String("easy"));
 			contextMetadataList1.add(contextMetadata1b);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
-			contextRegistrationAttribute1.setMetaData(contextMetadataList1);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
+			contextRegistrationAttribute1.setMetadata(contextMetadataList1);
 			contextRegistrationAttribute2 = new ContextRegistrationAttribute();
 			contextRegistrationAttribute2.setIsDomain(true);
 			contextRegistrationAttribute2.setName("temperature");
@@ -548,7 +548,7 @@ public class ContextRegistrationAttributeComparatorTest {
 			contextMetadata2b.setType(new URI("http://SimpleGeoLocation.com#test"));
 			contextMetadata2b.setValue(new String("simple"));
 			contextMetadataList2.add(contextMetadata2b);
-			contextRegistrationAttribute2.setMetaData(contextMetadataList2);
+			contextRegistrationAttribute2.setMetadata(contextMetadataList2);
 			condition = (contextRegistrationAttributeComparator.compare(
 					contextRegistrationAttribute1, contextRegistrationAttribute2) == 0);
 			assertTrue(condition);

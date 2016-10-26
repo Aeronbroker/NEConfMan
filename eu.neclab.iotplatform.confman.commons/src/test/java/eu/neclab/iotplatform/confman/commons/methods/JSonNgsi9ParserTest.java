@@ -343,7 +343,7 @@ public class JSonNgsi9ParserTest {
 			contMD1.setValue((String)"1110");
 			contMDList = new ArrayList<ContextMetadata>();
 			contMDList.add(contMD1);
-			contRegAtt2.setMetaData(contMDList);
+			contRegAtt2.setMetadata(contMDList);
 			contRegAttList = new ArrayList<ContextRegistrationAttribute>();
 			contRegAttList.add(contRegAtt1);
 			contRegAttList.add(contRegAtt2);
@@ -393,7 +393,7 @@ public class JSonNgsi9ParserTest {
 			contMDList = new ArrayList<ContextMetadata>();
 			contMDList.add(contMD1);
 			contMDList.add(contMD2);
-			contRegAtt2.setMetaData(contMDList);
+			contRegAtt2.setMetadata(contMDList);
 			contRegAttList = new ArrayList<ContextRegistrationAttribute>();
 			contRegAttList.add(contRegAtt1);
 			contRegAttList.add(contRegAtt2);
@@ -442,7 +442,7 @@ public class JSonNgsi9ParserTest {
 			contMDList = new ArrayList<ContextMetadata>();
 			contMDList.add(contMD1);
 			contMDList.add(contMD2);
-			contRegAtt2.setMetaData(contMDList);
+			contRegAtt2.setMetadata(contMDList);
 			contRegAttList = new ArrayList<ContextRegistrationAttribute>();
 			contRegAttList.add(contRegAtt1);
 			contRegAttList.add(contRegAtt2);
@@ -502,7 +502,7 @@ public class JSonNgsi9ParserTest {
 			contMDList = new ArrayList<ContextMetadata>();
 			contMDList.add(contMD1);
 			contMDList.add(contMD2);
-			contRegAtt2.setMetaData(contMDList);
+			contRegAtt2.setMetadata(contMDList);
 			contRegAttList = new ArrayList<ContextRegistrationAttribute>();
 			contRegAttList.add(contRegAtt1);
 			contRegAttList.add(contRegAtt2);
