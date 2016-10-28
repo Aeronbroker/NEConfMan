@@ -412,6 +412,11 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 					return response;
 				}
 
+				// Complete the registerContextRequest by setting the
+				// actual
+				// registrationId
+				request.setRegistrationId(registrationId);
+
 				// Forward the new registerContextRequest to the ngsi9 extension
 				// manager (in order to handle, for example, geolocation)
 				ngsi9ExtensionManager.dispatchRegistration(request);
@@ -1083,30 +1088,32 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 	}
 
-//	public static void main(String[] args) {
-//		String xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><contextRegistration>  <entityIdList>    <entityId type=\"PowerPanel\" isPattern=\"false\">      <id>powerpanel001</id>    </entityId>  </entityIdList>  <contextRegistrationAttributeList>    <contextRegistrationAttribute>      <name>temperature</name>      <type>degree</type>      <isDomain>false</isDomain>    </contextRegistrationAttribute>  </contextRegistrationAttributeList>  <registrationMetadata>    <contextMetadata>      <name>category</name>      <type>string</type>      <value>stream</value>    </contextMetadata>  </registrationMetadata>  <providingApplication>http://192.168.100.7:7777/application7</providingApplication></contextRegistration>";
-//		// Apply the Restriction
-//		XPath xpath = XPathFactory.newInstance().newXPath();
-//
-//		boolean check = false;
-//		try {
-//			XPathExpression expr = xpath.compile("//contextMetadata[name=\"categor\"][value=\"stream\"]");
-//
-//			Document doc = XmlFactory.stringToDocument(xml);
-//			Object result = expr.evaluate(doc, XPathConstants.NODESET);
-//
-//			NodeList nodes = (NodeList) result;
-//
-//			if (nodes.getLength() != 0) {
-//				check = true;
-//			}
-//
-//		} catch (XPathExpressionException e) {
-//			if (logger.isDebugEnabled()) {
-//				logger.debug("XPathExpressionException", e);
-//			}
-//		}
-//	}
+	// public static void main(String[] args) {
+	// String xml =
+	// "<?xml version=\"1.0\" encoding=\"UTF-8\"?><contextRegistration>  <entityIdList>    <entityId type=\"PowerPanel\" isPattern=\"false\">      <id>powerpanel001</id>    </entityId>  </entityIdList>  <contextRegistrationAttributeList>    <contextRegistrationAttribute>      <name>temperature</name>      <type>degree</type>      <isDomain>false</isDomain>    </contextRegistrationAttribute>  </contextRegistrationAttributeList>  <registrationMetadata>    <contextMetadata>      <name>category</name>      <type>string</type>      <value>stream</value>    </contextMetadata>  </registrationMetadata>  <providingApplication>http://192.168.100.7:7777/application7</providingApplication></contextRegistration>";
+	// // Apply the Restriction
+	// XPath xpath = XPathFactory.newInstance().newXPath();
+	//
+	// boolean check = false;
+	// try {
+	// XPathExpression expr =
+	// xpath.compile("//contextMetadata[name=\"categor\"][value=\"stream\"]");
+	//
+	// Document doc = XmlFactory.stringToDocument(xml);
+	// Object result = expr.evaluate(doc, XPathConstants.NODESET);
+	//
+	// NodeList nodes = (NodeList) result;
+	//
+	// if (nodes.getLength() != 0) {
+	// check = true;
+	// }
+	//
+	// } catch (XPathExpressionException e) {
+	// if (logger.isDebugEnabled()) {
+	// logger.debug("XPathExpressionException", e);
+	// }
+	// }
+	// }
 
 	@Override
 	public SubscribeContextAvailabilityResponse subscribeContextAvailability(

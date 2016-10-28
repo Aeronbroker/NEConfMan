@@ -65,7 +65,7 @@
 
 
 	<modules>
-		<!--   <module>../eu.neclab.iotplatform.ngsi.api</module> -->
+		<!-- <module>../eu.neclab.iotplatform.ngsi.api</module> -->
 		<module>../eu.neclab.iotplatform.confman.commons</module>
 		<module>../eu.neclab.iotplatform.confman.postgres/</module>
 		<module>../eu.neclab.iotplatform.confman.utilitystorage/</module>
@@ -76,21 +76,11 @@
 		<module>../eu.neclab.iotplatform.knowledgebase</module>
 		<module>../eu.neclab.iotplatform.confman.serverconf</module>
 		<module>../eu.neclab.iotplatform.confman.reset</module>
-		<module>
-			../../ConfMan-internal/eu.neclab.iotplatform.confman.geoindexer
-		</module>
-		<module>
-			../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsi9geoextension
-		</module>
-		<module>
-			../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchyextension
-		</module>
-		<module>
-			../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchystorage
-		</module>
-		<module>
-			../../ConfMan-internal/eu.neclab.iotplatform.confman.postgis
-		</module>
+		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.geoindexer</module>
+		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsi9geoextension</module>
+		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchyextension</module>
+		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.ngsihierarchystorage</module>
+		<module>../../ConfMan-internal/eu.neclab.iotplatform.confman.postgis</module>
 	</modules>
 
 

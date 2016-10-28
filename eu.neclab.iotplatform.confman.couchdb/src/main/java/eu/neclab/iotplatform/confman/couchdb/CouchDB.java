@@ -110,8 +110,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// registrationId
 	private UniqueIDGenerator idGenerator = new UniqueIDGenerator();
 
-//	private DocumentGenerator documentGenerator = new DocumentGenerator(
-//			idGenerator);
+	// private DocumentGenerator documentGenerator = new DocumentGenerator(
+	// idGenerator);
 
 	public CouchDB() {
 
@@ -616,12 +616,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public String update(RegisterContextRequest request)
 			throws NotExistingInDatabase, IllegalArgumentException {
 
-		return this.update(request.getRegistrationId(), request.toString(),
+		// return this.update(request.getRegistrationId(), request.toString(),
+		// DocumentType.REGISTER_CONTEXT);
+		return this.update(request.getRegistrationId(), request,
 				DocumentType.REGISTER_CONTEXT);
 
 	}
 
-	private String update(String id, String requestString, DocumentType docType)
+	private String update(String id, Object request, DocumentType docType)
 			throws NotExistingInDatabase {
 
 		// Check that the is contains both documentId and revision (fundamental
@@ -636,16 +638,20 @@ public class CouchDB implements Ngsi9StorageInterface {
 		ObjectId objectId = new ObjectId(id);
 
 		// Create the Json from XML
-		JSONObject xmlJSONObj = XML.toJSONObject(requestString);
-		logger.info("json register update: " + xmlJSONObj.toString());
+		// JSONObject xmlJSONObj = XML.toJSONObject(requestString);
+		String jsonString = DocumentGenerator.generateJsonString(request);
+
+		logger.info("json register update: " + jsonString);
 
 		// Inject the documentId and revision in the JSon document
-		String jsonUpdate = xmlJSONObj.toString().replaceFirst(
-				"\\{",
-				"{ \"_id\":\"" + objectId.get_id() + "\", \"_rev\":\""
-						+ objectId.get_rev() + "\",");
+		// String jsonUpdate = xmlJSONObj.toString().replaceFirst(
+		String jsonUpdate = jsonString.replaceFirst("\\{", "{ \"_id\":\""
+				+ objectId.get_id() + "\", \"_rev\":\"" + objectId.get_rev()
+				+ "\",");
 
-		logger.debug("Json Update sent to CouchDB:" + jsonUpdate);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Json Update sent to CouchDB:" + jsonUpdate);
+		}
 
 		// Send the request
 		FullHttpResponse response = sendData(objectId.get_id(), jsonUpdate,
@@ -668,7 +674,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public String update(UpdateContextAvailabilitySubscriptionRequest request)
 			throws NotExistingInDatabase, IllegalArgumentException {
 
-		return this.update(request.getSubscriptionId(), request.toString(),
+		// return this.update(request.getSubscriptionId(), request.toString(),
+		// DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+		return this.update(request.getSubscriptionId(), request,
 				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 	}
@@ -1086,8 +1094,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				subscriptionToNotify.setReference(row.getAsJsonObject("key")
 						.get("reference").getAsString());
-				
-				subscriptionToNotify.setAttributeExpression(row.getAsJsonObject("key")
+
+				subscriptionToNotify.setAttributeExpression(row
+						.getAsJsonObject("key")
 						.get("restrictionattributeexpression").getAsString());
 
 				// Parse the ContextRegistration
