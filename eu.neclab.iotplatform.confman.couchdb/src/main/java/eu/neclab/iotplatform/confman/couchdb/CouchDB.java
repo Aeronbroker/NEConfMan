@@ -787,7 +787,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		// Generate a random id of the view
 		String queryName = "query" + new Random().nextInt(999999);
-		logger.debug("JSON Object:" + view);
+		if (logger.isDebugEnabled()) {
+			logger.debug("JSON Object:" + view);
+		}
 		try {
 
 			// Store the view
