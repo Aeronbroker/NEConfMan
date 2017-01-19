@@ -145,7 +145,9 @@ public class ConfManRestController {
 	//
 	// }
 
-	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = { 
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<DiscoverContextAvailabilityResponse> discoverContextAvailability(
 			HttpServletRequest requester,
 			@RequestBody DiscoverContextAvailabilityRequest request) {
@@ -299,7 +301,9 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, consumes = { 
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<SubscribeContextAvailabilityResponse> subscribeContextAvailability(
 			HttpServletRequest requester,
 			@RequestBody SubscribeContextAvailabilityRequest request) {
@@ -354,7 +358,9 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, consumes = { 
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
 	ResponseEntity<UpdateContextAvailabilitySubscriptionResponse> updateContextAvailabilitySubscription(
 			HttpServletRequest requester,
@@ -405,7 +411,9 @@ public class ConfManRestController {
 		}
 	}
 
-	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, consumes = { 
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
 	ResponseEntity<UnsubscribeContextAvailabilityResponse> unsubscribeContextAvailability(
 			HttpServletRequest requester,
@@ -461,7 +469,9 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/notifyContextAvailability", method = RequestMethod.POST, headers = "Accept=*/*")
+	@RequestMapping(value = "/notifyContextAvailability", method = RequestMethod.POST, consumes = { 
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
+			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
 	String notifyContextAvailability() {
 
