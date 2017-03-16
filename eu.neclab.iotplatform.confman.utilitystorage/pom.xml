@@ -40,8 +40,8 @@
 					<instructions>
 						<Private-Package>eu.neclab.iotplatform.confman.utilitystorage.*</Private-Package>
 						<Import-Package>
-							eu.neclab.iotplatform.confman.commons.datatype;version="${confman.version}",
-							eu.neclab.iotplatform.confman.commons.interfaces;version="${confman.version}",
+							eu.neclab.iotplatform.confman.commons.datatype;version=0.0.0,
+							eu.neclab.iotplatform.confman.commons.interfaces;version=0.0.0,
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
 							javax.annotation,
 							org.apache.log4j

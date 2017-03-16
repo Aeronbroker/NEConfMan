@@ -876,7 +876,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private FullHttpResponse sendData(String id, String objectJson,
 			DocumentType documentType) {
 		FullHttpResponse response = null;
-		logger.debug("JSON Object:" + objectJson);
+		if (logger.isDebugEnabled()) {
+			logger.debug("JSON Object:" + objectJson);
+		}
 		try {
 			response = HttpRequester.sendPut(new URL(couchDB_IP + "/"
 					+ documentType.getDb_name() + "/" + id), objectJson,
