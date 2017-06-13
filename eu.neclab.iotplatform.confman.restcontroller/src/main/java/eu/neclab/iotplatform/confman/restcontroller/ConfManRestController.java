@@ -145,7 +145,7 @@ public class ConfManRestController {
 	//
 	// }
 
-	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = { 
+	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<DiscoverContextAvailabilityResponse> discoverContextAvailability(
@@ -167,7 +167,10 @@ public class ConfManRestController {
 
 		if (check.isCorrect()) {
 
-			logger.info("Discovery received : " + request);
+			logger.info("Discovery received");
+			if (logger.isDebugEnabled()) {
+				logger.debug("Discovery received : " + request);
+			}
 
 			DiscoverContextAvailabilityResponse response = ngsi9
 					.discoverContextAvailability(request);
@@ -182,7 +185,14 @@ public class ConfManRestController {
 						response, HttpStatus.OK);
 			}
 
-			logger.info("Response:" + response.toString());
+			if (response.getContextRegistrationResponse() != null) {
+				logger.info("Discovery response with "
+						+ response.getContextRegistrationResponse().size()
+						+ " ContextRegistrationResponses");
+			}
+			if (logger.isDebugEnabled()) {
+				logger.debug("Response:" + response.toString());
+			}
 			return new ResponseEntity<DiscoverContextAvailabilityResponse>(
 					response, HttpStatus.OK);
 
@@ -301,7 +311,7 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, consumes = { 
+	@RequestMapping(value = "/ngsi9/subscribeContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public ResponseEntity<SubscribeContextAvailabilityResponse> subscribeContextAvailability(
@@ -358,7 +368,7 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, consumes = { 
+	@RequestMapping(value = "/ngsi9/updateContextAvailabilitySubscription", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
@@ -411,7 +421,7 @@ public class ConfManRestController {
 		}
 	}
 
-	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, consumes = { 
+	@RequestMapping(value = "/ngsi9/unsubscribeContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
@@ -469,7 +479,7 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/notifyContextAvailability", method = RequestMethod.POST, consumes = { 
+	@RequestMapping(value = "/notifyContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody

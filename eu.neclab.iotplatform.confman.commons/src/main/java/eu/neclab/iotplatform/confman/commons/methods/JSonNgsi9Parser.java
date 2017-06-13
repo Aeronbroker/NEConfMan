@@ -1250,8 +1250,8 @@ public class JSonNgsi9Parser {
 		registerContextRequest
 				.setContextRegistrationList(contextRegistrationList);
 
-		System.out.println("asdfadfasdfadfadsf"
-				+ registerContextRequest.toJsonString());
+//		System.out.println("asdfadfasdfadfadsf"
+//				+ registerContextRequest.toJsonString());
 
 		return registerContextRequest;
 	}

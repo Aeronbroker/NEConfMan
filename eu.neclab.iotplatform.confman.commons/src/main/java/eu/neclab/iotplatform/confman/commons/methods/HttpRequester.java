@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.methods;
 
 import java.io.BufferedReader;
@@ -77,8 +76,10 @@ public class HttpRequester {
 			con.setRequestProperty("Content-Type", contentType);
 		}
 
-		logger.info("\nSending 'POST' request to URL : " + url + "\n"
-				+ "Put parameters : " + data + "\n");
+		if (logger.isDebugEnabled()) {
+			logger.debug("\nSending 'POST' request to URL : " + url + "\n"
+					+ "Put parameters : " + data + "\n");
+		}
 
 		if (data != null && !data.equals("")) {
 			// Send put request
@@ -117,8 +118,10 @@ public class HttpRequester {
 			httpResponse.setBody(response.toString());
 
 			// logger.info("Response Code : " + responseCode);
-			logger.info("\nResponse Code : " + responseCode + "\n"
-					+ "Response : " + response.toString());
+			if (logger.isDebugEnabled()) {
+				logger.debug("\nResponse Code : " + responseCode + "\n"
+						+ "Response : " + response.toString());
+			}
 
 			con.disconnect();
 			return httpResponse;
@@ -155,7 +158,7 @@ public class HttpRequester {
 					connection.getResponseMessage());
 
 			if (responseCode > 399 && responseCode < 500) {
-				
+
 				logger.info("\nResponse Code : " + responseCode + "\n");
 
 				connection.disconnect();
