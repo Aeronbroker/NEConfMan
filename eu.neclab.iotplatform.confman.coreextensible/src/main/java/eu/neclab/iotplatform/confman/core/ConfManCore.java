@@ -460,7 +460,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				 * against such Subscription.
 				 * 
 				 * 3) A Subscription and the ContextRegistration are specifying
-				 * different type of metadata. In this case there is not
+				 * different types of metadata. In this case there is not
 				 * mismatching between the metadata values. Further check must
 				 * be done against such Subscription.
 				 * 

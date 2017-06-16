@@ -58,6 +58,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
@@ -159,6 +162,11 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private Multimap<String, ContextRegistrationAttributeIndex> attributeToRegIdAndRegIndexMap = HashMultimap
 			.create();
 
+	private ReadWriteLock indicesReadWriteLock = new ReentrantReadWriteLock();
+
+	private Set<String> deletedRegistrations = new HashSet<String>();
+	private ReadWriteLock deletedRegistrationsReadWriteLock = new ReentrantReadWriteLock();
+
 	public static String COUCHDB_CONFIGURATION_FILE = "config.properties";
 
 	public static String CACHING_VIEWS_FOLDER = "/cachingViews";
@@ -168,6 +176,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 	public static String ATTRIBUTE_NAME_CACHING_VIEW_NAME = "AttributeNameCachingView";
 	public static String ENTITYID_CACHING_VIEW_NAME = "EntityIdCachingView";
+
+	public static double INDICES_MAXIMUM_SPARCITY_FACTOR = 0.2;
 
 	// private DocumentGenerator documentGenerator = new DocumentGenerator(
 	// idGenerator);
@@ -488,6 +498,35 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
+	private void checkSparsityOfIndices() {
+
+		if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
+				* typeToRegIdAndRegIndexMap.size()) {
+
+			indicesReadWriteLock.writeLock().lock();
+			deletedRegistrationsReadWriteLock.writeLock().lock();
+
+			if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
+					* typeToRegIdAndRegIndexMap.size()) {
+
+				entityIdToRegIdAndRegIndexMap = HashMultimap.create();
+
+				entityIdPatternToRegIdAndRegIndexMap = HashMultimap.create();
+				typeToRegIdAndRegIndexMap = HashMultimap.create();
+
+				attributeToRegIdAndRegIndexMap = HashMultimap.create();
+
+				initializeCaches();
+
+				deletedRegistrations = new HashSet<String>();
+			}
+
+			indicesReadWriteLock.writeLock().unlock();
+			deletedRegistrationsReadWriteLock.writeLock().unlock();
+
+		}
+	}
+
 	/**
 	 * This method send a request to CouchDB in order to create a database
 	 * 
@@ -740,7 +779,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// Create a unique identifier
 		String id = idGenerator.getNextUniqueId();
 
-		logger.info("Register request:" + request.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Register request:" + request.toString());
+		}
 
 		// String jsonString = generateJsonString(request);
 		String jsonString = DocumentGenerator.generateJsonString(request);
@@ -790,33 +831,46 @@ public class CouchDB implements Ngsi9StorageInterface {
 			registrationId = parseStoredId(response);
 		}
 
+		indicesReadWriteLock.writeLock().lock();
+
 		int contextRegIndex = 0;
 		for (ContextRegistration contextRegistration : request
 				.getContextRegistrationList()) {
 
-			int entityIdIndex = 0;
+			if (contextRegistration.getListEntityId() == null
+					|| contextRegistration.getListEntityId().isEmpty()) {
 
-			for (EntityId entityId : contextRegistration.getListEntityId()) {
-				if (entityId.getIsPattern()) {
-					entityIdPatternToRegIdAndRegIndexMap.put(entityId.getId(),
-							new EntityIdIndex(registrationId, contextRegIndex,
-									entityIdIndex));
-				} else {
-					entityIdToRegIdAndRegIndexMap.put(entityId.getId(),
-							new EntityIdIndex(registrationId, contextRegIndex,
-									entityIdIndex));
+				entityIdPatternToRegIdAndRegIndexMap.put(".*",
+						new EntityIdIndex(registrationId, contextRegIndex, -1));
+				typeToRegIdAndRegIndexMap.put(null, new EntityIdIndex(
+						registrationId, contextRegIndex, -1));
+
+			} else {
+
+				int entityIdIndex = 0;
+
+				for (EntityId entityId : contextRegistration.getListEntityId()) {
+					if (entityId.getIsPattern()) {
+						entityIdPatternToRegIdAndRegIndexMap.put(entityId
+								.getId(), new EntityIdIndex(registrationId,
+								contextRegIndex, entityIdIndex));
+					} else {
+						entityIdToRegIdAndRegIndexMap.put(entityId.getId(),
+								new EntityIdIndex(registrationId,
+										contextRegIndex, entityIdIndex));
+					}
+					if (entityId.getType() != null
+							&& !entityId.getType().toString().isEmpty()) {
+						typeToRegIdAndRegIndexMap.put(entityId.getType()
+								.toString(), new EntityIdIndex(registrationId,
+								contextRegIndex, entityIdIndex));
+					} else {
+						typeToRegIdAndRegIndexMap
+								.put(null, new EntityIdIndex(registrationId,
+										contextRegIndex, entityIdIndex));
+					}
+					entityIdIndex++;
 				}
-				if (entityId.getType() != null
-						&& !entityId.getType().toString().isEmpty()) {
-					typeToRegIdAndRegIndexMap.put(
-							entityId.getType().toString(), new EntityIdIndex(
-									registrationId, contextRegIndex,
-									entityIdIndex));
-				} else {
-					typeToRegIdAndRegIndexMap.put(null, new EntityIdIndex(
-							registrationId, contextRegIndex, entityIdIndex));
-				}
-				entityIdIndex++;
 			}
 
 			if (contextRegistration.getContextRegistrationAttribute() != null
@@ -844,6 +898,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 
 		}
+
+		indicesReadWriteLock.writeLock().unlock();
 
 		return registrationId;
 	}
@@ -951,6 +1007,21 @@ public class CouchDB implements Ngsi9StorageInterface {
 					&& httpResponse.getStatusLine().getStatusCode() == 404) {
 				throw new NotExistingInDatabase(
 						"It is not stored an object with id : " + docId);
+			} else {
+
+				if (type == DocumentType.REGISTER_CONTEXT) {
+					
+					deletedRegistrationsReadWriteLock.writeLock().lock();
+					deletedRegistrations.add(docId);
+					deletedRegistrationsReadWriteLock.writeLock().unlock();
+
+					new Runnable() {
+						public void run() {
+							checkSparsityOfIndices();
+						}
+					}.run();
+				}
+
 			}
 
 		} else {
@@ -991,7 +1062,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// JSONObject xmlJSONObj = XML.toJSONObject(requestString);
 		String jsonString = DocumentGenerator.generateJsonString(request);
 
-		logger.info("json register update: " + jsonString);
+		if (logger.isDebugEnabled()) {
+			logger.debug("json register update: " + jsonString);
+		}
 
 		// Inject the documentId and revision in the JSon document
 		// String jsonUpdate = xmlJSONObj.toString().replaceFirst(
@@ -1011,6 +1084,19 @@ public class CouchDB implements Ngsi9StorageInterface {
 			throw new NotExistingInDatabase(
 					"It is not stored a context with the RegistrationId : "
 							+ id);
+		}
+
+		if (docType == DocumentType.REGISTER_CONTEXT) {
+			
+			deletedRegistrationsReadWriteLock.writeLock().lock();
+			deletedRegistrations.add(id);
+			deletedRegistrationsReadWriteLock.writeLock().unlock();
+
+			new Runnable() {
+				public void run() {
+					checkSparsityOfIndices();
+				}
+			}.run();
 		}
 
 		// Parse and generate the new documentId
@@ -1059,6 +1145,13 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				registrationsFilter.getRegistrationFilterMap().keySet()
 						.retainAll(registrationIdList);
+
+				deletedRegistrationsReadWriteLock.readLock().lock();
+
+				registrationsFilter.getRegistrationFilterMap().keySet()
+						.removeAll(deletedRegistrations);
+				deletedRegistrationsReadWriteLock.readLock().unlock();
+
 			}
 
 		} else {
@@ -1129,6 +1222,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private RegistrationsFilter getRegistrationIdAndIndices(
 			DiscoverContextAvailabilityRequest request) {
 
+		indicesReadWriteLock.readLock().lock();
+
 		boolean entityIdsWildcard = false;
 
 		RegistrationsFilter registrationsFilter = new RegistrationsFilter();
@@ -1190,10 +1285,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 												.get(id));
 							}
 						}
-						
+
 						registeredEntityIdIndicesPerEntityIdRequested
-						.addAll(entityIdPatternToRegIdAndRegIndexMap
-								.get(".*"));
+								.addAll(entityIdPatternToRegIdAndRegIndexMap
+										.get(".*"));
 					}
 
 				} else {
@@ -1237,10 +1332,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 						&& !entityId.getType().toString().isEmpty()) {
 
 					Set<EntityIdIndex> entityIdMatchedWithType = new HashSet<EntityIdIndex>();
-					
+
 					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
 							.get(entityId.getType().toString()));
-					
+
 					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
 							.get(null));
 
@@ -1271,7 +1366,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 				.isEmpty()) && !entityIdsWildcard) {
 
 			// If we are it means that we have found no EntityId compatible
-
+			indicesReadWriteLock.readLock().unlock();
 			return null;
 		}
 
@@ -1290,6 +1385,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 							.getContextRegistrationIndex().getRegistrationId());
 
 				}
+				indicesReadWriteLock.readLock().unlock();
 				return registrationsFilter;
 
 			}
@@ -1314,6 +1410,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 
 		for (EntityIdIndex entityIdIndex : registeredEntityIdIndicesMatchedWithEntityIdsRequested) {
+
 			registrationsFilter.addEntityIdIndex(entityIdIndex);
 
 			if (attributesWildcard) {
@@ -1340,6 +1437,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 		}
 
+		indicesReadWriteLock.readLock().unlock();
 		return registrationsFilter;
 	}
 
