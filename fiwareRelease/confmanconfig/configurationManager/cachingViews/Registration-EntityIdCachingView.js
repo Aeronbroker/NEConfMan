@@ -2,20 +2,23 @@ function(doc) {
 if (doc.registerContextRequest.contextRegistrationList){
 
 	var contextRegistrationList = doc.registerContextRequest.contextRegistrationList;
-	var length = contextRegistrationList.contextRegistration.length;
 	
-	if (length != null){
-	
+	if (Object.prototype.toString.call(contextRegistrationList.contextRegistration) === '[object Array]'){
+		
+		var length = contextRegistrationList.contextRegistration.length;
+
 		for (i=0; i<length; i++){
 		
 			if (contextRegistrationList.contextRegistration[i].entityIdList){
 			
 				var entityIdList = contextRegistrationList.contextRegistration[i].entityIdList;
-				var entityIdLength = entityIdList.entityId.length;
 				
-				if (entityIdLength == null){
+				if (Object.prototype.toString.call(entityIdList.entityId) !== '[object Array]'){
+					
 					emit(entityIdList.entityId,doc._id+"_-_"+doc._rev+"_-_"+i+"_-_0");
+					
 				} else {
+					var entityIdLength = entityIdList.entityId.length;
 					for(j=0; j<entityIdLength; j++){
 						emit(entityIdList.entityId[j],doc._id+"_-_"+doc._rev+"_-_"+i+"_-_"+j);
 					}
@@ -32,11 +35,11 @@ if (doc.registerContextRequest.contextRegistrationList){
 		if (contextRegistrationList.contextRegistration.entityIdList){
 		
 			var entityIdList = contextRegistrationList.contextRegistration.entityIdList;
-			var entityIdLength = entityIdList.entityId.length;
 			
-			if (entityIdLength == null){
+			if (Object.prototype.toString.call(entityIdList.entityId) !== '[object Array]'){
 				emit(entityIdList.entityId, doc._id+"_-_"+doc._rev+"_-_0_-_0");
 			} else {
+				var entityIdLength = entityIdList.entityId.length;
 				for(j=0; j<entityIdLength; j++){
 					emit(entityIdList.entityId[j],doc._id+"_-_"+doc._rev+"_-_0_-_"+j);
 				}

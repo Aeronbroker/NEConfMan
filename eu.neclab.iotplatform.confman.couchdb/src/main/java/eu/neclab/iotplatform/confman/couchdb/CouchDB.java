@@ -128,54 +128,76 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// registrationId
 	private UniqueIDGenerator idGenerator = new UniqueIDGenerator();
 
-	// Cache of entityId to RegistrationId And ContextRegistration index in the
+	// Cache of non-pattern entityId to RegistrationId And ContextRegistration
+	// index in the
 	// ContextRegistration array
-
-	// private Multimap<String, String> entityIdToRegIdAndRegIndexMap =
-	// HashMultimap
-	// .create();
 	private Multimap<String, EntityIdIndex> entityIdToRegIdAndRegIndexMap = HashMultimap
 			.create();
 
-	// Cache of entityId to RegistrationId And ContextRegistration index in the
+	// Cache of pattern entityId to RegistrationId And ContextRegistration index
+	// in the
 	// ContextRegistration array
-
-	// private Multimap<String, String> entityIdPatternToRegIdAndRegIndexMap =
-	// HashMultimap
-	// .create();
 	private Multimap<String, EntityIdIndex> entityIdPatternToRegIdAndRegIndexMap = HashMultimap
 			.create();
 
-	// Cache of entityId to RegistrationId And ContextRegistration index in the
+	// Cache of entityId.type to RegistrationId And ContextRegistration index in
+	// the
 	// ContextRegistration array
-
-	// private Multimap<String, String> typeToRegIdAndRegIndexMap = HashMultimap
-	// .create();
 	private Multimap<String, EntityIdIndex> typeToRegIdAndRegIndexMap = HashMultimap
 			.create();
 
-	// Cache of entityId to RegistrationId And ContextRegistration index in the
+	// Cache of attribute.name to RegistrationId And ContextRegistration index
+	// in the
 	// ContextRegistration array
-	// private Multimap<String, String> attributeToRegIdAndRegIndexMap =
-	// HashMultimap
-	// .create();
 	private Multimap<String, ContextRegistrationAttributeIndex> attributeToRegIdAndRegIndexMap = HashMultimap
 			.create();
 
-	private ReadWriteLock indicesReadWriteLock = new ReentrantReadWriteLock();
+	private ReadWriteLock indicesReadWrite_Registrations = new ReentrantReadWriteLock();
 
 	private Set<String> deletedRegistrations = new HashSet<String>();
 	private ReadWriteLock deletedRegistrationsReadWriteLock = new ReentrantReadWriteLock();
+
+	// Cache of non-pattern entityId to SubscriptionId
+	private Multimap<String, String> entityIdToSubscriptionIdMap = HashMultimap
+			.create();
+
+	// Cache of pattern entityId to SubscriptionId
+	private Multimap<String, String> entityIdPatternToSubscriptionIdMap = HashMultimap
+			.create();
+
+	// Cache of entityId.type to SubscriptionId
+	private Multimap<String, String> typeToSubscriptionIdMap = HashMultimap
+			.create();
+
+	// Cache of attribute to SubscriptionId
+	private Multimap<String, String> attributeToSubscriptionIdMap = HashMultimap
+			.create();
+
+	// Cache of subscriptionId to reference
+	private Map<String, String> subscriptionIdToReferenceMap = new HashMap<String, String>();
+
+	// Cache of subscriptionId to attributeExpression
+	private Map<String, String> subscriptionIdToAttributeExpressionMap = new HashMap<String, String>();
+
+	private ReadWriteLock indicesReadWrite_Subscriptions = new ReentrantReadWriteLock();
 
 	public static String COUCHDB_CONFIGURATION_FILE = "config.properties";
 
 	public static String CACHING_VIEWS_FOLDER = "/cachingViews";
 
-	public static String ATTRIBUTE_NAME_CACHING_VIEW_FILE = "AttributeNameCachingView.js";
-	public static String ENTITYID_CACHING_VIEW_FILE = "EntityIdCachingView.js";
+	public static String REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_FILE = "Registration-AttributeNameCachingView.js";
+	public static String REGISTRATION_ENTITYID_CACHING_VIEW_FILE = "Registration-EntityIdCachingView.js";
+	public static String SUBSCRIPTION_ATTRIBUTE_NAME_CACHING_VIEW_FILE = "Subscription-AttributeNameCachingView.js";
+	public static String SUBSCRIPTION_ENTITYID_CACHING_VIEW_FILE = "Subscription-EntityIdCachingView.js";
+	public static String SUBSCRIPTION_REFERENCE_CACHING_VIEW_FILE = "Subscription-ReferenceCachingView.js";
+	public static String SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_FILE = "Subscription-AttributeExpressionCachingView.js";
 
-	public static String ATTRIBUTE_NAME_CACHING_VIEW_NAME = "AttributeNameCachingView";
-	public static String ENTITYID_CACHING_VIEW_NAME = "EntityIdCachingView";
+	public static String REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_NAME = "Registration-AttributeNameCachingView";
+	public static String REGISTRATION_ENTITYID_CACHING_VIEW_NAME = "Registration-EntityIdCachingView";
+	public static String SUBSCRIPTION_ATTRIBUTE_NAME_CACHING_VIEW_NAME = "Subscription-AttributeNameCachingView";
+	public static String SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME = "Subscription-EntityIdCachingView";
+	public static String SUBSCRIPTION_REFERENCE_CACHING_VIEW_NAME = "Subscription-ReferenceCachingView";
+	public static String SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_NAME = "Subscription-AttributeExpressionCachingView";
 
 	public static double INDICES_MAXIMUM_SPARCITY_FACTOR = 0.2;
 
@@ -265,10 +287,35 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
+	private void checkCachingViews() {
+
+		Map<String, String> viewNameToFile = new HashMap<String, String>();
+
+		viewNameToFile.put(REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_NAME,
+				REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_FILE);
+		viewNameToFile.put(REGISTRATION_ENTITYID_CACHING_VIEW_NAME,
+				REGISTRATION_ENTITYID_CACHING_VIEW_FILE);
+		checkViews(DocumentType.REGISTER_CONTEXT, viewNameToFile);
+
+		viewNameToFile.clear();
+		viewNameToFile.put(SUBSCRIPTION_ATTRIBUTE_NAME_CACHING_VIEW_NAME,
+				SUBSCRIPTION_ATTRIBUTE_NAME_CACHING_VIEW_FILE);
+		viewNameToFile.put(SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME,
+				SUBSCRIPTION_ENTITYID_CACHING_VIEW_FILE);
+		viewNameToFile.put(SUBSCRIPTION_REFERENCE_CACHING_VIEW_NAME,
+				SUBSCRIPTION_REFERENCE_CACHING_VIEW_FILE);
+		viewNameToFile.put(SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_NAME,
+				SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_FILE);
+
+		checkViews(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY, viewNameToFile);
+
+	}
+
 	/**
 	 * This method queries CouchDB in order to set up all the databases needed
 	 */
-	private void checkCachingViews() {
+	private void checkViews(DocumentType documentType,
+			Map<String, String> viewNameToFile) {
 
 		// for (DocumentType documentType : DocumentType.values()) {
 		try {
@@ -278,8 +325,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 							new URL(
 									couchDB_IP
 											+ "/"
-											+ DocumentType.REGISTER_CONTEXT
-													.getDb_name()
+											+ documentType.getDb_name()
 											+ "/_all_docs?startkey=\"_design/\"&endkey=\"_design0\""))
 					.getBody();
 
@@ -296,46 +342,26 @@ public class CouchDB implements Ngsi9StorageInterface {
 						.get("id").getAsString().replace("_design/", ""));
 			}
 
-			if (!existingViewsSet.contains(ENTITYID_CACHING_VIEW_NAME)) {
-				String entityIdCachingView = new String(
-						Files.readAllBytes(FileSystems
-								.getDefault()
-								.getPath(
-										System.getProperty("dir.config")
-												+ Ngsi9Interface.CONFIGURATIONAMANGER_PARENT_CONFIGURATION_FOLDER
-												+ CACHING_VIEWS_FOLDER,
-										ENTITYID_CACHING_VIEW_FILE)));
-				// Create the view headers
-				String view = "{\"views\":{\"query\":{\"map\":\""
-						+ entityIdCachingView.replace("\"", "\\\"")
-								.replace("\n", "").replace("\r", "")
-								.replace("\t", "") + "\"}}}";
+			for (Entry<String, String> entry : viewNameToFile.entrySet()) {
+				if (!existingViewsSet.contains(entry.getKey())) {
 
-				sendView(ENTITYID_CACHING_VIEW_NAME, view,
-						DocumentType.REGISTER_CONTEXT);
+					String entityIdCachingView = new String(
+							Files.readAllBytes(FileSystems
+									.getDefault()
+									.getPath(
+											System.getProperty("dir.config")
+													+ Ngsi9Interface.CONFIGURATIONAMANGER_PARENT_CONFIGURATION_FOLDER
+													+ CACHING_VIEWS_FOLDER,
+											entry.getValue())));
+					// Create the view headers
+					String view = "{\"views\":{\"query\":{\"map\":\""
+							+ entityIdCachingView.replace("\"", "\\\"")
+									.replace("\n", "").replace("\r", "")
+									.replace("\t", "") + "\"}}}";
 
-			}
+					sendView(entry.getKey(), view, documentType);
 
-			if (!existingViewsSet.contains(ATTRIBUTE_NAME_CACHING_VIEW_NAME)) {
-
-				String attributeNameCachingView = new String(
-						Files.readAllBytes(FileSystems
-								.getDefault()
-								.getPath(
-										System.getProperty("dir.config")
-												+ Ngsi9Interface.CONFIGURATIONAMANGER_PARENT_CONFIGURATION_FOLDER
-												+ CACHING_VIEWS_FOLDER,
-										ATTRIBUTE_NAME_CACHING_VIEW_FILE)));
-
-				// Create the view headers
-				String view = "{\"views\":{\"query\":{\"map\":\""
-						+ attributeNameCachingView.replace("\"", "\\\"")
-								.replace("\n", "").replace("\r", "")
-								.replace("\t", "") + "\"}}}";
-
-				sendView(ATTRIBUTE_NAME_CACHING_VIEW_NAME, view,
-						DocumentType.REGISTER_CONTEXT);
-
+				}
 			}
 
 		} catch (MalformedURLException e) {
@@ -346,7 +372,6 @@ public class CouchDB implements Ngsi9StorageInterface {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		// }
 	}
 
 	/**
@@ -354,23 +379,48 @@ public class CouchDB implements Ngsi9StorageInterface {
 	 */
 	private void initializeCaches() {
 
-		// Execute the view on couchDB server and get the response
-		FullHttpResponse response = getView(ENTITYID_CACHING_VIEW_NAME,
+		// Get the view from CouchDB
+		FullHttpResponse response = getView(
+				REGISTRATION_ENTITYID_CACHING_VIEW_NAME,
 				DocumentType.REGISTER_CONTEXT);
 
-		populateEntityIdAndTypeCaches(response.getBody());
+		populateEntityIdAndTypeCaches_Registration(response.getBody());
 
-		// Execute the view on couchDB server and get the response
-		response = getView(ATTRIBUTE_NAME_CACHING_VIEW_NAME,
+		// Get the view from CouchDB
+		response = getView(REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_NAME,
 				DocumentType.REGISTER_CONTEXT);
 
-		populateAttributeNameCaches(response.getBody());
+		populateAttributeNameCaches_Registration(response.getBody());
+
+		// Get the view from CouchDB
+		response = getView(SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		populateEntityIdAndTypeCaches_Subscription(response.getBody());
+
+		// Get the view from CouchDB
+		response = getView(SUBSCRIPTION_ATTRIBUTE_NAME_CACHING_VIEW_NAME,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		populateAttributeNameCaches_Subscription(response.getBody());
+
+		// Get the view from CouchDB
+		response = getView(SUBSCRIPTION_REFERENCE_CACHING_VIEW_NAME,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		populateReferenceCache(response.getBody());
+
+		// Get the view from CouchDB
+		response = getView(SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_NAME,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		populateAttributeExpressionCache(response.getBody());
 
 		logger.info("All caches initialized");
 
 	}
 
-	private void populateEntityIdAndTypeCaches(String response) {
+	private void populateEntityIdAndTypeCaches_Registration(String response) {
 
 		if (response == null || response.isEmpty()) {
 			return;
@@ -451,7 +501,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
-	private void populateAttributeNameCaches(String response) {
+	private void populateAttributeNameCaches_Registration(String response) {
 
 		if (response == null || response.isEmpty()) {
 			return;
@@ -498,12 +548,190 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
-	private void checkSparsityOfIndices() {
+	private void populateEntityIdAndTypeCaches_Subscription(String response) {
+
+		if (response == null || response.isEmpty()) {
+			return;
+		}
+
+		JsonElement jelement = new JsonParser().parse(response);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			int noOfRows = jobject.get("total_rows").getAsInt();
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (int i = 0; i < noOfRows; i++) {
+				JsonObject row = rows.get(i).getAsJsonObject();
+
+				// Get the key from the response
+				JsonElement entityId = row.get("key");
+
+				String subscriptionId = row.get("value").getAsString();
+
+				if (entityId.isJsonNull()) {
+
+					entityIdPatternToSubscriptionIdMap
+							.put(".*", subscriptionId);
+					typeToSubscriptionIdMap.put(null, subscriptionId);
+				} else {
+
+					JsonObject entityIdObject = entityId.getAsJsonObject();
+
+					boolean isPattern = entityIdObject.get("isPattern")
+							.getAsBoolean();
+					if (isPattern) {
+
+						entityIdPatternToSubscriptionIdMap.put(entityIdObject
+								.get("id").getAsString(), subscriptionId);
+
+					} else {
+
+						entityIdToSubscriptionIdMap.put(entityIdObject
+								.get("id").getAsString(), subscriptionId);
+					}
+
+					JsonElement type = entityIdObject.get("type");
+
+					if (type == null || type.isJsonNull()
+							|| type.toString().isEmpty()) {
+
+						typeToSubscriptionIdMap.put(null, subscriptionId);
+					} else {
+
+						typeToSubscriptionIdMap.put(type.getAsString(),
+								subscriptionId);
+					}
+
+				}
+
+			}
+		}
+	}
+
+	private void populateAttributeNameCaches_Subscription(String response) {
+
+		if (response == null || response.isEmpty()) {
+			return;
+		}
+
+		JsonElement jelement = new JsonParser().parse(response);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			int noOfRows = jobject.get("total_rows").getAsInt();
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (int i = 0; i < noOfRows; i++) {
+				JsonObject row = rows.get(i).getAsJsonObject();
+
+				// Get the key from the response
+				JsonElement attributeName = row.get("key");
+
+				String subscriptionId = row.get("value").getAsString();
+
+				if (attributeName == null || attributeName.isJsonNull()
+						|| attributeName.toString().isEmpty()) {
+
+					attributeToSubscriptionIdMap.put(null, subscriptionId);
+				} else {
+
+					attributeToSubscriptionIdMap.put(
+							attributeName.getAsString(), subscriptionId);
+				}
+
+			}
+		}
+	}
+
+	private void populateReferenceCache(String response) {
+
+		if (response == null || response.isEmpty()) {
+			return;
+		}
+
+		JsonElement jelement = new JsonParser().parse(response);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			int noOfRows = jobject.get("total_rows").getAsInt();
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (int i = 0; i < noOfRows; i++) {
+				JsonObject row = rows.get(i).getAsJsonObject();
+
+				// Get the key from the response
+				String subscriptionId = row.get("key").getAsString();
+
+				JsonElement reference = row.get("value");
+
+				if (reference == null || reference.isJsonNull()
+						|| reference.toString().isEmpty()) {
+
+					logger.warn("Broker reference (" + reference.toString()
+							+ ") for subscription: " + subscriptionId);
+				} else {
+
+					subscriptionIdToReferenceMap.put(subscriptionId,
+							reference.getAsString());
+				}
+
+			}
+		}
+	}
+
+	private void populateAttributeExpressionCache(String response) {
+
+		if (response == null || response.isEmpty()) {
+			return;
+		}
+
+		JsonElement jelement = new JsonParser().parse(response);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			int noOfRows = jobject.get("total_rows").getAsInt();
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (int i = 0; i < noOfRows; i++) {
+				JsonObject row = rows.get(i).getAsJsonObject();
+
+				// Get the key from the response
+				String subscriptionId = row.get("key").getAsString();
+
+				JsonElement attributeExpression = row.get("value");
+
+				if (attributeExpression == null
+						|| attributeExpression.isJsonNull()
+						|| attributeExpression.toString().isEmpty()) {
+
+					subscriptionIdToAttributeExpressionMap.put(subscriptionId,
+							null);
+
+				} else {
+
+					subscriptionIdToAttributeExpressionMap.put(subscriptionId,
+							attributeExpression.getAsString());
+				}
+
+			}
+		}
+	}
+
+	private void checkSparsityOfIndices_Registrations() {
 
 		if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
 				* typeToRegIdAndRegIndexMap.size()) {
 
-			indicesReadWriteLock.writeLock().lock();
+			indicesReadWrite_Registrations.writeLock().lock();
 			deletedRegistrationsReadWriteLock.writeLock().lock();
 
 			if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
@@ -521,7 +749,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 				deletedRegistrations = new HashSet<String>();
 			}
 
-			indicesReadWriteLock.writeLock().unlock();
+			indicesReadWrite_Registrations.writeLock().unlock();
 			deletedRegistrationsReadWriteLock.writeLock().unlock();
 
 		}
@@ -831,7 +1059,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 			registrationId = parseStoredId(response);
 		}
 
-		indicesReadWriteLock.writeLock().lock();
+		indicesReadWrite_Registrations.writeLock().lock();
 
 		int contextRegIndex = 0;
 		for (ContextRegistration contextRegistration : request
@@ -899,7 +1127,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		}
 
-		indicesReadWriteLock.writeLock().unlock();
+		indicesReadWrite_Registrations.writeLock().unlock();
 
 		return registrationId;
 	}
@@ -1010,14 +1238,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 			} else {
 
 				if (type == DocumentType.REGISTER_CONTEXT) {
-					
+
 					deletedRegistrationsReadWriteLock.writeLock().lock();
 					deletedRegistrations.add(docId);
 					deletedRegistrationsReadWriteLock.writeLock().unlock();
 
 					new Runnable() {
 						public void run() {
-							checkSparsityOfIndices();
+							checkSparsityOfIndices_Registrations();
 						}
 					}.run();
 				}
@@ -1087,14 +1315,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 
 		if (docType == DocumentType.REGISTER_CONTEXT) {
-			
+
 			deletedRegistrationsReadWriteLock.writeLock().lock();
 			deletedRegistrations.add(id);
 			deletedRegistrationsReadWriteLock.writeLock().unlock();
 
 			new Runnable() {
 				public void run() {
-					checkSparsityOfIndices();
+					checkSparsityOfIndices_Registrations();
 				}
 			}.run();
 		}
@@ -1150,6 +1378,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				registrationsFilter.getRegistrationFilterMap().keySet()
 						.removeAll(deletedRegistrations);
+
 				deletedRegistrationsReadWriteLock.readLock().unlock();
 
 			}
@@ -1222,7 +1451,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private RegistrationsFilter getRegistrationIdAndIndices(
 			DiscoverContextAvailabilityRequest request) {
 
-		indicesReadWriteLock.readLock().lock();
+		indicesReadWrite_Registrations.readLock().lock();
 
 		boolean entityIdsWildcard = false;
 
@@ -1249,8 +1478,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				if (entityId.getIsPattern()) {
 
 					// if there is a wildcard for entityId.Id and not type then
-					// it
-					// means take all entities. So let's decide by the attribute
+					// it means take all entities. So let's decide by the
+					// attribute
 					if (".*".equals(entityId.getId())
 							&& (entityId.getType() == null || entityId
 									.getType().toString().isEmpty())) {
@@ -1366,7 +1595,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 				.isEmpty()) && !entityIdsWildcard) {
 
 			// If we are it means that we have found no EntityId compatible
-			indicesReadWriteLock.readLock().unlock();
+			indicesReadWrite_Registrations.readLock().unlock();
 			return null;
 		}
 
@@ -1385,7 +1614,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 							.getContextRegistrationIndex().getRegistrationId());
 
 				}
-				indicesReadWriteLock.readLock().unlock();
+				indicesReadWrite_Registrations.readLock().unlock();
 				return registrationsFilter;
 
 			}
@@ -1437,7 +1666,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 		}
 
-		indicesReadWriteLock.readLock().unlock();
+		indicesReadWrite_Registrations.readLock().unlock();
 		return registrationsFilter;
 	}
 
@@ -1915,14 +2144,83 @@ public class CouchDB implements Ngsi9StorageInterface {
 		String jsView = JavascriptGenerator.createJavaScriptView(
 				contextRegistration, metadataToSubscriptionMap,
 				otherRestrictiveMetadata, superTypesMap);
-		logger.info("View from contextRegistration created:" + jsView);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("View from contextRegistration created:" + jsView);
+		}
 
 		FullHttpResponse viewResult = executeView(jsView,
 				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
-		logger.info("Result of the contextRegistration in the "
-				+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
-				+ ": \n" + viewResult.getBody());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Result of the contextRegistration in the "
+					+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+					+ ": \n" + viewResult.getBody());
+		}
+
+		Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
+				.generateNotificationsMap(viewResult.getBody());
+
+		return multimap;
+	}
+
+	private Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptionsWithCaches(
+			ContextRegistration contextRegistration,
+			boolean hasMetadataRestriction,
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata,
+			Multimap<URI, URI> superTypesMap) {
+
+		Multimap<String, ContextRegistration> map = HashMultimap.create();
+
+		if (contextRegistration.getListEntityId() == null
+				|| contextRegistration.getListEntityId().isEmpty()) {
+
+			for (String subscriptionId : entityIdToSubscriptionIdMap.values()) {
+				
+				if (!map.containsKey(subscriptionId)){
+					map.put(subscriptionId, new ContextRegistration());
+				}
+			}
+
+		} else {
+			
+			for (EntityId entityId : contextRegistration.getListEntityId()) {
+
+				if (entityId.getIsPattern()){
+					
+					if (".*".equals(entityId.getId())){
+						for (String subscriptionId : entityIdPatternToSubscriptionIdMap.values()) {
+							if (!map.containsKey(subscriptionId)){
+								map.put(subscriptionId, new ContextRegistration());
+								
+								qui abbiamo un problema, gli indici di type e gli indici di entityId.id non sono correlati, quindi non posso fare un controllo degli id con i type richiesti. 
+								
+							}
+						}
+					}
+					
+				}
+				
+			}
+		}
+
+		String jsView = JavascriptGenerator.createJavaScriptView(
+				contextRegistration, metadataToSubscriptionMap,
+				otherRestrictiveMetadata, superTypesMap);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("View from contextRegistration created:" + jsView);
+		}
+
+		FullHttpResponse viewResult = executeView(jsView,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Result of the contextRegistration in the "
+					+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
+					+ ": \n" + viewResult.getBody());
+		}
 
 		Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
 				.generateNotificationsMap(viewResult.getBody());
