@@ -53,25 +53,23 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
-
-import javax.swing.plaf.synth.Region;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
 import org.json.XML;
-import org.osgi.service.blueprint.container.ReifiedType;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -99,6 +97,7 @@ import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationAttribute;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.MetadataTypes;
+import eu.neclab.iotplatform.ngsi.api.datamodel.OperationScope;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.UpdateContextAvailabilitySubscriptionRequest;
@@ -179,7 +178,16 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// Cache of subscriptionId to attributeExpression
 	private Map<String, String> subscriptionIdToAttributeExpressionMap = new HashMap<String, String>();
 
+	// Cache of subscriptionId to scopeTypes
+	private Multimap<String, String> scopeTypesToSubscriptionIdMap = HashMultimap
+			.create();
+
+	private Multimap<String, String> notScopeTypesToSubscriptionIdMap = HashMultimap
+			.create();
+
 	private ReadWriteLock indicesReadWrite_Subscriptions = new ReentrantReadWriteLock();
+	private Set<String> deletedSubscriptions = new HashSet<String>();
+	private ReadWriteLock deletedSubscriptionsReadWriteLock = new ReentrantReadWriteLock();
 
 	public static String COUCHDB_CONFIGURATION_FILE = "config.properties";
 
@@ -191,6 +199,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public static String SUBSCRIPTION_ENTITYID_CACHING_VIEW_FILE = "Subscription-EntityIdCachingView.js";
 	public static String SUBSCRIPTION_REFERENCE_CACHING_VIEW_FILE = "Subscription-ReferenceCachingView.js";
 	public static String SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_FILE = "Subscription-AttributeExpressionCachingView.js";
+	public static String SUBSCRIPTION_SCOPETYPE_CACHING_VIEW_FILE = "Subscription-ScopeTypeCachingView.js";
 
 	public static String REGISTRATION_ATTRIBUTE_NAME_CACHING_VIEW_NAME = "Registration-AttributeNameCachingView";
 	public static String REGISTRATION_ENTITYID_CACHING_VIEW_NAME = "Registration-EntityIdCachingView";
@@ -198,8 +207,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 	public static String SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME = "Subscription-EntityIdCachingView";
 	public static String SUBSCRIPTION_REFERENCE_CACHING_VIEW_NAME = "Subscription-ReferenceCachingView";
 	public static String SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_NAME = "Subscription-AttributeExpressionCachingView";
+	public static String SUBSCRIPTION_SCOPETYPE_CACHING_VIEW_NAME = "Subscription-ScopeTypeCachingView";
 
-	public static double INDICES_MAXIMUM_SPARCITY_FACTOR = 0.2;
+	public static double INDICES_MAXIMUM_SPARSITY_FACTOR = 0.2;
 
 	// private DocumentGenerator documentGenerator = new DocumentGenerator(
 	// idGenerator);
@@ -229,8 +239,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 			// Check if all DBs exists in CouchDB
 			this.checkDBs();
 
-			this.checkCachingViews();
-			this.initializeCaches();
+			this.checkIndexViews();
+			this.initializeIndices_Registrations();
+			this.initializeIndices_Subscriptions();
 
 		} catch (IOException ex) {
 
@@ -287,7 +298,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
-	private void checkCachingViews() {
+	private void checkIndexViews() {
 
 		Map<String, String> viewNameToFile = new HashMap<String, String>();
 
@@ -306,6 +317,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				SUBSCRIPTION_REFERENCE_CACHING_VIEW_FILE);
 		viewNameToFile.put(SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_NAME,
 				SUBSCRIPTION_ATTRIBUTEEXPRESSION_CACHING_VIEW_FILE);
+		viewNameToFile.put(SUBSCRIPTION_SCOPETYPE_CACHING_VIEW_NAME,
+				SUBSCRIPTION_SCOPETYPE_CACHING_VIEW_FILE);
 
 		checkViews(DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY, viewNameToFile);
 
@@ -377,7 +390,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 	/**
 	 * This method initializes the multimap caches
 	 */
-	private void initializeCaches() {
+	private void initializeIndices_Registrations() {
 
 		// Get the view from CouchDB
 		FullHttpResponse response = getView(
@@ -392,8 +405,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		populateAttributeNameCaches_Registration(response.getBody());
 
+		logger.info("All indices initialized");
+
+	}
+
+	/**
+	 * This method initializes the multimap caches
+	 */
+	private void initializeIndices_Subscriptions() {
+
 		// Get the view from CouchDB
-		response = getView(SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME,
+		FullHttpResponse response = getView(
+				SUBSCRIPTION_ENTITYID_CACHING_VIEW_NAME,
 				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
 
 		populateEntityIdAndTypeCaches_Subscription(response.getBody());
@@ -416,7 +439,13 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		populateAttributeExpressionCache(response.getBody());
 
-		logger.info("All caches initialized");
+		// Get the view from CouchDB
+		response = getView(SUBSCRIPTION_SCOPETYPE_CACHING_VIEW_NAME,
+				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+
+		populateScopeTypesCache(response.getBody());
+
+		logger.info("All indices initialized");
 
 	}
 
@@ -569,13 +598,19 @@ public class CouchDB implements Ngsi9StorageInterface {
 				// Get the key from the response
 				JsonElement entityId = row.get("key");
 
-				String subscriptionId = row.get("value").getAsString();
+				// The multimaps entityId and type caches will contain the
+				// subscription Id and the index of the entityId in the array.
+				String subscriptionIdAndEntityId = row.get("value")
+						.getAsString()
+						+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+						+ i;
 
 				if (entityId.isJsonNull()) {
 
-					entityIdPatternToSubscriptionIdMap
-							.put(".*", subscriptionId);
-					typeToSubscriptionIdMap.put(null, subscriptionId);
+					entityIdPatternToSubscriptionIdMap.put(".*",
+							subscriptionIdAndEntityId);
+					typeToSubscriptionIdMap
+							.put(null, subscriptionIdAndEntityId);
 				} else {
 
 					JsonObject entityIdObject = entityId.getAsJsonObject();
@@ -585,12 +620,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 					if (isPattern) {
 
 						entityIdPatternToSubscriptionIdMap.put(entityIdObject
-								.get("id").getAsString(), subscriptionId);
+								.get("id").getAsString(),
+								subscriptionIdAndEntityId);
 
 					} else {
 
 						entityIdToSubscriptionIdMap.put(entityIdObject
-								.get("id").getAsString(), subscriptionId);
+								.get("id").getAsString(),
+								subscriptionIdAndEntityId);
 					}
 
 					JsonElement type = entityIdObject.get("type");
@@ -598,11 +635,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 					if (type == null || type.isJsonNull()
 							|| type.toString().isEmpty()) {
 
-						typeToSubscriptionIdMap.put(null, subscriptionId);
+						typeToSubscriptionIdMap.put(null,
+								subscriptionIdAndEntityId);
 					} else {
 
 						typeToSubscriptionIdMap.put(type.getAsString(),
-								subscriptionId);
+								subscriptionIdAndEntityId);
 					}
 
 				}
@@ -726,15 +764,89 @@ public class CouchDB implements Ngsi9StorageInterface {
 		}
 	}
 
+	private void populateScopeTypesCache(String response) {
+
+		if (response == null || response.isEmpty()) {
+			return;
+		}
+
+		JsonElement jelement = new JsonParser().parse(response);
+		if (!jelement.isJsonNull()) {
+
+			JsonObject jobject = jelement.getAsJsonObject();
+
+			int noOfRows = jobject.get("total_rows").getAsInt();
+			JsonArray rows = jobject.getAsJsonArray("rows");
+
+			// Parse each row of the response
+			for (int i = 0; i < noOfRows; i++) {
+				JsonObject row = rows.get(i).getAsJsonObject();
+
+				// Get the key from the response
+				String subscriptionId = row.get("key").getAsString();
+
+				JsonElement scopeType = row.get("value");
+
+				if (scopeType != null && !scopeType.isJsonNull()
+						&& !scopeType.toString().isEmpty()) {
+
+					if (notScopeTypesToSubscriptionIdMap.containsKey(scopeType)) {
+						notScopeTypesToSubscriptionIdMap.putAll(
+								scopeType.getAsString(),
+								subscriptionIdToReferenceMap.keySet());
+					}
+					notScopeTypesToSubscriptionIdMap.remove(
+							scopeType.getAsString(), subscriptionId);
+
+					scopeTypesToSubscriptionIdMap.put(scopeType.getAsString(),
+							subscriptionId);
+
+				}
+
+			}
+		}
+	}
+
+	private void checkSparsityOfIndices_Subscriptions() {
+
+		if (deletedSubscriptions.size() >= INDICES_MAXIMUM_SPARSITY_FACTOR
+				* typeToSubscriptionIdMap.size()) {
+
+			indicesReadWrite_Subscriptions.writeLock().lock();
+			deletedSubscriptionsReadWriteLock.writeLock().lock();
+
+			if (deletedSubscriptions.size() >= INDICES_MAXIMUM_SPARSITY_FACTOR
+					* typeToSubscriptionIdMap.size()) {
+
+				entityIdPatternToSubscriptionIdMap = HashMultimap.create();
+				entityIdToSubscriptionIdMap = HashMultimap.create();
+				typeToSubscriptionIdMap = HashMultimap.create();
+				attributeToSubscriptionIdMap = HashMultimap.create();
+				subscriptionIdToReferenceMap = new HashMap<String, String>();
+				subscriptionIdToAttributeExpressionMap = new HashMap<String, String>();
+				scopeTypesToSubscriptionIdMap = HashMultimap.create();
+				notScopeTypesToSubscriptionIdMap = HashMultimap.create();
+
+				initializeIndices_Subscriptions();
+
+				deletedSubscriptions = new HashSet<String>();
+			}
+
+			indicesReadWrite_Subscriptions.writeLock().unlock();
+			deletedSubscriptionsReadWriteLock.writeLock().unlock();
+
+		}
+	}
+
 	private void checkSparsityOfIndices_Registrations() {
 
-		if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
+		if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARSITY_FACTOR
 				* typeToRegIdAndRegIndexMap.size()) {
 
 			indicesReadWrite_Registrations.writeLock().lock();
 			deletedRegistrationsReadWriteLock.writeLock().lock();
 
-			if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARCITY_FACTOR
+			if (deletedRegistrations.size() >= INDICES_MAXIMUM_SPARSITY_FACTOR
 					* typeToRegIdAndRegIndexMap.size()) {
 
 				entityIdToRegIdAndRegIndexMap = HashMultimap.create();
@@ -744,7 +856,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				attributeToRegIdAndRegIndexMap = HashMultimap.create();
 
-				initializeCaches();
+				initializeIndices_Registrations();
 
 				deletedRegistrations = new HashSet<String>();
 			}
@@ -1153,7 +1265,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		}
 
-		logger.info("Subscribe request:" + request.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Subscribe request:" + request.toString());
+		}
 
 		// Create a Json Object from the XML
 		// JSONObject xmlJSONObj = XML.toJSONObject(request.toString());
@@ -1187,7 +1301,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 		}
 
-		logger.info("Response from CouchDB:" + response);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Response from CouchDB:" + response);
+		}
 
 		// Check if there were some error
 		String subscriptionId;
@@ -1200,7 +1316,100 @@ public class CouchDB implements Ngsi9StorageInterface {
 			subscriptionId = parseStoredId(response);
 		}
 
+		indexSubscription(request, subscriptionId);
+
 		return subscriptionId;
+	}
+
+	private void indexSubscription(
+			SubscribeContextAvailabilityRequest subscription,
+			String subscriptionId) {
+
+		indicesReadWrite_Subscriptions.writeLock().lock();
+
+		if (subscription.getEntityIdList() == null
+				|| subscription.getEntityIdList().isEmpty()) {
+			entityIdPatternToSubscriptionIdMap.put(".*", subscriptionId
+					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + "0");
+			typeToSubscriptionIdMap.put(null, subscriptionId
+					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + "0");
+		} else {
+
+			int i = 0;
+			for (EntityId entityId : subscription.getEntityIdList()) {
+
+				if (entityId.getIsPattern()) {
+
+					entityIdPatternToSubscriptionIdMap.put(entityId.getId(),
+							subscriptionId
+									+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+									+ i);
+
+				} else {
+					entityIdToSubscriptionIdMap.put(entityId.getId(),
+							subscriptionId
+									+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+									+ i);
+				}
+
+				if (entityId.getType() == null
+						|| entityId.getType().toString().isEmpty()) {
+					typeToSubscriptionIdMap.put(null, subscriptionId
+							+ Ngsi9StorageInterface.ID_REV_SEPARATOR + i);
+
+				} else {
+					typeToSubscriptionIdMap.put(entityId.getType().toString(),
+							subscriptionId
+									+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+									+ i);
+				}
+
+				i++;
+			}
+		}
+
+		if (subscription.getAttributeList() == null
+				|| subscription.getAttributeList().isEmpty()) {
+
+			attributeToSubscriptionIdMap.put(null, subscriptionId);
+
+		} else {
+			for (String attribute : subscription.getAttributeList()) {
+				attributeToSubscriptionIdMap.put(attribute, subscriptionId);
+			}
+		}
+
+		if (subscription.getRestriction() != null) {
+
+			if (subscription.getRestriction().getAttributeExpression() == null
+					|| subscription.getRestriction().getAttributeExpression()
+							.isEmpty()) {
+				subscriptionIdToAttributeExpressionMap
+						.put(subscriptionId, null);
+			} else {
+				subscriptionIdToAttributeExpressionMap.put(subscriptionId,
+						subscription.getRestriction().getAttributeExpression());
+			}
+
+			if (subscription.getRestriction().getOperationScope() == null
+					|| subscription.getRestriction().getOperationScope()
+							.isEmpty()) {
+				scopeTypesToSubscriptionIdMap.put(null, subscriptionId);
+			} else {
+				for (OperationScope scope : subscription.getRestriction()
+						.getOperationScope()) {
+					scopeTypesToSubscriptionIdMap.put(scope.getScopeType(),
+							subscriptionId);
+				}
+			}
+
+		}
+
+		subscriptionIdToReferenceMap.put(subscriptionId,
+				subscription.getReference());
+
+		indicesReadWrite_Subscriptions.writeLock().unlock();
+
 	}
 
 	@Override
@@ -1246,6 +1455,16 @@ public class CouchDB implements Ngsi9StorageInterface {
 					new Runnable() {
 						public void run() {
 							checkSparsityOfIndices_Registrations();
+						}
+					}.run();
+				} else {
+					deletedSubscriptionsReadWriteLock.writeLock().lock();
+					deletedSubscriptions.add(docId);
+					deletedSubscriptionsReadWriteLock.writeLock().unlock();
+
+					new Runnable() {
+						public void run() {
+							checkSparsityOfIndices_Subscriptions();
 						}
 					}.run();
 				}
@@ -1323,6 +1542,16 @@ public class CouchDB implements Ngsi9StorageInterface {
 			new Runnable() {
 				public void run() {
 					checkSparsityOfIndices_Registrations();
+				}
+			}.run();
+		} else {
+			deletedSubscriptionsReadWriteLock.writeLock().lock();
+			deletedSubscriptions.add(id);
+			deletedSubscriptionsReadWriteLock.writeLock().unlock();
+
+			new Runnable() {
+				public void run() {
+					checkSparsityOfIndices_Subscriptions();
 				}
 			}.run();
 		}
@@ -2106,9 +2335,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	}
 
 	@Override
-	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+	public Map<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
-			boolean hasMetadataRestriction,
 			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
 			Set<MetadataTypes> otherRestrictiveMetadata) {
 
@@ -2129,14 +2357,28 @@ public class CouchDB implements Ngsi9StorageInterface {
 		//
 		// return multimap;
 
-		return checkSubscriptions(contextRegistration, hasMetadataRestriction,
+		return checkSubscriptions(contextRegistration,
 				metadataToSubscriptionMap, otherRestrictiveMetadata, null);
 	}
 
 	@Override
-	public Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+	public Map<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
-			boolean hasMetadataRestriction,
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata,
+			Multimap<URI, URI> superTypesMap) {
+
+		return checkSubscriptionsWithCaches(contextRegistration,
+				metadataToSubscriptionMap, otherRestrictiveMetadata,
+				superTypesMap);
+		
+//		return checkSubscriptionsWithViews(contextRegistration,
+//				metadataToSubscriptionMap, otherRestrictiveMetadata,
+//				superTypesMap);
+	}
+
+	private Map<SubscriptionToNotify, ContextRegistration> checkSubscriptionsWithViews(
+			ContextRegistration contextRegistration,
 			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
 			Set<MetadataTypes> otherRestrictiveMetadata,
 			Multimap<URI, URI> superTypesMap) {
@@ -2158,74 +2400,460 @@ public class CouchDB implements Ngsi9StorageInterface {
 					+ ": \n" + viewResult.getBody());
 		}
 
-		Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
+		Map<SubscriptionToNotify, ContextRegistration> map = this
 				.generateNotificationsMap(viewResult.getBody());
 
-		return multimap;
+		return map;
+
 	}
 
-	private Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptionsWithCaches(
+	private Map<SubscriptionToNotify, ContextRegistration> checkSubscriptionsWithCaches(
 			ContextRegistration contextRegistration,
-			boolean hasMetadataRestriction,
 			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
 			Set<MetadataTypes> otherRestrictiveMetadata,
 			Multimap<URI, URI> superTypesMap) {
 
-		Multimap<String, ContextRegistration> map = HashMultimap.create();
+		indicesReadWrite_Subscriptions.readLock().lock();
+
+		Map<String, ContextRegistration> map = new HashMap<String, ContextRegistration>();
+
+		/*
+		 * Here we check the entityIds
+		 */
 
 		if (contextRegistration.getListEntityId() == null
 				|| contextRegistration.getListEntityId().isEmpty()) {
 
-			for (String subscriptionId : entityIdToSubscriptionIdMap.values()) {
-				
-				if (!map.containsKey(subscriptionId)){
-					map.put(subscriptionId, new ContextRegistration());
-				}
+			/*
+			 * No EntityId: take all
+			 */
+
+			Set<String> scopeComplianceSet = getScopesComplianceSet(
+					metadataToSubscriptionMap, otherRestrictiveMetadata);
+
+			for (String subscriptionId : scopeComplianceSet) {
+
+				map.put(subscriptionId, new ContextRegistration());
+
 			}
 
 		} else {
-			
+
+			Set<String> scopeComplianceSet = getScopesComplianceSet(
+					metadataToSubscriptionMap, otherRestrictiveMetadata);
+
 			for (EntityId entityId : contextRegistration.getListEntityId()) {
 
-				if (entityId.getIsPattern()){
-					
-					if (".*".equals(entityId.getId())){
-						for (String subscriptionId : entityIdPatternToSubscriptionIdMap.values()) {
-							if (!map.containsKey(subscriptionId)){
-								map.put(subscriptionId, new ContextRegistration());
-								
-								qui abbiamo un problema, gli indici di type e gli indici di entityId.id non sono correlati, quindi non posso fare un controllo degli id con i type richiesti. 
-								
+				if (entityId.getIsPattern()) {
+
+					/*
+					 * ContextRegistration.EntityId is a pattern
+					 */
+
+					if (".*".equals(entityId.getId())) {
+
+						/*
+						 * EntityId is a pattern : WildCard for entityId.id
+						 */
+
+						Collection<String> indices;
+						if (entityId.getType() == null
+								|| entityId.getType().toString().isEmpty()) {
+
+							// Since the ContextRegistration has wildcard both
+							// on entityId.id (i.e. .*) and for types (null or
+							// empty) then we take all the subscriptions
+							indices = typeToSubscriptionIdMap.values();
+
+						} else {
+							// Otherwise we check the types
+							indices = typeToSubscriptionIdMap.get(entityId
+									.getType().toString());
+
+							// And the superTypes if any
+							if (superTypesMap != null
+									&& superTypesMap.containsKey(entityId
+											.getType())) {
+								for (URI superType : superTypesMap.get(entityId
+										.getType())) {
+									indices.addAll(typeToSubscriptionIdMap
+											.get(superType.toString()));
+								}
+							}
+						}
+
+						for (String index : indices) {
+
+							String subscriptionId = index
+									.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0];
+
+							if (scopeComplianceSet.contains(subscriptionId)) {
+
+								addEntityIdToSubscriptionToContextReg(map,
+										contextRegistration, subscriptionId,
+										entityId);
+							}
+						}
+					} else {
+
+						/*
+						 * ContextRegistration.EntityId is a pattern: generic
+						 */
+
+						for (String id : entityIdToSubscriptionIdMap.keySet()) {
+
+							if (Collections.disjoint(
+									entityIdToSubscriptionIdMap.get(id),
+									scopeComplianceSet)) {
+
+								// if there are no scope compliant subscription
+								// in the set, it is useless to spend time to
+								// check the regex
+								continue;
+							}
+
+							if (id.matches(entityId.getId())) {
+
+								Collection<String> indices = entityIdToSubscriptionIdMap
+										.get(id);
+
+								if (entityId.getType() != null
+										&& !entityId.getType().toString()
+												.isEmpty()) {
+
+									Collection<String> collection = typeToSubscriptionIdMap
+											.get(entityId.getType().toString());
+
+									// And the superTypes if any
+									if (superTypesMap != null
+											&& superTypesMap
+													.containsKey(entityId
+															.getType())) {
+										for (URI superType : superTypesMap
+												.get(entityId.getType())) {
+											collection
+													.addAll(typeToSubscriptionIdMap.get(superType
+															.toString()));
+										}
+									}
+
+									// Retain only the one that are matching
+									// also the entityId.type
+									indices.retainAll(collection);
+
+								}
+
+								for (String index : indices) {
+
+									String subscriptionId = index
+											.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0];
+
+									if (scopeComplianceSet
+											.contains(subscriptionId)) {
+										addEntityIdToSubscriptionToContextReg(
+												map, contextRegistration,
+												subscriptionId, entityId);
+									}
+								}
 							}
 						}
 					}
-					
+				} else {
+
+					/*
+					 * ContextRegistration.EntityId is not a pattern
+					 */
+
+					Collection<String> indices = entityIdToSubscriptionIdMap
+							.get(entityId.getId());
+
+					for (String pattern : entityIdPatternToSubscriptionIdMap
+							.keySet()) {
+
+						if (".*".equals(pattern)) {
+							indices.addAll(entityIdPatternToSubscriptionIdMap
+									.get(pattern));
+						} else if (entityId.getId().matches(pattern)) {
+							indices.addAll(entityIdPatternToSubscriptionIdMap
+									.get(pattern));
+						}
+					}
+
+					if (entityId.getType() != null
+							&& !entityId.getType().toString().isEmpty()) {
+
+						Collection<String> collection = typeToSubscriptionIdMap
+								.get(entityId.getType().toString());
+
+						// And the superTypes if any
+						if (superTypesMap != null
+								&& superTypesMap
+										.containsKey(entityId.getType())) {
+							for (URI superType : superTypesMap.get(entityId
+									.getType())) {
+								collection.addAll(typeToSubscriptionIdMap
+										.get(superType.toString()));
+							}
+						}
+
+						// Retain only the one that are matching
+						// also the entityId.type
+						indices.retainAll(collection);
+					}
+
+					for (String index : indices) {
+
+						String subscriptionId = index
+								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0];
+
+						if (scopeComplianceSet.contains(subscriptionId)) {
+							addEntityIdToSubscriptionToContextReg(map,
+									contextRegistration, subscriptionId,
+									entityId);
+						}
+					}
+
 				}
-				
 			}
 		}
 
-		String jsView = JavascriptGenerator.createJavaScriptView(
-				contextRegistration, metadataToSubscriptionMap,
-				otherRestrictiveMetadata, superTypesMap);
+		/*
+		 * Here we check the contextAttribute.
+		 * 
+		 * At this point we have 3 cases:
+		 * 
+		 * a) contextRegistrationAttributeList is null or empty
+		 * 
+		 * --> Simply skip the check and have as notification map what you have
+		 * found
+		 * 
+		 * b) subscription.contextRegistrationAttributeList is null or empty
+		 * 
+		 * --> Add all the available ContextRegistrationAttribute if any to such
+		 * subscriptions
+		 * 
+		 * c) contextRegistrationAttributeList is not empty &&
+		 * subscription.contextRegistrationAttributeList is not empty
+		 * 
+		 * --> Check the matching
+		 */
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("View from contextRegistration created:" + jsView);
+		Multimap<String, ContextRegistrationAttribute> subscriptionToContextRegAttr = HashMultimap
+				.create();
+
+		// check if case a)
+		if (contextRegistration.getContextRegistrationAttribute() != null
+				&& !contextRegistration.getContextRegistrationAttribute()
+						.isEmpty()) {
+
+			// check case b)
+			for (String subscriptionId : attributeToSubscriptionIdMap.get(null)) {
+				subscriptionToContextRegAttr.putAll(subscriptionId,
+						contextRegistration.getContextRegistrationAttribute());
+			}
+
+			// check case c)
+			for (ContextRegistrationAttribute contextRegAtt : contextRegistration
+					.getContextRegistrationAttribute()) {
+
+				for (String subscriptionId : attributeToSubscriptionIdMap
+						.get(contextRegAtt.getName())) {
+
+					subscriptionToContextRegAttr.put(subscriptionId,
+							contextRegAtt);
+
+				}
+
+			}
+
 		}
 
-		FullHttpResponse viewResult = executeView(jsView,
-				DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY);
+		indicesReadWrite_Subscriptions.readLock().unlock();
 
-		if (logger.isDebugEnabled()) {
-			logger.debug("Result of the contextRegistration in the "
-					+ DocumentType.SUBSCRIBE_CONTEXT_AVAILABILITY.getDb_name()
-					+ ": \n" + viewResult.getBody());
+		return complementMap(map, subscriptionToContextRegAttr);
+	}
+
+	private Set<String> getScopesComplianceSet(
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata) {
+
+		Set<String> subscriptionSet = new HashSet<String>();
+
+		boolean isFirst = true;
+
+		for (MetadataTypes metadataType : metadataToSubscriptionMap.keySet()) {
+			Set<String> set = new HashSet<String>();
+			set.addAll(notScopeTypesToSubscriptionIdMap.get(metadataType
+					.getName()));
+			set.addAll(metadataToSubscriptionMap.get(metadataType));
+			if (isFirst) {
+				subscriptionSet = set;
+			} else {
+				subscriptionSet.retainAll(set);
+				isFirst = false;
+			}
+
+			if (subscriptionSet.isEmpty()) {
+				// shortcut since there are no subscription left
+				return subscriptionSet;
+			}
+
 		}
 
-		Multimap<SubscriptionToNotify, ContextRegistration> multimap = this
-				.generateNotificationsMap(viewResult.getBody());
+		for (MetadataTypes metadataType : otherRestrictiveMetadata) {
+			if (isFirst) {
+				subscriptionSet.addAll(notScopeTypesToSubscriptionIdMap
+						.get(metadataType.getName()));
+			} else {
+				subscriptionSet.retainAll(notScopeTypesToSubscriptionIdMap
+						.get(metadataType.getName()));
+				isFirst = false;
+			}
 
-		return multimap;
+			if (subscriptionSet.isEmpty()) {
+				// shortcut since there are no subscription left
+				return subscriptionSet;
+			}
+		}
+
+		return subscriptionSet;
+
+	}
+
+	private Set<String> retainScopeComplianceSet(
+			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
+			Set<MetadataTypes> otherRestrictiveMetadata,
+			Set<String> matchingSubscriptionIdSet) {
+
+		Set<String> subscriptionSet = new HashSet<String>();
+
+		boolean isFirst = true;
+
+		for (MetadataTypes metadataType : metadataToSubscriptionMap.keySet()) {
+
+			Set<String> set1 = new HashSet<String>(matchingSubscriptionIdSet);
+			set1.removeAll(scopeTypesToSubscriptionIdMap.get(metadataType
+					.getName()));
+
+			Set<String> set2 = new HashSet<String>(matchingSubscriptionIdSet);
+			set2.retainAll(metadataToSubscriptionMap.get(metadataType));
+
+			set2.retainAll(set1);
+
+			if (isFirst) {
+				subscriptionSet.addAll(set2);
+			} else {
+				subscriptionSet.retainAll(set2);
+				isFirst = false;
+			}
+
+			if (subscriptionSet.isEmpty()) {
+				// shortcut since there are no subscription left
+				return subscriptionSet;
+			}
+		}
+
+		for (MetadataTypes metadataType : otherRestrictiveMetadata) {
+
+			Set<String> set1 = new HashSet<String>(matchingSubscriptionIdSet);
+			set1.removeAll(scopeTypesToSubscriptionIdMap.get(metadataType
+					.getName()));
+
+			if (isFirst) {
+				subscriptionSet.addAll(set1);
+			} else {
+				subscriptionSet.retainAll(set1);
+				isFirst = false;
+			}
+
+			if (subscriptionSet.isEmpty()) {
+				// shortcut since there are no subscription left
+				return subscriptionSet;
+			}
+		}
+
+		return subscriptionSet;
+
+	}
+
+	private void addEntityIdToSubscriptionToContextReg(
+			Map<String, ContextRegistration> map,
+			ContextRegistration originalContextRegistration,
+			String subscriptionId, EntityId entityId) {
+
+		deletedSubscriptionsReadWriteLock.readLock().lock();
+		if (deletedSubscriptions.contains(subscriptionId)) {
+			return;
+		}
+		deletedSubscriptionsReadWriteLock.readLock().unlock();
+
+		if (!map.containsKey(subscriptionId)) {
+
+			// This subscription has not yet been added
+			// to the map
+			ContextRegistration contextReg = getContextRegistrationTemplateForNotification(originalContextRegistration);
+			contextReg.getListEntityId().add(entityId);
+			map.put(subscriptionId, contextReg);
+
+		} else {
+
+			// This subscription has been already added
+			// to the map, so we check if the same
+			// entity has been added
+			ContextRegistration contextReg = map.get(subscriptionId);
+			if (!contextReg.getListEntityId().contains(entityId)) {
+				contextReg.getListEntityId().add(entityId);
+			}
+		}
+	}
+
+	/**
+	 * This map takes the out of the Subscriptions EntityIds lookup versus the
+	 * ContextRegistration and the Subscriptions Attributs lookup versus, again,
+	 * the ContextRegistration. It make an AND check (the subscriptions must in
+	 * both maps) and then complements the information in the final notification
+	 * map.
+	 * 
+	 * @param map
+	 * @param subscriptionToContextRegAttr
+	 * @return
+	 */
+	private Map<SubscriptionToNotify, ContextRegistration> complementMap(
+			Map<String, ContextRegistration> map,
+			Multimap<String, ContextRegistrationAttribute> subscriptionToContextRegAttr) {
+
+		Map<SubscriptionToNotify, ContextRegistration> notificationMap = new HashMap<SubscriptionToNotify, ContextRegistration>();
+
+		for (String subscriptionId : subscriptionToContextRegAttr.keySet()) {
+
+			ContextRegistration contextRegistration = map.get(subscriptionId);
+
+			if (contextRegistration != null) {
+				SubscriptionToNotify subscriptionToNotify = new SubscriptionToNotify(
+						subscriptionId,
+						subscriptionIdToReferenceMap.get(subscriptionId));
+				subscriptionToNotify
+						.setAttributeExpression(subscriptionIdToAttributeExpressionMap
+								.get(subscriptionId));
+				contextRegistration.getContextRegistrationAttribute().addAll(
+						subscriptionToContextRegAttr.get(subscriptionId));
+				notificationMap.put(subscriptionToNotify, contextRegistration);
+			}
+
+		}
+
+		return notificationMap;
+
+	}
+
+	private ContextRegistration getContextRegistrationTemplateForNotification(
+			ContextRegistration contextRegistration) {
+
+		return new ContextRegistration(new ArrayList<EntityId>(),
+				new ArrayList<ContextRegistrationAttribute>(),
+				contextRegistration.getListContextMetadata(),
+				contextRegistration.getProvidingApplication());
+
 	}
 
 	/**
@@ -2237,15 +2865,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 	 * @param results
 	 * @return
 	 */
-	private Multimap<SubscriptionToNotify, ContextRegistration> generateNotificationsMap(
+	private Map<SubscriptionToNotify, ContextRegistration> generateNotificationsMap(
 			String results) {
 
 		// Subscriber -> Set<ContextRegistration>
-		Multimap<SubscriptionToNotify, ContextRegistration> multimap = HashMultimap
-				.create();
+		Map<SubscriptionToNotify, ContextRegistration> map = new HashMap<SubscriptionToNotify, ContextRegistration>();
 
 		if (results == null || results.isEmpty()) {
-			return multimap;
+			return map;
 		}
 
 		JsonElement jelement = new JsonParser().parse(results);
@@ -2281,15 +2908,17 @@ public class CouchDB implements Ngsi9StorageInterface {
 						.parseContextRegistration(row.get("value").toString());
 
 				// Put in the multimap
-				multimap.put(subscriptionToNotify, contextRegAv);
-				logger.info("Row " + i + " :" + row
-						+ "\nNotification should be sent to:\n"
-						+ subscriptionToNotify + "\nWith data:\n"
-						+ contextRegAv);
+				map.put(subscriptionToNotify, contextRegAv);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Row " + i + " :" + row
+							+ "\nNotification should be sent to:\n"
+							+ subscriptionToNotify + "\nWith data:\n"
+							+ contextRegAv);
+				}
 			}
 		}
 
-		return multimap;
+		return map;
 	}
 
 }

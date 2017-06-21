@@ -4,7 +4,7 @@ function(doc) {
         var subscription = doc.subscribeContextAvailabilityRequest;
 	
 		if (subscription.attributeList) {
-			var subscriptionAttributeList = subscription.attributeList;
+			var subscriptionAttributeList = subscription.attributeList.attribute;
 						
 			if (Object.prototype.toString.call(subscriptionAttributeList) !== '[object Array]') {
 				

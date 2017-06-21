@@ -13,7 +13,7 @@ public class ContextRegistrationFilter {
 
 	// In order to go into the full filter, the map needs to have at least one
 	// element for each of the set
-	private Map<Integer, Pair<Set<Integer>, Set<Integer>>> preStageFilter = new HashMap<Integer, Pair<Set<Integer>, Set<Integer>>>();;
+	private Map<Integer, Pair<Set<Integer>, Set<Integer>>> preStageFilter = new HashMap<Integer, Pair<Set<Integer>, Set<Integer>>>();
 
 	/**
 	 * It return true when after this adding the filter becomes a full filter

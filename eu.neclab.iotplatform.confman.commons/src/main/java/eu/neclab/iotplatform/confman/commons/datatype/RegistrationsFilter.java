@@ -102,7 +102,7 @@ public class RegistrationsFilter {
 						.getContextRegistrationIndex().getRegistrationId(),
 						contextRegistrationFilter);
 
-				contextRegistrationFilter.addEntityIdIndex(attributeIndex
+				contextRegistrationFilter.addAttributeIndex(attributeIndex
 						.getContextRegistrationIndex()
 						.getContextRegistrationIndex(), attributeIndex
 						.getContextRegistrationAttributeIndex());

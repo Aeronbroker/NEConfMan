@@ -228,8 +228,10 @@ public class HttpRequester {
 			con.setRequestProperty("Content-Type", contentType);
 		}
 
-		logger.info("\nSending 'PUT' request to URL : " + url + "\n"
-				+ "Put parameters : " + data + "\n");
+		if (logger.isDebugEnabled()) {
+			logger.debug("\nSending 'PUT' request to URL : " + url + "\n"
+					+ "Put parameters : " + data + "\n");
+		}
 
 		if (data != null && !data.equals("")) {
 			// Send put request
@@ -268,8 +270,11 @@ public class HttpRequester {
 			httpResponse.setBody(response.toString());
 
 			// logger.info("Response Code : " + responseCode);
-			logger.info("\nResponse Code : " + responseCode + "\n"
-					+ "Response : " + response.toString());
+			if (logger.isDebugEnabled()) {
+
+				logger.debug("\nResponse Code : " + responseCode + "\n"
+						+ "Response : " + response.toString());
+			}
 
 			con.disconnect();
 			return httpResponse;
