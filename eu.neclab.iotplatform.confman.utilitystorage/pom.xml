@@ -44,7 +44,8 @@
 							eu.neclab.iotplatform.confman.commons.interfaces;version=0.0.0,
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
 							javax.annotation,
-							org.apache.log4j
+							org.apache.log4j,
+							com.google.common.collect
 						</Import-Package>
 					</instructions>
 				</configuration>
@@ -66,6 +67,9 @@
 			<version>1.0.0</version>
 		</dependency>
 
-
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
 	</dependencies>
 </project>

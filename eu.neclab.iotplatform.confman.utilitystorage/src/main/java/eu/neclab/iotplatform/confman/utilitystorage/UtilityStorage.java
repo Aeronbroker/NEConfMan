@@ -42,7 +42,6 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.utilitystorage;
 
 import java.io.File;
@@ -66,10 +65,13 @@ import javax.annotation.PostConstruct;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.collect.Multimap;
+
 import eu.neclab.iotplatform.confman.commons.datatype.Pair;
 import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.PostgresInterface;
 import eu.neclab.iotplatform.confman.commons.interfaces.UtilityStorageInterface;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.EntityId;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 
@@ -515,7 +517,6 @@ public class UtilityStorage implements UtilityStorageInterface {
 								subscription, geoHashSet));
 			}
 
-
 			try {
 				if (rs != null) {
 					rs.close();
@@ -571,6 +572,43 @@ public class UtilityStorage implements UtilityStorageInterface {
 
 			execute(sql);
 
+		}
+
+	}
+
+	@Override
+	public void storeNotifications(String subscriptionId,
+			Multimap<String, String> regIdAndHashes) {
+
+		StringBuffer sql = new StringBuffer();
+
+		for (String registrationId : regIdAndHashes.keySet()) {
+
+			StringBuffer geoHashesSB = new StringBuffer();
+			Iterator<String> geoHashesIterator = regIdAndHashes.get(
+					registrationId).iterator();
+			while (geoHashesIterator.hasNext()) {
+				geoHashesSB.append(geoHashesIterator.next());
+				if (geoHashesIterator.hasNext()) {
+					geoHashesSB.append(",");
+				}
+			}
+
+			if (subscriptionId != null && !subscriptionId.isEmpty()
+					&& registrationId != null && !registrationId.isEmpty()) {
+
+				String insert = String
+						.format("INSERT INTO %s (subscriptionid, registrationid, geohashlist) VALUES ('%s','%s','%s');",
+								notificationTable, subscriptionId,
+								registrationId, geoHashesSB.toString());
+				sql.append(insert);
+
+			}
+		}
+
+		execute(sql.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Inserting notifications sent: " + sql);
 		}
 
 	}
