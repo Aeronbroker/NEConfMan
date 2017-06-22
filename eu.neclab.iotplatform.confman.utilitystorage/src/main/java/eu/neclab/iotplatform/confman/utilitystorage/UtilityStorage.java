@@ -159,7 +159,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 			// Ask for all the tables existing in the database
 			String query = "SELECT table_name FROM information_schema.tables;";
 
-			logger.info("SQL request: " + query);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + query);
+			}
 			rs = st.executeQuery(query);
 
 			// Check the table list against the table that should exist
@@ -250,7 +252,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 							subscriptionTable,
 							subscription.getSubscriptionId(),
 							subscription.getReference());
-			logger.info("Subscription storing: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Subscription storing: " + sql);
+			}
 			execute(sql);
 
 			/*
@@ -272,7 +276,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 			sql = String
 					.format("INSERT INTO %s (subscriptionid, entityid, type, ispattern) VALUES %s;",
 							subscriptionEntityTable, entityIdSB.toString());
-			logger.info("SubscriptionEntities storing: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SubscriptionEntities storing: " + sql);
+			}
 			execute(sql);
 
 			/*
@@ -295,7 +301,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 						.format("INSERT INTO %s (subscriptionid, attribute) VALUES %s;",
 								subscriptionAttributeTable,
 								attributesSB.toString());
-				logger.info("SubscriptionAttributes storing: " + sql);
+				if (logger.isDebugEnabled()) {
+					logger.debug("SubscriptionAttributes storing: " + sql);
+				}
 				execute(sql);
 			}
 
@@ -314,7 +322,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 
 				st = con.createStatement();
 				st.execute(sql);
-				logger.info("SQL request: " + sql);
+				if (logger.isDebugEnabled()) {
+					logger.debug("SQL request: " + sql);
+				}
 
 			} catch (SQLException e) {
 				logger.error("Error!! ", e);
@@ -340,7 +350,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 		String sql = String.format(
 				"DELETE FROM %s WHERE subscriptionid = '%s';",
 				subscriptionTable, subscriptionId);
-		logger.info("Subscription storing: " + sql);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Subscription storing: " + sql);
+		}
 		execute(sql);
 
 	}
@@ -364,7 +376,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 					"SELECT reference FROM %s WHERE subscriptionid = '%s';",
 					subscriptionTable, subscriptionId);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 
 			if (rs.next()) {
@@ -391,7 +405,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 					.format("SELECT entityid,type,ispattern FROM %s WHERE subscriptionid = '%s';",
 							subscriptionEntityTable, subscriptionId);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 			while (rs.next()) {
 				EntityId entityId = new EntityId();
@@ -433,7 +449,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 					"SELECT attribute FROM %s WHERE subscriptionid = '%s';",
 					subscriptionAttributeTable, subscriptionId);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 			while (rs.next()) {
 				attributeList.add(rs.getString("attribute"));
@@ -492,7 +510,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 							registrationId
 									.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0]);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 
 			// Set<String> subscriptionIdSet = new HashSet<>();
@@ -568,8 +588,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 					.format("INSERT INTO %s (subscriptionid, registrationid, geohashlist) VALUES ('%s','%s','%s');",
 							notificationTable, subscriptionId, registrationId,
 							geoHashesSB.toString());
-			logger.info("Inserting notifications sent: " + sql);
-
+			if (logger.isDebugEnabled()) {
+				logger.debug("Inserting notifications sent: " + sql);
+			}
 			execute(sql);
 
 		}
@@ -643,7 +664,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 									.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0],
 							subscriptionId);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 
 			Set<String> oldHashSet = new HashSet<String>();
@@ -713,7 +736,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 						subscriptionId,
 						registrationId
 								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0]);
-		logger.info("Subscription storing: " + sql);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Subscription storing: " + sql);
+		}
 		execute(sql);
 
 	}
@@ -744,7 +769,9 @@ public class UtilityStorage implements UtilityStorageInterface {
 					"SELECT reference FROM %s WHERE subscriptionid = '%s';",
 					subscriptionTable, subscriptionId);
 			st = con.createStatement();
-			logger.info("SQL request: " + sql);
+			if (logger.isDebugEnabled()) {
+				logger.debug("SQL request: " + sql);
+			}
 			rs = st.executeQuery(sql);
 
 			if (rs.next()) {
