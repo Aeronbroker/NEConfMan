@@ -194,8 +194,10 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				Ngsi9ExtensionInterface extension = extensionCatalogue
 						.get(metadataType);
 
-				logger.info("ContextMetadata to be sent to extension: "
-						+ extension + "\n" + contextMetadata);
+				if (logger.isDebugEnabled()) {
+					logger.debug("ContextMetadata to be sent to extension: "
+							+ extension + "\n" + contextMetadata);
+				}
 
 				return extension;
 

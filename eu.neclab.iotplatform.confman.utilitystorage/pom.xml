@@ -43,7 +43,7 @@
 							eu.neclab.iotplatform.confman.commons.datatype;version=0.0.0,
 							eu.neclab.iotplatform.confman.commons.interfaces;version=0.0.0,
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
-							javax.annotation,
+							javax.annotation;version=0.0.0,
 							org.apache.log4j,
 							com.google.common.collect
 						</Import-Package>
