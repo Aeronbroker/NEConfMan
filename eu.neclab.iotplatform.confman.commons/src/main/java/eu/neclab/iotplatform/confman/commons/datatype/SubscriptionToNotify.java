@@ -42,35 +42,31 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.datatype;
 
 public class SubscriptionToNotify {
-	
-
 
 	private String reference;
 	private String subscriptionId;
 	private String attributeExpression;
-	
-	
+
 	public SubscriptionToNotify() {
 		super();
 	}
-	
-	public SubscriptionToNotify(String reference, String subscriptioId) {
+
+	public SubscriptionToNotify(String reference, String subscriptionId) {
 		super();
 		this.reference = reference;
-		this.subscriptionId = subscriptioId;
+		this.subscriptionId = subscriptionId;
 	}
-	
+
 	public String getReference() {
 		return reference;
 	}
+
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
-
 
 	public String getSubscriptionId() {
 		return subscriptionId;
@@ -79,8 +75,6 @@ public class SubscriptionToNotify {
 	public void setSubscriptionId(String subscriptionId) {
 		this.subscriptionId = subscriptionId;
 	}
-	
-	
 
 	public String getAttributeExpression() {
 		return attributeExpression;
@@ -114,6 +108,11 @@ public class SubscriptionToNotify {
 		if (getClass() != obj.getClass())
 			return false;
 		SubscriptionToNotify other = (SubscriptionToNotify) obj;
+		if (subscriptionId == null) {
+			if (other.subscriptionId != null)
+				return false;
+		} else if (!subscriptionId.equals(other.subscriptionId))
+			return false;
 		if (attributeExpression == null) {
 			if (other.attributeExpression != null)
 				return false;
@@ -124,11 +123,6 @@ public class SubscriptionToNotify {
 				return false;
 		} else if (!reference.equals(other.reference))
 			return false;
-		if (subscriptionId == null) {
-			if (other.subscriptionId != null)
-				return false;
-		} else if (!subscriptionId.equals(other.subscriptionId))
-			return false;
 		return true;
 	}
 
@@ -138,11 +132,5 @@ public class SubscriptionToNotify {
 				+ ", subscriptionId=" + subscriptionId
 				+ ", attributeExpression=" + attributeExpression + "]";
 	}
-
-
-	
-	
-	
-	
 
 }

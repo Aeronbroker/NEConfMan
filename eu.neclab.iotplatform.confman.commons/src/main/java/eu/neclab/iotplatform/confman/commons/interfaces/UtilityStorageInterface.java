@@ -48,6 +48,8 @@ package eu.neclab.iotplatform.confman.commons.interfaces;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Multimap;
+
 import eu.neclab.iotplatform.confman.commons.datatype.Pair;
 import eu.neclab.iotplatform.ngsi.api.datamodel.SubscribeContextAvailabilityRequest;
 
@@ -83,6 +85,9 @@ public interface UtilityStorageInterface {
 	 */
 	void storeNotification(String subscriptionId, String registrationId,
 			Set<String> metadataHashes);
+	
+	void storeNotifications(String subscriptionId,
+			Multimap<String, String> regIdAndHashes);
 
 	/**
 	 * Delete all the information related to this

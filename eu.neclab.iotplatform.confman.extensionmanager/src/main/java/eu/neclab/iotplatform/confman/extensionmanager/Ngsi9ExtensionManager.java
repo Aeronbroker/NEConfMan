@@ -194,8 +194,10 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 				Ngsi9ExtensionInterface extension = extensionCatalogue
 						.get(metadataType);
 
-				logger.info("ContextMetadata to be sent to extension: "
-						+ extension + "\n" + contextMetadata);
+				if (logger.isDebugEnabled()) {
+					logger.debug("ContextMetadata to be sent to extension: "
+							+ extension + "\n" + contextMetadata);
+				}
 
 				return extension;
 
@@ -288,8 +290,13 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 								.get(metadataType);
 
 						logger.info("OperationScope to be sent to extension: "
-								+ extension.getDescription() + "\n"
-								+ operationScope);
+								+ extension.getDescription());
+						if (logger.isDebugEnabled()) {
+							logger.debug("OperationScope to be sent to extension: "
+									+ extension.getDescription()
+									+ "\n"
+									+ operationScope);
+						}
 						// Put in the map
 						operationScopeDispatch.put(extension, operationScope);
 
@@ -392,11 +399,13 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 					extension.computeDiscoveryRestriction(operationScopeList));
 		}
 
-		logger.info("FullyMetadataCompliantRegIdSet: "
-				+ restrictionAppliedFromDiscovery
-						.getFullyMetadataCompliantRegIdSet()
-				+ "\n HasRestrictionApplied: "
-				+ restrictionAppliedFromDiscovery.hasRestrictionApplied());
+		if (logger.isDebugEnabled()) {
+			logger.debug("FullyMetadataCompliantRegIdSet: "
+					+ restrictionAppliedFromDiscovery
+							.getFullyMetadataCompliantRegIdSet()
+					+ "\n HasRestrictionApplied: "
+					+ restrictionAppliedFromDiscovery.hasRestrictionApplied());
+		}
 
 		return restrictionAppliedFromDiscovery;
 

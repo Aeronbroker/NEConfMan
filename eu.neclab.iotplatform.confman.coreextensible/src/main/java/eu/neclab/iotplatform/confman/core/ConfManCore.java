@@ -51,6 +51,7 @@ import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -460,7 +461,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				 * against such Subscription.
 				 * 
 				 * 3) A Subscription and the ContextRegistration are specifying
-				 * different type of metadata. In this case there is not
+				 * different types of metadata. In this case there is not
 				 * mismatching between the metadata values. Further check must
 				 * be done against such Subscription.
 				 * 
@@ -511,17 +512,18 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				// specifying
 				// the previous map and whether the Ngsi9Storage must care about
 				// metadataRestriction
-				Multimap<SubscriptionToNotify, ContextRegistration> ngsi9StorageResponse = ngsi9Storage
-						.checkSubscriptions(contReg,
-								!metadataToSubscriptionMap.isEmpty(),
-								metadataToSubscriptionMap,
+				Map<SubscriptionToNotify, ContextRegistration> ngsi9StorageResponse = ngsi9Storage
+						.checkSubscriptions(contReg, metadataToSubscriptionMap,
 								otherRestrictiveMetadata, superTypesMap);
 
 				// We then apply the attribute Expressions (if present)
 				applyAttributeExpression(ngsi9StorageResponse);
 
 				// Finally we add them
-				multimap.putAll(ngsi9StorageResponse);
+				for (Entry<SubscriptionToNotify, ContextRegistration> entry : ngsi9StorageResponse
+						.entrySet()) {
+					multimap.put(entry.getKey(), entry.getValue());
+				}
 
 			}
 			logger.info("Resulting notification multimap:" + multimap);
@@ -563,10 +565,10 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	}
 
 	private void applyAttributeExpression(
-			Multimap<SubscriptionToNotify, ContextRegistration> multimap) {
+			Map<SubscriptionToNotify, ContextRegistration> map) {
 
-		Iterator<Entry<SubscriptionToNotify, ContextRegistration>> iterator = multimap
-				.entries().iterator();
+		Iterator<Entry<SubscriptionToNotify, ContextRegistration>> iterator = map
+				.entrySet().iterator();
 		while (iterator.hasNext()) {
 
 			Entry<SubscriptionToNotify, ContextRegistration> pair = iterator
@@ -1124,7 +1126,9 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		// Sanify wrong regular expression. e.g. "*" should become ".*"
 		sanifyWrongRegExp(request.getEntityIdList());
 
-		logger.info("Subscribe Context Availability received:\n" + request);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Subscribe Context Availability received:\n" + request);
+		}
 
 		// If this flag is true it means that it is needed no storing in
 		// the database. This can happen when a SubscribeContextAvailability has
@@ -1219,28 +1223,29 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 	private void storeNotifications(String subscriptionId,
 			Multimap<String, ContextRegistrationResponse> regIdAndContReg) {
 
+		Multimap<String, String> regIdAndHashes = HashMultimap.create();
+		
 		// Iterate over all RegistrationId
-		Set<String> keySet = regIdAndContReg.keySet();
-
-		Iterator<String> keyIterator = keySet.iterator();
-
-		while (keyIterator.hasNext()) {
-
-			String registrationId = keyIterator.next();
+		for (String registrationId : regIdAndContReg.keySet()) {
 
 			// Get the list of ContextRegistrationResponse, belonging to the
 			// given RegisterContext, that have been notified
 			List<ContextRegistrationResponse> contRegResList = new ArrayList<ContextRegistrationResponse>(
 					regIdAndContReg.get(registrationId));
 
-			Set<String> metadataValueHashSet = ngsi9ExtensionManager
-					.getMetadataValueHashes(contRegResList).getElement1();
+//			Set<String> metadataValueHashSet = ngsi9ExtensionManager
+//					.getMetadataValueHashes(contRegResList).getElement1();
+			
+			regIdAndHashes.putAll(registrationId, ngsi9ExtensionManager
+					.getMetadataValueHashes(contRegResList).getElement1());
 
 			// Store the notifications
-			utilityStorage.storeNotification(subscriptionId, registrationId,
-					metadataValueHashSet);
+//			utilityStorage.storeNotifications(subscriptionId, regIdAndHashes);
 
 		}
+		
+		utilityStorage.storeNotifications(subscriptionId, regIdAndHashes);
+
 	}
 
 	/**

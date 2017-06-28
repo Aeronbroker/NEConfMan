@@ -42,13 +42,14 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.methods;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import javax.xml.bind.JAXBException;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -62,6 +63,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import eu.neclab.iotplatform.confman.commons.datatype.ContextRegistrationFilter;
 import eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Circle;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ContextMetadata;
@@ -122,7 +124,8 @@ public class JSonNgsi9Parser {
 		 * Parse ContextMetadata.Value
 		 */
 		if (jo.get("value") != null) {
-			if ("simplegeolocation".equals(contextMetadata.getName().toLowerCase())) {
+			if ("simplegeolocation".equals(contextMetadata.getName()
+					.toLowerCase())) {
 
 				if (jo.get("value").toString().contains("segment")) {
 					Segment segment = new Segment();
@@ -293,8 +296,8 @@ public class JSonNgsi9Parser {
 			// }
 		}
 
-//		contextMetadata = (ContextMetadata) NgsiStructure.convertStringToXml(
-//				contextMetadata.toString(), ContextMetadata.class);
+		// contextMetadata = (ContextMetadata) NgsiStructure.convertStringToXml(
+		// contextMetadata.toString(), ContextMetadata.class);
 
 		return contextMetadata;
 
@@ -576,176 +579,182 @@ public class JSonNgsi9Parser {
 
 	public static void main(String[] args) throws URISyntaxException,
 			JAXBException {
-//		for (int i = 0; i < 18; i++) {
-//			int value = 3070 + i;
-//			String file = "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:"
-//					+ value + ".obs";
-//			BufferedReader br;
-//			StringBuffer sb = new StringBuffer();
-//			try {
-//				br = new BufferedReader(new FileReader(file));
-//				String line;
-//				while ((line = br.readLine()) != null) {
-//					JsonParser jsonParser = new JsonParser();
-//					JsonObject jo = (JsonObject) jsonParser.parse(line);
-//
-//					JsonObject joValue = jo.get("doc").getAsJsonObject();
-//					joValue.remove("_id");
-//					joValue.remove("_rev");
-//
-//					float lat = 0;
-//					float lng = 0;
-//
-//					JsonArray joAttributes = joValue
-//							.getAsJsonArray("attributes");
-//					Iterator<JsonElement> iter = joAttributes.iterator();
-//					while (iter.hasNext()) {
-//						JsonElement element = iter.next();
-//						String type = element.getAsJsonObject().get("type")
-//								.getAsString();
-//						if ("date".equals(type) || "district".equals(type)
-//								|| "section".equals(type)
-//								|| "count".equals(type)) {
-//							iter.remove();
-//						}
-//						if ("latitude".equals(type)) {
-//							lat = element.getAsJsonObject().get("contextValue")
-//									.getAsFloat();
-//							iter.remove();
-//						}
-//						if ("longitude".equals(type)) {
-//							lng = element.getAsJsonObject().get("contextValue")
-//									.getAsFloat();
-//							iter.remove();
-//						}
-//					}
-//
-//					ContextMetadata simpleGeoLocation = new ContextMetadata();
-//					simpleGeoLocation.setName("SimpleGeoLocation");
-//					simpleGeoLocation.setType(new URI("SimpleGeoLocation"));
-//					simpleGeoLocation.setValue("geoLocationPlaceHolder");
-//
-//					Segment segment = new Segment(String.format("%f,%f", lat,
-//							lng), String.format("%f,%f", lat, lng), null);
-//					JAXBContext jaxbContext = JAXBContext
-//							.newInstance(Segment.class);
-//					Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-//					StringWriter sw = new StringWriter();
-//					jaxbMarshaller.marshal(segment, sw);
-//					String segmentString = sw
-//							.toString()
-//							.replace(
-//									"<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
-//									"");
-//
-//					// Circle circle = new Circle(lat,lng,0f);
-//					//
-//					// JAXBContext jaxbContext =
-//					// JAXBContext.newInstance(Circle.class);
-//					// Marshaller jaxbMarshaller =
-//					// jaxbContext.createMarshaller();
-//					// StringWriter sw = new StringWriter();
-//					// jaxbMarshaller.marshal(circle, sw);
-//					// String cicleString =
-//					// sw.toString().replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
-//					// "");
-//
-//					ObjectMapper mapper = new ObjectMapper();
-//
-//					// 2. Convert JSON to Java object
-//					ContextElement contextElement = mapper.readValue(
-//							joValue.toString(), ContextElement.class);
-//					// System.out.println(contextElement);
-//					List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
-//					contextMetadataList.add(simpleGeoLocation);
-//					contextElement.setDomainMetadata(contextMetadataList);
-//
-//					// 1. Convert Java object to JSON format
-//					// System.out.println(mapper.writeValueAsString(contextElement));
-//
-//					// System.out.println(joValue);
-//					// sb.append(mapper.writeValueAsString(contextElement) +
-//					// "\n");
-//
-//					// JAXBContext context;
-//					try {
-//						jaxbContext = JAXBContext
-//								.newInstance(ContextElement.class);
-//						jaxbMarshaller = jaxbContext.createMarshaller();
-//						sw = new StringWriter();
-//						jaxbMarshaller.marshal(contextElement, sw);
-//						String contextElementString = sw.toString();
-//
-//						// String string = contextElement.toString();
-//						contextElementString = contextElementString
-//								.replace(
-//										"<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
-//										"<value>" + segmentString + "</value>");
-//						String finalContextElement = contextElementString
-//								.replace("\n", "");
-//
-//						sb.append(finalContextElement + "\n");
-//
-//						// JAXBContext jaxbContext =
-//						// JAXBContext.newInstance(ContextElement.class);
-//						// Marshaller jaxbMarshaller =
-//						// jaxbContext.createMarshaller();
-//						//
-//						// // output pretty printed
-//						// jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
-//						// true);
-//						//
-//						// contextElement.setDomainMetadata(null);
-//						//
-//						// jaxbMarshaller.marshal(contextElement, System.out);
-//						// System.out.println();
-//						//
-//						//
-//						// Segment segment = new Segment("4,5","5,5",null);
-//						// jaxbContext = JAXBContext.newInstance(Segment.class);
-//						// jaxbMarshaller= jaxbContext.createMarshaller();
-//						// jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT,
-//						// true);
-//						//
-//						// jaxbMarshaller.marshal(contextElement, System.out);
-//						// System.out.println();
-//						//
-//						// XmlFactory xmlf = new XmlFactory();
-//						// System.out.println(xmlf.convertToXml(contextElement,ContextElement.class));
-//
-//						// System.out.println(contextElement.toString());
-//
-//						// context =
-//						// JAXBContext.newInstance(ContextElement.class);
-//						// Marshaller marshaller = context.createMarshaller();
-//						// StringWriter sw = new StringWriter();
-//						// marshaller.marshal(contextElement, sw);
-//
-//						// System.out.println(mapper.writeValueAsString(contextElement)
-//						// + "\n");
-//
-//						// } catch (JAXBException e) {
-//						// // TODO Auto-generated catch block
-//						// e.printStackTrace();
-//					} catch (Exception e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//
-//				}
-//
-//				System.out.println(sb);
-//				PrintWriter writer = new PrintWriter(file + ".cleaned", "UTF-8");
-//				writer.println(sb.toString());
-//				writer.close();
-//				br.close();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
-//		}
+		// for (int i = 0; i < 18; i++) {
+		// int value = 3070 + i;
+		// String file =
+		// "/home/flavio/mycode/eclipseWorkspace/workspace_Demo-MobileOpCenter/DataResources/observations/urn:x-iot:smartsantander:2:"
+		// + value + ".obs";
+		// BufferedReader br;
+		// StringBuffer sb = new StringBuffer();
+		// try {
+		// br = new BufferedReader(new FileReader(file));
+		// String line;
+		// while ((line = br.readLine()) != null) {
+		// JsonParser jsonParser = new JsonParser();
+		// JsonObject jo = (JsonObject) jsonParser.parse(line);
+		//
+		// JsonObject joValue = jo.get("doc").getAsJsonObject();
+		// joValue.remove("_id");
+		// joValue.remove("_rev");
+		//
+		// float lat = 0;
+		// float lng = 0;
+		//
+		// JsonArray joAttributes = joValue
+		// .getAsJsonArray("attributes");
+		// Iterator<JsonElement> iter = joAttributes.iterator();
+		// while (iter.hasNext()) {
+		// JsonElement element = iter.next();
+		// String type = element.getAsJsonObject().get("type")
+		// .getAsString();
+		// if ("date".equals(type) || "district".equals(type)
+		// || "section".equals(type)
+		// || "count".equals(type)) {
+		// iter.remove();
+		// }
+		// if ("latitude".equals(type)) {
+		// lat = element.getAsJsonObject().get("contextValue")
+		// .getAsFloat();
+		// iter.remove();
+		// }
+		// if ("longitude".equals(type)) {
+		// lng = element.getAsJsonObject().get("contextValue")
+		// .getAsFloat();
+		// iter.remove();
+		// }
+		// }
+		//
+		// ContextMetadata simpleGeoLocation = new ContextMetadata();
+		// simpleGeoLocation.setName("SimpleGeoLocation");
+		// simpleGeoLocation.setType(new URI("SimpleGeoLocation"));
+		// simpleGeoLocation.setValue("geoLocationPlaceHolder");
+		//
+		// Segment segment = new Segment(String.format("%f,%f", lat,
+		// lng), String.format("%f,%f", lat, lng), null);
+		// JAXBContext jaxbContext = JAXBContext
+		// .newInstance(Segment.class);
+		// Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+		// StringWriter sw = new StringWriter();
+		// jaxbMarshaller.marshal(segment, sw);
+		// String segmentString = sw
+		// .toString()
+		// .replace(
+		// "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
+		// "");
+		//
+		// // Circle circle = new Circle(lat,lng,0f);
+		// //
+		// // JAXBContext jaxbContext =
+		// // JAXBContext.newInstance(Circle.class);
+		// // Marshaller jaxbMarshaller =
+		// // jaxbContext.createMarshaller();
+		// // StringWriter sw = new StringWriter();
+		// // jaxbMarshaller.marshal(circle, sw);
+		// // String cicleString =
+		// //
+		// sw.toString().replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n",
+		// // "");
+		//
+		// ObjectMapper mapper = new ObjectMapper();
+		//
+		// // 2. Convert JSON to Java object
+		// ContextElement contextElement = mapper.readValue(
+		// joValue.toString(), ContextElement.class);
+		// // System.out.println(contextElement);
+		// List<ContextMetadata> contextMetadataList = new
+		// ArrayList<ContextMetadata>();
+		// contextMetadataList.add(simpleGeoLocation);
+		// contextElement.setDomainMetadata(contextMetadataList);
+		//
+		// // 1. Convert Java object to JSON format
+		// // System.out.println(mapper.writeValueAsString(contextElement));
+		//
+		// // System.out.println(joValue);
+		// // sb.append(mapper.writeValueAsString(contextElement) +
+		// // "\n");
+		//
+		// // JAXBContext context;
+		// try {
+		// jaxbContext = JAXBContext
+		// .newInstance(ContextElement.class);
+		// jaxbMarshaller = jaxbContext.createMarshaller();
+		// sw = new StringWriter();
+		// jaxbMarshaller.marshal(contextElement, sw);
+		// String contextElementString = sw.toString();
+		//
+		// // String string = contextElement.toString();
+		// contextElementString = contextElementString
+		// .replace(
+		// "<value xsi:type=\"xs:string\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">geoLocationPlaceHolder</value>",
+		// "<value>" + segmentString + "</value>");
+		// String finalContextElement = contextElementString
+		// .replace("\n", "");
+		//
+		// sb.append(finalContextElement + "\n");
+		//
+		// // JAXBContext jaxbContext =
+		// // JAXBContext.newInstance(ContextElement.class);
+		// // Marshaller jaxbMarshaller =
+		// // jaxbContext.createMarshaller();
+		// //
+		// // // output pretty printed
+		// // jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,
+		// // true);
+		// //
+		// // contextElement.setDomainMetadata(null);
+		// //
+		// // jaxbMarshaller.marshal(contextElement, System.out);
+		// // System.out.println();
+		// //
+		// //
+		// // Segment segment = new Segment("4,5","5,5",null);
+		// // jaxbContext = JAXBContext.newInstance(Segment.class);
+		// // jaxbMarshaller= jaxbContext.createMarshaller();
+		// // jaxbMarshaller.setProperty(Marshaller.JAXB_FRAGMENT,
+		// // true);
+		// //
+		// // jaxbMarshaller.marshal(contextElement, System.out);
+		// // System.out.println();
+		// //
+		// // XmlFactory xmlf = new XmlFactory();
+		// //
+		// System.out.println(xmlf.convertToXml(contextElement,ContextElement.class));
+		//
+		// // System.out.println(contextElement.toString());
+		//
+		// // context =
+		// // JAXBContext.newInstance(ContextElement.class);
+		// // Marshaller marshaller = context.createMarshaller();
+		// // StringWriter sw = new StringWriter();
+		// // marshaller.marshal(contextElement, sw);
+		//
+		// // System.out.println(mapper.writeValueAsString(contextElement)
+		// // + "\n");
+		//
+		// // } catch (JAXBException e) {
+		// // // TODO Auto-generated catch block
+		// // e.printStackTrace();
+		// } catch (Exception e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		//
+		// }
+		//
+		// System.out.println(sb);
+		// PrintWriter writer = new PrintWriter(file + ".cleaned", "UTF-8");
+		// writer.println(sb.toString());
+		// writer.close();
+		// br.close();
+		// } catch (IOException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// }
 
-		ContextMetadata c = new ContextMetadata("SimpleGeoLocation", new URI("http://SimpleGeoLocation.com#test"), new Segment("10.5,22.12", "1.10,32.15", null));
+		ContextMetadata c = new ContextMetadata("SimpleGeoLocation", new URI(
+				"http://SimpleGeoLocation.com#test"), new Segment("10.5,22.12",
+				"1.10,32.15", null));
 		System.out.println(c);
 
 	}
@@ -789,7 +798,8 @@ public class JSonNgsi9Parser {
 		/*
 		 * Parse ContextRegistrationAttribute.Metadata
 		 */
-		if (jo.get("metadata") != null && jo.get("metadata").isJsonObject()
+		if (jo.get("metadata") != null
+				&& jo.get("metadata").isJsonObject()
 				&& jo.getAsJsonObject("metadata").get("contextMetadata") != null) {
 
 			JsonArray jsonContextMetadataList;
@@ -976,6 +986,187 @@ public class JSonNgsi9Parser {
 		return contextReg;
 	}
 
+	public static ContextRegistration parseContextRegistration(
+			String jsonContextRegistration,
+			Set<Integer> entityIdAllowedIndices,
+			Set<Integer> attributeAllowedIndices) {
+
+		// System.out.println("Here is the ContextRegistration to parse:"
+		// + jsonContextRegistration);
+
+		JsonParser jsonParser = new JsonParser();
+		JsonObject jo = (JsonObject) jsonParser.parse(jsonContextRegistration);
+
+		// JSONObject root = new JSONObject(tokener);
+
+		ContextRegistration contextReg = new ContextRegistration();
+
+
+		/*
+		 * Parse ContextRegistrationList.EntityIdList
+		 */
+		boolean takeAllEntityIds = false;
+		if (entityIdAllowedIndices == null || entityIdAllowedIndices.isEmpty()
+				|| entityIdAllowedIndices.contains(-1)) {
+			takeAllEntityIds = true;
+		}		
+		JsonArray jsonEntityIdList;
+		if (jo.get("entityIdList") != null
+				&& jo.get("entityIdList").isJsonObject()
+				&& jo.getAsJsonObject("entityIdList").get("entityId") != null) {
+
+			if (jo.getAsJsonObject("entityIdList").get("entityId")
+					.isJsonArray()) {
+				jsonEntityIdList = jo.getAsJsonObject("entityIdList")
+						.getAsJsonArray("entityId");
+			} else {
+				jsonEntityIdList = new JsonArray();
+				jsonEntityIdList.add(jo.getAsJsonObject("entityIdList")
+						.getAsJsonObject("entityId"));
+			}
+			// jo.getAsJsonObject().getAsJsonArray("entityId");
+
+			if (!jsonEntityIdList.isJsonNull()) {
+				List<EntityId> enityIdList = new ArrayList<EntityId>();
+
+				for (int j = 0; j < jsonEntityIdList.size(); j++) {
+
+					if (!takeAllEntityIds && !entityIdAllowedIndices.contains(j)) {
+						continue;
+					}
+
+					// EntityId entity = json.fromJson(jsonEntityIdList.get(j)
+					// .getAsJsonObject(), EntityId.class);
+					EntityId entity = parseEntityId(jsonEntityIdList.get(j)
+							.toString());
+					enityIdList.add(entity);
+
+				}
+				contextReg.setListEntityId(enityIdList);
+			}
+		}
+
+		/*
+		 * Parse ContextRegistrationList.ContextRegistrationAttributeList
+		 */
+		boolean takeAllAttribute = false;
+		if (attributeAllowedIndices == null || attributeAllowedIndices.isEmpty()
+				|| attributeAllowedIndices.contains(-1)) {
+			takeAllAttribute = true;
+		}
+		JsonArray jsonContextRegistrationAttributeList;
+
+		if (jo.get("contextRegistrationAttributeList") != null
+				&& jo.get("contextRegistrationAttributeList").isJsonObject()
+				&& jo.getAsJsonObject("contextRegistrationAttributeList") != null
+				&& !jo.getAsJsonObject("contextRegistrationAttributeList")
+						.isJsonNull()
+				&& jo.getAsJsonObject("contextRegistrationAttributeList").get(
+						"contextRegistrationAttribute") != null) {
+			if (jo.getAsJsonObject("contextRegistrationAttributeList")
+					.get("contextRegistrationAttribute").isJsonArray()) {
+				jsonContextRegistrationAttributeList = jo.getAsJsonObject(
+						"contextRegistrationAttributeList").getAsJsonArray(
+						"contextRegistrationAttribute");
+			} else {
+				jsonContextRegistrationAttributeList = new JsonArray();
+				jsonContextRegistrationAttributeList.add(jo.getAsJsonObject(
+						"contextRegistrationAttributeList").getAsJsonObject(
+						"contextRegistrationAttribute"));
+			}
+
+			if (jsonContextRegistrationAttributeList != null
+					&& !jsonContextRegistrationAttributeList.isJsonNull()) {
+				List<ContextRegistrationAttribute> contextRegistrationAttributeList = new ArrayList<ContextRegistrationAttribute>();
+
+				for (int j = 0; j < jsonContextRegistrationAttributeList.size(); j++) {
+
+					if (!takeAllAttribute && !attributeAllowedIndices.contains(j)) {
+						continue;
+					}
+
+					// ContextRegistrationAttribute contextRegistrationAttribute
+					// = json
+					// .fromJson(
+					// jsonContextRegistrationAttributeList.get(j)
+					// .getAsJsonObject(),
+					// ContextRegistrationAttribute.class);
+					ContextRegistrationAttribute contextRegistrationAttribute = parseContextRegistrationAttribute(jsonContextRegistrationAttributeList
+							.get(j).toString());
+
+					// System.out.println("Attribute to Parse:"
+					// +jsonContextRegistrationAttributeList
+					// .get(j).toString());
+					contextRegistrationAttributeList
+							.add(contextRegistrationAttribute);
+
+				}
+				contextReg
+						.setListContextRegistrationAttribute(contextRegistrationAttributeList);
+
+			}
+		}
+
+		/*
+		 * Parse ContextRegistrationList.RegistrationMetadataList
+		 */
+		// JsonArray jsonRegistrationMetadataList = jo.getAsJsonObject()
+		// .getAsJsonArray("contextMetadata");
+		JsonArray jsonRegistrationMetadataList;
+		if (jo.get("registrationMetadata") != null
+				&& jo.get("registrationMetadata").isJsonObject()
+				&& jo.getAsJsonObject("registrationMetadata") != null
+				&& jo.getAsJsonObject("registrationMetadata").get(
+						"contextMetadata") != null) {
+			if (jo.getAsJsonObject("registrationMetadata")
+					.get("contextMetadata").isJsonArray()) {
+				jsonRegistrationMetadataList = jo.getAsJsonObject(
+						"registrationMetadata").getAsJsonArray(
+						"contextMetadata");
+			} else {
+				jsonRegistrationMetadataList = new JsonArray();
+				jsonRegistrationMetadataList.add(jo.getAsJsonObject(
+						"registrationMetadata").getAsJsonObject(
+						"contextMetadata"));
+			}
+
+			if (jsonRegistrationMetadataList != null
+					&& !jsonRegistrationMetadataList.isJsonNull()) {
+				List<ContextMetadata> contextMetadataList = new ArrayList<ContextMetadata>();
+
+				for (int t = 0; t < jsonRegistrationMetadataList.size(); t++) {
+
+					ContextMetadata contextMetadata = parseContextMetadata(jsonRegistrationMetadataList
+							.get(t).toString());
+
+					contextMetadataList.add(contextMetadata);
+
+				}
+				if (!contextMetadataList.isEmpty()) {
+					contextReg.setListContextMetadata(contextMetadataList);
+				}
+
+			}
+		}
+
+		/*
+		 * Parse ContextRegistrationList.ProvidingApplication
+		 */
+		if (jo.get("providingApplication") != null) {
+			try {
+
+				contextReg.setProvidingApplication(new URI(jo.getAsJsonObject()
+						.get("providingApplication").getAsString()));
+
+			} catch (URISyntaxException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		return contextReg;
+	}
+
 	public static RegisterContextRequest parseRegisterContextRequestJson(
 			String jsonRegisterContext) {
 
@@ -1050,6 +1241,110 @@ public class JSonNgsi9Parser {
 
 				contextReg = parseContextRegistration(jsonContextRegistration
 						.get(i).toString());
+
+				contextRegistrationList.add(contextReg);
+
+			}
+		}
+
+		registerContextRequest
+				.setContextRegistrationList(contextRegistrationList);
+
+//		System.out.println("asdfadfasdfadfadsf"
+//				+ registerContextRequest.toJsonString());
+
+		return registerContextRequest;
+	}
+
+	public static RegisterContextRequest parseRegisterContextRequestJson(
+			String jsonRegisterContext,
+			ContextRegistrationFilter contextRegistrationFilter) {
+
+		if (contextRegistrationFilter == null) {
+			return parseRegisterContextRequestJson(jsonRegisterContext);
+		}
+
+		RegisterContextRequest registerContextRequest = new RegisterContextRequest();
+
+		JsonParser jsonParser = new JsonParser();
+		JsonObject jo = (JsonObject) jsonParser.parse(jsonRegisterContext);
+
+		if (jo.get("registerContextRequest") == null) {
+			return null;
+		}
+
+		/*
+		 * Parse RegisterContextRequest.RegistrationId
+		 */
+		if (jo.getAsJsonObject("registerContextRequest").get("registrationId") != null) {
+			registerContextRequest.setRegistrationId(jo
+					.getAsJsonObject("registerContextRequest")
+					.get("registrationId").getAsString());
+
+		} else if (jo.get("_id") != null && jo.get("_rev") != null) {
+
+			String id = jo.get("_id").getAsString();
+			String rev = jo.get("_rev").getAsString();
+			registerContextRequest.setRegistrationId(id
+					+ Ngsi9StorageInterface.ID_REV_SEPARATOR + rev);
+		}
+
+		/*
+		 * Parse RegisterContextRequest.Duration
+		 */
+		if (jo.getAsJsonObject("registerContextRequest").get("duration") != null) {
+			DatatypeFactory dataFactory;
+			try {
+				dataFactory = DatatypeFactory.newInstance();
+
+				registerContextRequest.setDuration(dataFactory.newDuration(jo
+						.getAsJsonObject("registerContextRequest")
+						.get("duration").getAsString()));
+			} catch (DatatypeConfigurationException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+
+		/*
+		 * Parse RegisterContextRequest.ContextRegistrationList List
+		 */
+		List<ContextRegistration> contextRegistrationList = new ArrayList<ContextRegistration>();
+
+		JsonArray jsonContextRegistration;
+		if (jo.getAsJsonObject("registerContextRequest")
+				.getAsJsonObject("contextRegistrationList")
+				.get("contextRegistration").isJsonArray()) {
+			jsonContextRegistration = jo
+					.getAsJsonObject("registerContextRequest")
+					.getAsJsonObject("contextRegistrationList")
+					.getAsJsonArray("contextRegistration");
+		} else {
+			jsonContextRegistration = new JsonArray();
+			jsonContextRegistration.add(jo
+					.getAsJsonObject("registerContextRequest")
+					.getAsJsonObject("contextRegistrationList")
+					.getAsJsonObject("contextRegistration"));
+		}
+
+		Set<Integer> allowedContextRegistrationId = contextRegistrationFilter
+				.getFullFilter().keySet();
+
+		if (!jsonContextRegistration.isJsonNull()) {
+
+			for (int i = 0; i < jsonContextRegistration.size(); i++) {
+
+				if (!allowedContextRegistrationId.contains(i)) {
+					continue;
+				}
+
+				ContextRegistration contextReg = new ContextRegistration();
+
+				contextReg = parseContextRegistration(jsonContextRegistration
+						.get(i).toString(), contextRegistrationFilter
+						.getFullFilter().get(i).getElement1(),
+						contextRegistrationFilter.getFullFilter().get(i)
+								.getElement2());
 
 				contextRegistrationList.add(contextReg);
 

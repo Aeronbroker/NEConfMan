@@ -42,10 +42,10 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.commons.interfaces;
 
 import java.net.URI;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.Multimap;
@@ -175,7 +175,7 @@ public interface Ngsi9StorageInterface {
 	 * that the contextRegistration is matching against the EntityIdList and
 	 * AttributeList.
 	 * 
-	 * If the flag hasMetadataRestrition is TRUE, the Ngsi9Storage must filter
+	 * If the metadataToSubscriptionMap is not null or empty, the Ngsi9Storage must filter
 	 * out the subscription that has the same metadataTypes specified by the
 	 * contextRegistration but it has a subscriptionId that is not contained in
 	 * the map given as input.
@@ -191,19 +191,18 @@ public interface Ngsi9StorageInterface {
 	 *            not in the metadataToSubscriptionMap
 	 * @return
 	 */
-	Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+	Map<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
-			boolean hasMetadataRestriction,
 			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
 			Set<MetadataTypes> otherRestrictiveMetadata);
-	
+
 	/**
 	 * The Ngsi9Storage will find which subscription shall be notified about a
 	 * contextRegistration because a match is found. The Ngsi9Storage must check
 	 * that the contextRegistration is matching against the EntityIdList and
 	 * AttributeList.
 	 * 
-	 * If the flag hasMetadataRestrition is TRUE, the Ngsi9Storage must filter
+	 * If the metadataToSubscriptionMap is not null or empty, the Ngsi9Storage must filter
 	 * out the subscription that has the same metadataTypes specified by the
 	 * contextRegistration but it has a subscriptionId that is not contained in
 	 * the map given as input.
@@ -218,12 +217,11 @@ public interface Ngsi9StorageInterface {
 	 *            Set of other MetadataName that are restrictive but that are
 	 *            not in the metadataToSubscriptionMap
 	 * @param supertTypesMap
-	 * 			  Map between type and its super types in an ontology
+	 *            Map between type and its super types in an ontology
 	 * @return
 	 */
-	Multimap<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
+	Map<SubscriptionToNotify, ContextRegistration> checkSubscriptions(
 			ContextRegistration contextRegistration,
-			boolean hasMetadataRestriction,
 			Multimap<MetadataTypes, String> metadataToSubscriptionMap,
 			Set<MetadataTypes> otherRestrictiveMetadata,
 			Multimap<URI, URI> superTypesMap);
@@ -252,7 +250,5 @@ public interface Ngsi9StorageInterface {
 	 * This method reset the databases of the Ngsi9Storage
 	 */
 	void reset();
-
-
 
 }
