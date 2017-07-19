@@ -47,9 +47,11 @@ package eu.neclab.iotplatform.confman.couchdb;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -1163,8 +1165,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		String registrationId;
 		if (response.getStatusLine().getStatusCode() > 299) {
-			logger.error("CouchDB returned error when registering: "
-					+ response.toString());
+			logger.error(String
+					.format("CouchDB returned error when registering id: %s with body %s. The response was: %s",
+							id, jsonString, response.toString()));
 			registrationId = null;
 		} else {
 			// Parse and generate the registrationId from the response
@@ -1706,7 +1709,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 				if (entityId.getIsPattern()) {
 
-					// if there is a wildcard for entityId.Id and not type then
+					// if there is a wildcard for entityId.Id and not type
+					// then
 					// it means take all entities. So let's decide by the
 					// attribute
 					if (".*".equals(entityId.getId())
@@ -1720,11 +1724,14 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 					if (".*".equals(entityId.getId())) {
 
-						// if there is wildcard for the entity.id but there is a
-						// type (stated by the if before not passed), let's the
+						// if there is wildcard for the entity.id but there
+						// is a
+						// type (stated by the if before not passed), let's
+						// the
 						// type
 						// decides the lists
-						// registrationIdsPerEntityId = new HashSet<String>();
+						// registrationIdsPerEntityId = new
+						// HashSet<String>();
 						registeredEntityIdIndicesPerEntityIdRequested = new HashSet<EntityIdIndex>();
 						entityIdIdWildcard = true;
 
@@ -1742,6 +1749,24 @@ public class CouchDB implements Ngsi9StorageInterface {
 										.addAll(entityIdToRegIdAndRegIndexMap
 												.get(id));
 							}
+
+							// lets try also with url decoded
+							try {
+								if (id.matches(URLDecoder.decode(
+										entityId.getId(), "UTF-8"))) {
+
+									// registrationIdList
+									// .addAll(entityIdToRegIdAndRegIndexMap
+									// .get(id));
+									registeredEntityIdIndicesPerEntityIdRequested
+											.addAll(entityIdToRegIdAndRegIndexMap
+													.get(id));
+								}
+							} catch (UnsupportedEncodingException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+
 						}
 
 						registeredEntityIdIndicesPerEntityIdRequested
@@ -1758,6 +1783,17 @@ public class CouchDB implements Ngsi9StorageInterface {
 							.addAll(entityIdToRegIdAndRegIndexMap.get(entityId
 									.getId()));
 
+					// lets try also with url decoded
+					try {
+						registeredEntityIdIndicesPerEntityIdRequested
+								.addAll(entityIdToRegIdAndRegIndexMap
+										.get(URLDecoder.decode(
+												entityId.getId(), "UTF-8")));
+					} catch (UnsupportedEncodingException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
 					for (String registeredPattern : entityIdPatternToRegIdAndRegIndexMap
 							.keySet()) {
 
@@ -1769,13 +1805,29 @@ public class CouchDB implements Ngsi9StorageInterface {
 											.get(registeredPattern));
 
 						}
+
+						// lets try also with url decoded
+						try {
+							if (URLDecoder.decode(entityId.getId(), "UTF-8")
+									.matches(registeredPattern)) {
+
+								registeredEntityIdIndicesPerEntityIdRequested
+										.addAll(entityIdPatternToRegIdAndRegIndexMap
+												.get(registeredPattern));
+
+							}
+						} catch (UnsupportedEncodingException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
 					}
 
 				}
 
 				if (entityIdIdWildcard) {
 
-					// if we are here it means that entity.id was a wildcard but
+					// if we are here it means that entity.id was a wildcard
+					// but
 					// there is a type
 					// registrationIdsPerEntityId.addAll(typeToRegIdAndRegIndexMap
 					// .get(entityId.getType().toString()));
@@ -2371,10 +2423,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 		return checkSubscriptionsWithCaches(contextRegistration,
 				metadataToSubscriptionMap, otherRestrictiveMetadata,
 				superTypesMap);
-		
-//		return checkSubscriptionsWithViews(contextRegistration,
-//				metadataToSubscriptionMap, otherRestrictiveMetadata,
-//				superTypesMap);
+
+		// return checkSubscriptionsWithViews(contextRegistration,
+		// metadataToSubscriptionMap, otherRestrictiveMetadata,
+		// superTypesMap);
 	}
 
 	private Map<SubscriptionToNotify, ContextRegistration> checkSubscriptionsWithViews(
