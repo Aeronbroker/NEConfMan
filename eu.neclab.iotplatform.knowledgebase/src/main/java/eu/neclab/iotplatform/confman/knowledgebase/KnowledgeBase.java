@@ -85,9 +85,8 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		try {
 
 			// Read properties from file
-			input = new FileInputStream(
-					System.getProperty("dir.config")
-							+ "/confmanconfig/knowledgeBase/knowledgeBase.properties");
+			input = new FileInputStream(System.getProperty("dir.config")
+					+ "/confmanconfig/knowledgeBase/knowledgeBase.properties");
 
 			// Load the properties file
 			prop.load(input);
@@ -122,11 +121,11 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 		// Example:
 		// http://localhost:8080/query?request=getSubTypes&entityType=Node
-		
+
 		Set<URI> subtypes = null;
 
 		// Lets create the query string
-		String queryString = "request=getSubTypes&";
+		String queryString = "request=getAllSubTypes&";
 		String[] namespaceAndType = type.toString().split("#");
 		if (namespaceAndType.length == 1) {
 			queryString += "entityType=" + namespaceAndType[0];
@@ -141,7 +140,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 			FullHttpResponse fullHttpResponse = HttpRequester.sendGet(fullUrl);
 
 			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
-				
+
 				subtypes = parseTypes(fullHttpResponse.getBody());
 
 			} else {
@@ -155,6 +154,11 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+
+		if (logger.isDebugEnabled()) {
+			logger.debug("Type " + type.toString() + " has subtypes: "
+					+ subtypes);
 		}
 
 		return subtypes;
@@ -210,8 +214,14 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 				&& binding.getAsJsonObject().getAsJsonObject("type")
 						.get("value") != null) {
 			try {
-				subtype = new URI(binding.getAsJsonObject()
-						.getAsJsonObject("type").get("value").getAsString());
+				String value = binding.getAsJsonObject()
+						.getAsJsonObject("type").get("value").getAsString();
+				if (value.contains("#")) {
+					value = value.split("#")[1];
+				}
+
+				subtype = new URI(value);
+
 			} catch (URISyntaxException e) {
 				logger.info("Bad uri as type");
 			}
@@ -224,11 +234,10 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 
 	@Override
 	public Set<URI> getSuperTypes(URI type) {
-		
+
 		// Example:
 		// http://localhost:8080/query?request=getSuperTypes&entityType=BusSensor
 
-		
 		Set<URI> superTypes = null;
 
 		// Lets create the query string
@@ -247,7 +256,7 @@ public class KnowledgeBase implements KnowledgeBaseInterface {
 			FullHttpResponse fullHttpResponse = HttpRequester.sendGet(fullUrl);
 
 			if (fullHttpResponse.getStatusLine().getStatusCode() == 200) {
-				
+
 				superTypes = parseTypes(fullHttpResponse.getBody());
 
 			} else {

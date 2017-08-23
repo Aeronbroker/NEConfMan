@@ -1594,7 +1594,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// HashMultimap
 		// .create();
 
-		RegistrationsFilter registrationsFilter = getRegistrationIdAndIndices(request);
+		RegistrationsFilter registrationsFilter = getRegistrationIdAndIndices(
+				request, subtypesMap);
 
 		// We keep only the keys present in the registrationList given as filter
 		if (registrationsFilter != null
@@ -1681,7 +1682,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// }
 
 	private RegistrationsFilter getRegistrationIdAndIndices(
-			DiscoverContextAvailabilityRequest request) {
+			DiscoverContextAvailabilityRequest request,
+			Multimap<URI, URI> subtypesMap) {
 
 		indicesReadWrite_Registrations.readLock().lock();
 
@@ -1835,8 +1837,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 							.addAll(typeToRegIdAndRegIndexMap.get(entityId
 									.getType().toString()));
 
-					registeredEntityIdIndicesPerEntityIdRequested
-							.addAll(typeToRegIdAndRegIndexMap.get(null));
+					if (subtypesMap != null && !subtypesMap.isEmpty()
+							&& subtypesMap.containsKey(entityId.getType())) {
+						for (URI subtype : subtypesMap.get(entityId.getType())) {
+							registeredEntityIdIndicesPerEntityIdRequested
+									.addAll(typeToRegIdAndRegIndexMap
+											.get(subtype.toString()));
+						}
+
+					}
+
+					// registeredEntityIdIndicesPerEntityIdRequested
+					// .addAll(typeToRegIdAndRegIndexMap.get(null));
 
 				} else if (entityId.getType() != null
 						&& !entityId.getType().toString().isEmpty()) {
@@ -1846,8 +1858,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
 							.get(entityId.getType().toString()));
 
-					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
-							.get(null));
+					if (subtypesMap != null && !subtypesMap.isEmpty()
+							&& subtypesMap.containsKey(entityId.getType())) {
+						for (URI subtype : subtypesMap.get(entityId.getType())) {
+							entityIdMatchedWithType
+									.addAll(typeToRegIdAndRegIndexMap
+											.get(subtype.toString()));
+						}
+
+					}
+
+					// entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
+					// .get(null));
 
 					// if we are here it means we have to simply filter out
 					// against
@@ -1956,7 +1978,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 			DiscoverContextAvailabilityRequest request,
 			Set<String> registrationIdList, Multimap<URI, URI> subtypesMap) {
 
-		return discoverWithCaches(request, registrationIdList, null);
+		return discoverWithCaches(request, registrationIdList, subtypesMap);
 
 		// // This map will contain: RegistrationID -> Set<ContextRegistration>
 		// Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap

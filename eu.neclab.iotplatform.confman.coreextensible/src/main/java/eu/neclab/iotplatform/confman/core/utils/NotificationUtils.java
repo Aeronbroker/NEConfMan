@@ -271,7 +271,7 @@ public class NotificationUtils {
 
 			// Start NotifierThread
 			NotifyContextAvailabilityRequest notifyReq = new NotifyContextAvailabilityRequest();
-			notifyReq.setSubscribeId(subToNotify.getSubscriptionId());
+			notifyReq.setSubscriptionId(subToNotify.getSubscriptionId());
 			notifyReq.setContextRegistrationResponseList(contRegRespList);
 			new NotifierThread(subToNotify.getReference(), notifyReq).start();
 		}

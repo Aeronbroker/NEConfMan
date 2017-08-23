@@ -638,7 +638,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 			// Create the Ngsi9 NotifyContextAvailabilityRequest
 			NotifyContextAvailabilityRequest notifyReq = new NotifyContextAvailabilityRequest();
-			notifyReq.setSubscribeId(subscriber.getSubscriptionId());
+			notifyReq.setSubscriptionId(subscriber.getSubscriptionId());
 
 			/*
 			 * Check if the contextRegistration marked as now-available is also
@@ -920,6 +920,10 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				}
 			}
 		}
+		
+		if (logger.isDebugEnabled()) {
+			logger.debug("SubTypesMap: " + subtypesMap);
+		}
 
 		return subtypesMap;
 
@@ -1090,33 +1094,6 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 
 	}
 
-	// public static void main(String[] args) {
-	// String xml =
-	// "<?xml version=\"1.0\" encoding=\"UTF-8\"?><contextRegistration>  <entityIdList>    <entityId type=\"PowerPanel\" isPattern=\"false\">      <id>powerpanel001</id>    </entityId>  </entityIdList>  <contextRegistrationAttributeList>    <contextRegistrationAttribute>      <name>temperature</name>      <type>degree</type>      <isDomain>false</isDomain>    </contextRegistrationAttribute>  </contextRegistrationAttributeList>  <registrationMetadata>    <contextMetadata>      <name>category</name>      <type>string</type>      <value>stream</value>    </contextMetadata>  </registrationMetadata>  <providingApplication>http://192.168.100.7:7777/application7</providingApplication></contextRegistration>";
-	// // Apply the Restriction
-	// XPath xpath = XPathFactory.newInstance().newXPath();
-	//
-	// boolean check = false;
-	// try {
-	// XPathExpression expr =
-	// xpath.compile("//contextMetadata[name=\"categor\"][value=\"stream\"]");
-	//
-	// Document doc = XmlFactory.stringToDocument(xml);
-	// Object result = expr.evaluate(doc, XPathConstants.NODESET);
-	//
-	// NodeList nodes = (NodeList) result;
-	//
-	// if (nodes.getLength() != 0) {
-	// check = true;
-	// }
-	//
-	// } catch (XPathExpressionException e) {
-	// if (logger.isDebugEnabled()) {
-	// logger.debug("XPathExpressionException", e);
-	// }
-	// }
-	// }
-
 	@Override
 	public SubscribeContextAvailabilityResponse subscribeContextAvailability(
 			SubscribeContextAvailabilityRequest request) {
@@ -1224,7 +1201,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 			Multimap<String, ContextRegistrationResponse> regIdAndContReg) {
 
 		Multimap<String, String> regIdAndHashes = HashMultimap.create();
-		
+
 		// Iterate over all RegistrationId
 		for (String registrationId : regIdAndContReg.keySet()) {
 
@@ -1233,17 +1210,18 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 			List<ContextRegistrationResponse> contRegResList = new ArrayList<ContextRegistrationResponse>(
 					regIdAndContReg.get(registrationId));
 
-//			Set<String> metadataValueHashSet = ngsi9ExtensionManager
-//					.getMetadataValueHashes(contRegResList).getElement1();
-			
+			// Set<String> metadataValueHashSet = ngsi9ExtensionManager
+			// .getMetadataValueHashes(contRegResList).getElement1();
+
 			regIdAndHashes.putAll(registrationId, ngsi9ExtensionManager
 					.getMetadataValueHashes(contRegResList).getElement1());
 
 			// Store the notifications
-//			utilityStorage.storeNotifications(subscriptionId, regIdAndHashes);
+			// utilityStorage.storeNotifications(subscriptionId,
+			// regIdAndHashes);
 
 		}
-		
+
 		utilityStorage.storeNotifications(subscriptionId, regIdAndHashes);
 
 	}
@@ -1267,7 +1245,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 		notifyReq
 				.setContextRegistrationResponseList(new ArrayList<ContextRegistrationResponse>(
 						regIdAndContReg.values()));
-		notifyReq.setSubscribeId(subscriptionId);
+		notifyReq.setSubscriptionId(subscriptionId);
 
 		return notifyReq;
 	}

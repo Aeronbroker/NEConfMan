@@ -42,7 +42,8 @@
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
 							eu.neclab.iotplatform.ngsi.api.ngsi9;version="${iotbroker.version}",
 							org.apache.log4j;version="1.2.15",
-							eu.neclab.iotplatform.confman.commons.comparators;version="${confman.version}"
+							eu.neclab.iotplatform.confman.commons.comparators;version="${confman.version}",
+							org.apache.http
 						</Import-Package>
 					</instructions>
 				</configuration>
