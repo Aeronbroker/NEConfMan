@@ -184,6 +184,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private Multimap<String, String> scopeTypesToSubscriptionIdMap = HashMultimap
 			.create();
 
+	// Cache for each scopeType which subscription
 	private Multimap<String, String> notScopeTypesToSubscriptionIdMap = HashMultimap
 			.create();
 
@@ -792,7 +793,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				if (scopeType != null && !scopeType.isJsonNull()
 						&& !scopeType.toString().isEmpty()) {
 
-					if (notScopeTypesToSubscriptionIdMap.containsKey(scopeType)) {
+					if (!notScopeTypesToSubscriptionIdMap.containsKey(scopeType
+							.getAsString())) {
 						notScopeTypesToSubscriptionIdMap.putAll(
 								scopeType.getAsString(),
 								subscriptionIdToReferenceMap.keySet());
@@ -803,8 +805,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 					scopeTypesToSubscriptionIdMap.put(scopeType.getAsString(),
 							subscriptionId);
 
+				} else {
+					scopeTypesToSubscriptionIdMap.put(null, subscriptionId);
 				}
-
 			}
 		}
 	}
@@ -1405,6 +1408,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 							subscriptionId);
 				}
 			}
+
+		} else {
+
+			scopeTypesToSubscriptionIdMap.put(null, subscriptionId);
 
 		}
 
@@ -2677,8 +2684,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 					for (String index : indices) {
 
-						String subscriptionId = index
-								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0];
+						String[] indexSplit = index
+								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
+
+						String subscriptionId = indexSplit[0]
+								+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+								+ indexSplit[1];
 
 						if (scopeComplianceSet.contains(subscriptionId)) {
 							addEntityIdToSubscriptionToContextReg(map,
@@ -2769,6 +2780,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (subscriptionSet.isEmpty()) {
 				// shortcut since there are no subscription left
+				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 				return subscriptionSet;
 			}
 
@@ -2786,10 +2798,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (subscriptionSet.isEmpty()) {
 				// shortcut since there are no subscription left
+				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 				return subscriptionSet;
 			}
 		}
 
+		subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 		return subscriptionSet;
 
 	}
@@ -2904,8 +2918,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (contextRegistration != null) {
 				SubscriptionToNotify subscriptionToNotify = new SubscriptionToNotify(
-						subscriptionId,
-						subscriptionIdToReferenceMap.get(subscriptionId));
+						subscriptionIdToReferenceMap.get(subscriptionId),
+						subscriptionId);
 				subscriptionToNotify
 						.setAttributeExpression(subscriptionIdToAttributeExpressionMap
 								.get(subscriptionId));

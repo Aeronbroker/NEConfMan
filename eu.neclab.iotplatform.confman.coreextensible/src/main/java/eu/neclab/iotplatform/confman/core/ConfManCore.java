@@ -726,7 +726,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 						.start();
 
 				/*
-				 * Next steps are meant to maintain the of notifications sent
+				 * Next steps are meant to maintain the list of notifications sent
 				 * (storing in the UtililityStorage). In that way is possible to
 				 * have an INCREMENTAL notification system (i.e. only
 				 * now-available contestRegistration or the one
