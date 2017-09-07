@@ -42,18 +42,21 @@
  * DAMAGE.
  ******************************************************************************/
 
-
 package eu.neclab.iotplatform.confman.core;
 
-import java.net.ConnectException;
+import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.NoRouteToHostException;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
 
+import eu.neclab.iotplatform.confman.commons.datatype.ContentType;
+import eu.neclab.iotplatform.confman.commons.datatype.FullHttpResponse;
 import eu.neclab.iotplatform.confman.commons.methods.HttpRequester;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NgsiStructure;
 import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest_OrionCustomization;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 
 /**
  * The purpose of this Class is to create a thread that sends a notification to
@@ -79,33 +82,108 @@ public class NotifierThread extends Thread {
 	}
 
 	public void run() {
+		FullHttpResponse httpResponse = null;
 		try {
 			// Send an HTTP POST
-			HttpRequester.sendPost(new URL(reference), notifyReq.toString(),
-					"application/xml");
+			httpResponse = sendPostTryingAllSupportedContentType(new URL(
+					reference), notifyReq, ContentType.JSON);
 
 		} catch (MalformedURLException e) {
 
 			logger.error("Malformed URl. ", e);
-
-		} catch (ConnectException e) {
-
-			if (e.getMessage().equals("Connection timed out")) {
-				logger.warn("Reference " + reference
-						+ " is not reachable (Conncection timeout)");
-			} else {
-				logger.warn("Problem with connection to " + reference + "\n"
-						+ e.toString());
-			}
-
-		} catch (NoRouteToHostException e) {
-			logger.warn("Impossible to contact " + reference
-					+ ": No route to host");
 
 		} catch (Exception e) {
 
 			logger.error("Error. ", e);
 
 		}
+
+		if (logger.isDebugEnabled() && httpResponse != null) {
+			logger.debug(String
+					.format("Response from %s for nofitication %s has statusCode %s and body %s",
+							reference, notifyReq.toJsonString(),
+							httpResponse.getStatusLine(),
+							httpResponse.getBody()));
+
+		}
+	}
+
+	private FullHttpResponse sendPostTryingAllSupportedContentType(URL url,
+			NotifyContextAvailabilityRequest request,
+			ContentType preferredContentType) {
+
+		ContentType requestContentType = preferredContentType;
+		FullHttpResponse fullHttpResponse = null;
+
+		try {
+
+			String data;
+			if (requestContentType == ContentType.XML) {
+				data = request.toString();
+			} else {
+				data = request.toJsonString();
+			}
+
+			fullHttpResponse = HttpRequester.sendPost(url, data,
+					requestContentType.toString());
+
+			/*
+			 * Check if there contentType is not supported and switch to the
+			 * other IoT Broker supports
+			 */
+			if (fullHttpResponse.getStatusLine().getStatusCode() == 415) {
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("Contacted HTTP server non supporting "
+							+ requestContentType
+							+ ". Trying a different content type");
+				}
+				if (requestContentType == ContentType.XML) {
+					requestContentType = ContentType.JSON;
+				} else {
+					requestContentType = ContentType.XML;
+				}
+
+				if (requestContentType == ContentType.XML) {
+					data = request.toString();
+				} else {
+					data = request.toJsonString();
+				}
+
+				fullHttpResponse = HttpRequester.sendPost(url, data,
+						requestContentType.toString());
+
+			} else if (fullHttpResponse.getStatusLine().getStatusCode() == 200
+					&& fullHttpResponse.getBody().contains("JSON Parse Error")) {
+
+				// If we are here, the recipient is supporting, hopefully, the
+				// Orion encoding
+				if (logger.isDebugEnabled()) {
+					logger.debug("Contacted HTTP server non-supporting IoT Broker NGSI JSON encoding "
+							+ fullHttpResponse.getStatusLine()
+									.getReasonPhrase());
+				}
+
+				data = new NotifyContextAvailabilityRequest_OrionCustomization(
+						notifyReq).toJsonString();
+
+				fullHttpResponse = HttpRequester.sendPost(url, data,
+						requestContentType.toString());
+			}
+
+		} catch (java.net.NoRouteToHostException noRoutToHostEx) {
+			logger.warn("Impossible to contact: " + url);
+		} catch (IOException e) {
+			logger.warn("Impossible to contact " + e.getMessage());
+			return fullHttpResponse;
+
+		} catch (Exception e) {
+
+			logger.warn("Exception", e);
+			return fullHttpResponse;
+		}
+
+		return fullHttpResponse;
+
 	}
 }

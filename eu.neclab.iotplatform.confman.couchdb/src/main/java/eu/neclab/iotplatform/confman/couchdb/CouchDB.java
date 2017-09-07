@@ -184,6 +184,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 	private Multimap<String, String> scopeTypesToSubscriptionIdMap = HashMultimap
 			.create();
 
+	// Cache for each scopeType which subscription
 	private Multimap<String, String> notScopeTypesToSubscriptionIdMap = HashMultimap
 			.create();
 
@@ -792,7 +793,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 				if (scopeType != null && !scopeType.isJsonNull()
 						&& !scopeType.toString().isEmpty()) {
 
-					if (notScopeTypesToSubscriptionIdMap.containsKey(scopeType)) {
+					if (!notScopeTypesToSubscriptionIdMap.containsKey(scopeType
+							.getAsString())) {
 						notScopeTypesToSubscriptionIdMap.putAll(
 								scopeType.getAsString(),
 								subscriptionIdToReferenceMap.keySet());
@@ -803,8 +805,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 					scopeTypesToSubscriptionIdMap.put(scopeType.getAsString(),
 							subscriptionId);
 
+				} else {
+					scopeTypesToSubscriptionIdMap.put(null, subscriptionId);
 				}
-
 			}
 		}
 	}
@@ -1406,6 +1409,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 				}
 			}
 
+		} else {
+
+			scopeTypesToSubscriptionIdMap.put(null, subscriptionId);
+
 		}
 
 		subscriptionIdToReferenceMap.put(subscriptionId,
@@ -1594,7 +1601,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 		// HashMultimap
 		// .create();
 
-		RegistrationsFilter registrationsFilter = getRegistrationIdAndIndices(request);
+		RegistrationsFilter registrationsFilter = getRegistrationIdAndIndices(
+				request, subtypesMap);
 
 		// We keep only the keys present in the registrationList given as filter
 		if (registrationsFilter != null
@@ -1681,7 +1689,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 	// }
 
 	private RegistrationsFilter getRegistrationIdAndIndices(
-			DiscoverContextAvailabilityRequest request) {
+			DiscoverContextAvailabilityRequest request,
+			Multimap<URI, URI> subtypesMap) {
 
 		indicesReadWrite_Registrations.readLock().lock();
 
@@ -1835,8 +1844,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 							.addAll(typeToRegIdAndRegIndexMap.get(entityId
 									.getType().toString()));
 
-					registeredEntityIdIndicesPerEntityIdRequested
-							.addAll(typeToRegIdAndRegIndexMap.get(null));
+					if (subtypesMap != null && !subtypesMap.isEmpty()
+							&& subtypesMap.containsKey(entityId.getType())) {
+						for (URI subtype : subtypesMap.get(entityId.getType())) {
+							registeredEntityIdIndicesPerEntityIdRequested
+									.addAll(typeToRegIdAndRegIndexMap
+											.get(subtype.toString()));
+						}
+
+					}
+
+					// registeredEntityIdIndicesPerEntityIdRequested
+					// .addAll(typeToRegIdAndRegIndexMap.get(null));
 
 				} else if (entityId.getType() != null
 						&& !entityId.getType().toString().isEmpty()) {
@@ -1846,8 +1865,18 @@ public class CouchDB implements Ngsi9StorageInterface {
 					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
 							.get(entityId.getType().toString()));
 
-					entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
-							.get(null));
+					if (subtypesMap != null && !subtypesMap.isEmpty()
+							&& subtypesMap.containsKey(entityId.getType())) {
+						for (URI subtype : subtypesMap.get(entityId.getType())) {
+							entityIdMatchedWithType
+									.addAll(typeToRegIdAndRegIndexMap
+											.get(subtype.toString()));
+						}
+
+					}
+
+					// entityIdMatchedWithType.addAll(typeToRegIdAndRegIndexMap
+					// .get(null));
 
 					// if we are here it means we have to simply filter out
 					// against
@@ -1956,7 +1985,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 			DiscoverContextAvailabilityRequest request,
 			Set<String> registrationIdList, Multimap<URI, URI> subtypesMap) {
 
-		return discoverWithCaches(request, registrationIdList, null);
+		return discoverWithCaches(request, registrationIdList, subtypesMap);
 
 		// // This map will contain: RegistrationID -> Set<ContextRegistration>
 		// Multimap<String, ContextRegistration> regIdAndContReg = HashMultimap
@@ -2655,8 +2684,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 					for (String index : indices) {
 
-						String subscriptionId = index
-								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR)[0];
+						String[] indexSplit = index
+								.split(Ngsi9StorageInterface.ID_REV_SEPARATOR);
+
+						String subscriptionId = indexSplit[0]
+								+ Ngsi9StorageInterface.ID_REV_SEPARATOR
+								+ indexSplit[1];
 
 						if (scopeComplianceSet.contains(subscriptionId)) {
 							addEntityIdToSubscriptionToContextReg(map,
@@ -2747,6 +2780,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (subscriptionSet.isEmpty()) {
 				// shortcut since there are no subscription left
+				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 				return subscriptionSet;
 			}
 
@@ -2764,10 +2798,12 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (subscriptionSet.isEmpty()) {
 				// shortcut since there are no subscription left
+				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 				return subscriptionSet;
 			}
 		}
 
+		subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 		return subscriptionSet;
 
 	}
@@ -2882,8 +2918,8 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 			if (contextRegistration != null) {
 				SubscriptionToNotify subscriptionToNotify = new SubscriptionToNotify(
-						subscriptionId,
-						subscriptionIdToReferenceMap.get(subscriptionId));
+						subscriptionIdToReferenceMap.get(subscriptionId),
+						subscriptionId);
 				subscriptionToNotify
 						.setAttributeExpression(subscriptionIdToAttributeExpressionMap
 								.get(subscriptionId));

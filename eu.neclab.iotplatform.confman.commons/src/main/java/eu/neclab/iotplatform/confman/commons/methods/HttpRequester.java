@@ -49,6 +49,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -139,7 +140,9 @@ public class HttpRequester {
 		// StringBuilder sb = new StringBuilder();
 		// String line = null;
 
-		logger.info("Sending GET to: " + url);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Sending GET to: " + url);
+		}
 
 		try {
 			// set up out communications stuff
@@ -196,16 +199,28 @@ public class HttpRequester {
 			// sb.append(line + '\n');
 			// }
 
+		} catch (ConnectException e) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("ConnectExcpetion " + url);
+			}
+			return new FullHttpResponse(HttpVersion.HTTP_1_0,
+					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("MalformedURLException " + url);
+			}
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} catch (ProtocolException e) {
-			e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("ProtocolException " + url);
+			}
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} catch (IOException e) {
-			e.printStackTrace();
+			if (logger.isDebugEnabled()) {
+				logger.debug("IOException " + url);
+			}
 			return new FullHttpResponse(HttpVersion.HTTP_1_0,
 					HttpStatus.SC_INTERNAL_SERVER_ERROR, "");
 		} finally {
