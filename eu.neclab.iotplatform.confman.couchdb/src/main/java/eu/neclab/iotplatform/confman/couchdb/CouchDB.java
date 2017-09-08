@@ -2912,6 +2912,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		Map<SubscriptionToNotify, ContextRegistration> notificationMap = new HashMap<SubscriptionToNotify, ContextRegistration>();
 
+		/*
+		 *  Complement the attributes to the ContextRegistration
+		 */
 		for (String subscriptionId : subscriptionToContextRegAttr.keySet()) {
 
 			ContextRegistration contextRegistration = map.get(subscriptionId);
@@ -2928,6 +2931,28 @@ public class CouchDB implements Ngsi9StorageInterface {
 				notificationMap.put(subscriptionToNotify, contextRegistration);
 			}
 
+		}
+
+		/*
+		 * Now we add also the ContextRegistrations which has no Attributes
+		 */
+		Set<String> subscriptionIdWithoutAtt = new HashSet<String>(map.keySet());
+		subscriptionIdWithoutAtt.removeAll(subscriptionToContextRegAttr
+				.keySet());
+		for (String subscriptionId : subscriptionIdWithoutAtt) {
+			
+			ContextRegistration contextRegistration = map.get(subscriptionId);
+
+			if (contextRegistration != null) {
+				SubscriptionToNotify subscriptionToNotify = new SubscriptionToNotify(
+						subscriptionIdToReferenceMap.get(subscriptionId),
+						subscriptionId);
+				subscriptionToNotify
+						.setAttributeExpression(subscriptionIdToAttributeExpressionMap
+								.get(subscriptionId));
+
+				notificationMap.put(subscriptionToNotify, contextRegistration);
+			}
 		}
 
 		return notificationMap;
