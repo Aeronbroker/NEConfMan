@@ -80,7 +80,7 @@ public class XmlValidator {
 	public boolean xmlValidation(Object request, String xmlSchema) {
 
 		boolean error = false;
-		
+
 		try {
 
 			// create JAXB context from the class of the request
@@ -91,8 +91,7 @@ public class XmlValidator {
 			JAXBSource source = new JAXBSource(jc, request);
 
 			// create schema factory
-			SchemaFactory sf = SchemaFactory
-					.newInstance(W3C_XML_SCHEMA_NS_URI);
+			SchemaFactory sf = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
 
 			// creates a Java representation of the schema file
 			Schema schema = sf.newSchema(new File(xmlSchema));
@@ -123,11 +122,11 @@ public class XmlValidator {
 		return error;
 
 	}
-	
+
 	public ValidatorCheck xmlValidate(Object request, String xmlSchema) {
 
 		ValidatorCheck check = new ValidatorCheck();
-		
+
 		try {
 
 			// create JAXB context from the class of the request
@@ -138,8 +137,7 @@ public class XmlValidator {
 			JAXBSource source = new JAXBSource(jc, request);
 
 			// create schema factory
-			SchemaFactory sf = SchemaFactory
-					.newInstance(W3C_XML_SCHEMA_NS_URI);
+			SchemaFactory sf = SchemaFactory.newInstance(W3C_XML_SCHEMA_NS_URI);
 
 			// creates a Java representation of the schema file
 			Schema schema = sf.newSchema(new File(xmlSchema));
@@ -152,12 +150,13 @@ public class XmlValidator {
 			errorHandler.setXmlValidatorCheck(check);
 			validator.setErrorHandler(errorHandler);
 
-			
-			logger.info("Validator:\nRequest:"+request.toString()+"\nSchema "+xmlSchema);
-			
+			if (logger.isDebugEnabled()) {
+				logger.info("Validator:\nRequest:" + request.toString()
+						+ "\nSchema " + xmlSchema);
+			}
+
 			// now finally validate.
 			validator.validate(source);
-
 
 		} catch (Exception e) {
 			// catching all validation exceptions
@@ -169,11 +168,11 @@ public class XmlValidator {
 	}
 
 	private class MyErrorHandler implements ErrorHandler {
-		
+
 		private int errorCount = 0;
 		private ValidatorCheck check = null;
-		
-		public void setXmlValidatorCheck(ValidatorCheck check){
+
+		public void setXmlValidatorCheck(ValidatorCheck check) {
 			this.check = check;
 		}
 
@@ -185,8 +184,9 @@ public class XmlValidator {
 
 		@Override
 		public void error(SAXParseException exception) throws SAXException {
-			logger.warn("Invalid Incoming XML message:" + exception.getMessage());
-			if(check != null){
+			logger.warn("Invalid Incoming XML message:"
+					+ exception.getMessage());
+			if (check != null) {
 				check.addCauseOfError(exception.getMessage());
 				check.setCorrect(false);
 			}
@@ -197,7 +197,7 @@ public class XmlValidator {
 		@Override
 		public void fatalError(SAXParseException exception) throws SAXException {
 			logger.info("\nFATAL ERROR", exception);
-			if(check != null){
+			if (check != null) {
 				check.addCauseOfError(exception.getMessage());
 				check.setCorrect(false);
 			}

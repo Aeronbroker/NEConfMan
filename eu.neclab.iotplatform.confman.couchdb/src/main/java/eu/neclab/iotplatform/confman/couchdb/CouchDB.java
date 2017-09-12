@@ -2773,37 +2773,47 @@ public class CouchDB implements Ngsi9StorageInterface {
 			set.addAll(metadataToSubscriptionMap.get(metadataType));
 			if (isFirst) {
 				subscriptionSet = set;
+				isFirst = false;
 			} else {
 				subscriptionSet.retainAll(set);
-				isFirst = false;
 			}
 
 			if (subscriptionSet.isEmpty()) {
-				// shortcut since there are no subscription left
-				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
-				return subscriptionSet;
+				break;
 			}
 
 		}
 
+		Set<String> nonRestrictiveMetadata = new HashSet<String>(
+				scopeTypesToSubscriptionIdMap.keySet());
+		nonRestrictiveMetadata
+				.addAll(notScopeTypesToSubscriptionIdMap.keySet());
+
 		for (MetadataTypes metadataType : otherRestrictiveMetadata) {
+
+			nonRestrictiveMetadata.remove(metadataType.getName());
+
 			if (isFirst) {
 				subscriptionSet.addAll(notScopeTypesToSubscriptionIdMap
 						.get(metadataType.getName()));
-			} else {
-				subscriptionSet.retainAll(notScopeTypesToSubscriptionIdMap
-						.get(metadataType.getName()));
 				isFirst = false;
-			}
-
-			if (subscriptionSet.isEmpty()) {
-				// shortcut since there are no subscription left
-				subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
-				return subscriptionSet;
+			} else {
+				if (subscriptionSet.isEmpty()) {
+					continue;
+				} else {
+					subscriptionSet.retainAll(notScopeTypesToSubscriptionIdMap
+							.get(metadataType.getName()));
+				}
 			}
 		}
 
 		subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
+		for (String metadataType : nonRestrictiveMetadata) {
+			subscriptionSet.addAll(scopeTypesToSubscriptionIdMap
+					.get(metadataType));
+			subscriptionSet.addAll(notScopeTypesToSubscriptionIdMap
+					.get(metadataType));
+		}
 		return subscriptionSet;
 
 	}
@@ -2913,7 +2923,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		Map<SubscriptionToNotify, ContextRegistration> notificationMap = new HashMap<SubscriptionToNotify, ContextRegistration>();
 
 		/*
-		 *  Complement the attributes to the ContextRegistration
+		 * Complement the attributes to the ContextRegistration
 		 */
 		for (String subscriptionId : subscriptionToContextRegAttr.keySet()) {
 
@@ -2940,7 +2950,7 @@ public class CouchDB implements Ngsi9StorageInterface {
 		subscriptionIdWithoutAtt.removeAll(subscriptionToContextRegAttr
 				.keySet());
 		for (String subscriptionId : subscriptionIdWithoutAtt) {
-			
+
 			ContextRegistration contextRegistration = map.get(subscriptionId);
 
 			if (contextRegistration != null) {
