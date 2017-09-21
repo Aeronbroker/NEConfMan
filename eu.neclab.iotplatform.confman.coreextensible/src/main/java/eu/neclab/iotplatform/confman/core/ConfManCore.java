@@ -526,7 +526,9 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				}
 
 			}
-			logger.info("Resulting notification multimap:" + multimap);
+			if (logger.isDebugEnabled()) {
+				logger.debug("Resulting notification multimap:" + multimap);
+			}
 		}
 
 		// Create and send notifications
@@ -719,17 +721,19 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				notifyReq.setContextRegistrationResponseList(contRegRespList);
 
 				// Start a notifier thread
-				logger.info("Send notification to: "
-						+ subscriber.getReference() + ":\n"
-						+ notifyReq.toString());
+				if (logger.isDebugEnabled()) {
+					logger.debug("Send notification to: "
+							+ subscriber.getReference() + ":\n"
+							+ notifyReq.toString());
+				}
 				new NotifierThread(subscriber.getReference(), notifyReq)
 						.start();
 
 				/*
-				 * Next steps are meant to maintain the list of notifications sent
-				 * (storing in the UtililityStorage). In that way is possible to
-				 * have an INCREMENTAL notification system (i.e. only
-				 * now-available contestRegistration or the one
+				 * Next steps are meant to maintain the list of notifications
+				 * sent (storing in the UtililityStorage). In that way is
+				 * possible to have an INCREMENTAL notification system (i.e.
+				 * only now-available contestRegistration or the one
 				 * not-available-anymore contextRegistration are notified)
 				 * 
 				 * MetadataValueHashed is a trick to solve the issue given by
@@ -920,7 +924,7 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				}
 			}
 		}
-		
+
 		if (logger.isDebugEnabled()) {
 			logger.debug("SubTypesMap: " + subtypesMap);
 		}

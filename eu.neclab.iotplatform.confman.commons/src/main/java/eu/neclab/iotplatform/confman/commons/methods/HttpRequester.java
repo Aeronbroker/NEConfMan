@@ -164,7 +164,9 @@ public class HttpRequester {
 
 			if (responseCode > 399 && responseCode < 500) {
 
-				logger.info("\nResponse Code : " + responseCode + "\n");
+				if (logger.isDebugEnabled()) {
+					logger.debug("\nResponse Code : " + responseCode + "\n");
+				}
 
 				connection.disconnect();
 				return httpResponse;
@@ -184,9 +186,11 @@ public class HttpRequester {
 
 				httpResponse.setBody(response.toString());
 
-				// logger.info("Response Code : " + responseCode);
-				logger.info("\nResponse Code : " + responseCode + "\n"
-						+ "Response : " + response.toString());
+				if (logger.isDebugEnabled()) {
+					// logger.info("Response Code : " + responseCode);
+					logger.debug("\nResponse Code : " + responseCode + "\n"
+							+ "Response : " + response.toString());
+				}
 
 				connection.disconnect();
 			}

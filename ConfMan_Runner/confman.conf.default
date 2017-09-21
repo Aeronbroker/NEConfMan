@@ -27,6 +27,10 @@ confman_tomcatinitport=8065
 # IoTDiscovery resource prefix
 confman_pathprefixngsi9='ngsi9'
 
+# Enables the treatment of any notification of new entity available as a registration
+# By default is set to false for security reason
+confman_treatnotificationasregistration=false
+
 # Postgres configuration
 confman_postgresuser='postgres'
 confman_postgrespassword='postgres'

@@ -2764,13 +2764,43 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		Set<String> subscriptionSet = new HashSet<String>();
 
+		Set<String> nonRestrictiveMetadata = new HashSet<String>(
+				scopeTypesToSubscriptionIdMap.keySet());
+		nonRestrictiveMetadata
+				.addAll(notScopeTypesToSubscriptionIdMap.keySet());
+
 		boolean isFirst = true;
 
+		/*
+		 * Frist we get the subscriptions that have the restrictive scope
+		 * compliants
+		 */
 		for (MetadataTypes metadataType : metadataToSubscriptionMap.keySet()) {
+
 			Set<String> set = new HashSet<String>();
+
 			set.addAll(notScopeTypesToSubscriptionIdMap.get(metadataType
 					.getName()));
-			set.addAll(metadataToSubscriptionMap.get(metadataType));
+
+			Collection<String> subscriptionIds = metadataToSubscriptionMap
+					.get(metadataType);
+
+			for (String string : subscriptionIds) {
+				logger.info(string);
+			}
+
+			if (subscriptionIds == null
+					|| subscriptionIds.isEmpty()
+					|| (subscriptionIds.size() == 1 && subscriptionIds
+							.iterator().next() == null)) {
+				// we need to remove from this list in order to omit to add
+				// these subscription (with this metadata as scope) to the
+				// compliance set
+				nonRestrictiveMetadata.remove(metadataType.getName().toLowerCase());
+			} else {
+				set.addAll(subscriptionIds);
+			}
+
 			if (isFirst) {
 				subscriptionSet = set;
 				isFirst = false;
@@ -2784,11 +2814,10 @@ public class CouchDB implements Ngsi9StorageInterface {
 
 		}
 
-		Set<String> nonRestrictiveMetadata = new HashSet<String>(
-				scopeTypesToSubscriptionIdMap.keySet());
-		nonRestrictiveMetadata
-				.addAll(notScopeTypesToSubscriptionIdMap.keySet());
-
+		/*
+		 * Then we specify otherRestrictiveMetadata to be removed from the
+		 * possible compliant set
+		 */
 		for (MetadataTypes metadataType : otherRestrictiveMetadata) {
 
 			nonRestrictiveMetadata.remove(metadataType.getName());
@@ -2807,6 +2836,9 @@ public class CouchDB implements Ngsi9StorageInterface {
 			}
 		}
 
+		/*
+		 * Finally we add all the restrictions which has no restrictive scope
+		 */
 		subscriptionSet.addAll(scopeTypesToSubscriptionIdMap.get(null));
 		for (String metadataType : nonRestrictiveMetadata) {
 			subscriptionSet.addAll(scopeTypesToSubscriptionIdMap

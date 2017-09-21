@@ -463,18 +463,11 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 		Multimap<Ngsi9ExtensionInterface, ContextMetadata> dispatcherMap = getDispatcherMap(contextRegistration);
 
 		// Iterate over extensions
-		Iterator<Ngsi9ExtensionInterface> extensionIter = dispatcherMap
-				.keySet().iterator();
-		while (extensionIter.hasNext()) {
-			Ngsi9ExtensionInterface extension = extensionIter.next();
+		for (Ngsi9ExtensionInterface extension : dispatcherMap.keySet()) {
 
 			// Iterate over all contextMetadata that should be forwarded to such
 			// extension.
-			Iterator<ContextMetadata> contMetadataIter = dispatcherMap.get(
-					extension).iterator();
-			while (contMetadataIter.hasNext()) {
-
-				ContextMetadata contMetadata = contMetadataIter.next();
+			for (ContextMetadata contMetadata : dispatcherMap.get(extension)) {
 
 				// Query the extension in order to obtain the list of which
 				// subscription are matching against the contextMetadata (e.g.
@@ -490,7 +483,7 @@ public class Ngsi9ExtensionManager implements Ngsi9ExtensionManagerInterface {
 					 * map
 					 */
 					metadataNameToSubscriptionIdMap.put(
-							extension.getMetadataName(), "");
+							extension.getMetadataName(), null);
 				} else {
 					/*
 					 * Add all the subscriptionIds found by the extension

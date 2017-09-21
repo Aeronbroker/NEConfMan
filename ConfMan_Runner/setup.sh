@@ -132,6 +132,7 @@ setPropertyIntoIni "tomcat.init.port" "$confman_tomcatinitport" "$confman_config
 setPropertyIntoXML "pathPreFix_ngsi9" "$confman_pathprefixngsi9" "$confman_configxml"
 setPropertyIntoXML "schema_ngsi9_operation" "$confman_schemangsi9operation" "$confman_configxml"
 setPropertyIntoXML "Ngsi9_10_dataStructure_v07" "$confman_schemangsidatastructure" "$confman_configxml"
+setPropertyIntoXML "treatNotificationAsRegistration" "$confman_treatnotificationasregistration" "$confman_configxml"
 
 setPropertyIntoProperties "postgres_user" "$confman_postgresuser" "$confman_configproperties"
 setPropertyIntoProperties "postgres_password" "$confman_postgrespassword" "$confman_configproperties"

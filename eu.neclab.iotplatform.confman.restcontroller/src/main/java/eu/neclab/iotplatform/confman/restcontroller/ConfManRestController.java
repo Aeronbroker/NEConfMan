@@ -44,7 +44,8 @@
 
 package eu.neclab.iotplatform.confman.restcontroller;
 
-import java.io.BufferedReader;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -60,13 +61,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import eu.neclab.iotplatform.confman.commons.methods.JsonValidator;
-import eu.neclab.iotplatform.confman.commons.methods.XmlValidator;
 import eu.neclab.iotplatform.confman.commons.methods.ValidatorCheck;
+import eu.neclab.iotplatform.confman.commons.methods.XmlValidator;
 import eu.neclab.iotplatform.confman.restcontroller.datamodel.SanityCheck;
 import eu.neclab.iotplatform.ngsi.api.datamodel.Code;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistration;
+import eu.neclab.iotplatform.ngsi.api.datamodel.ContextRegistrationResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.DiscoverContextAvailabilityResponse;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityRequest;
+import eu.neclab.iotplatform.ngsi.api.datamodel.NotifyContextAvailabilityResponse;
 import eu.neclab.iotplatform.ngsi.api.datamodel.ReasonPhrase;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextRequest;
 import eu.neclab.iotplatform.ngsi.api.datamodel.RegisterContextResponse;
@@ -89,6 +93,9 @@ public class ConfManRestController {
 	/** String representing the xml schema for NGSI 9. */
 	private @Value("${schema_ngsi9_operation}")
 	String sNgsi9schema;
+
+	@Value("${treatNotificationAsRegistration:false}")
+	private boolean treatNotificationAsRegistration;
 
 	/** String representing json content type. */
 	private final String CONTENT_TYPE_JSON = "application/json";
@@ -135,15 +142,6 @@ public class ConfManRestController {
 		return new ResponseEntity<SanityCheck>(response, HttpStatus.OK);
 
 	}
-
-	// @RequestMapping(value = "/discoverContextAvailability", method =
-	// RequestMethod.POST, headers = "Accept=*/*")
-	// public @ResponseBody
-	// String discoverContextAvailability_OLD() {
-	//
-	// return "IoT Connector is up and running!";
-	//
-	// }
 
 	@RequestMapping(value = "/ngsi9/discoverContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
@@ -246,7 +244,9 @@ public class ConfManRestController {
 
 		}
 
-		logger.info("Incoming request Valid:" + check.isCorrect());
+		if (logger.isDebugEnabled()) {
+			logger.debug("Incoming request Valid:" + check.isCorrect());
+		}
 
 		return check;
 
@@ -479,14 +479,59 @@ public class ConfManRestController {
 
 	}
 
-	@RequestMapping(value = "/notifyContextAvailability", method = RequestMethod.POST, consumes = {
+	@RequestMapping(value = "/ngsi9/notifyContextAvailability", method = RequestMethod.POST, consumes = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON }, produces = {
 			CONTENT_TYPE_XML, CONTENT_TYPE_JSON })
 	public @ResponseBody
-	String notifyContextAvailability() {
+	ResponseEntity<NotifyContextAvailabilityResponse> notifyContextAvailability(
+			HttpServletRequest requester,
+			@RequestBody NotifyContextAvailabilityRequest request) {
 
-		return "IoT Connector is up and running!";
+		if (logger.isDebugEnabled()) {
+			logger.debug("Notification arrived. Treating as registration: "+treatNotificationAsRegistration);
+		}
+		if (treatNotificationAsRegistration) {
+
+			if (logger.isDebugEnabled()) {
+				logger.debug("The notification:" + request
+						+ " will be treated as a registration");
+			}
+
+			List<ContextRegistration> contextRegistrationList = new ArrayList<ContextRegistration>();
+
+			for (ContextRegistrationResponse contextRegistrationResponse : request
+					.getContextRegistrationResponseList()) {
+
+				if (contextRegistrationResponse.getErrorCode() == null
+						|| contextRegistrationResponse.getErrorCode().getCode() < 300) {
+					contextRegistrationList.add(contextRegistrationResponse
+							.getContextRegistration());
+				}
+			}
+
+			if (!contextRegistrationList.isEmpty()) {
+
+				RegisterContextRequest registration = new RegisterContextRequest(
+						contextRegistrationList, null, null);
+				RegisterContextResponse response = ngsi9
+						.registerContext(registration);
+
+				if (logger.isDebugEnabled()) {
+					logger.debug("The notification:" + request
+							+ " has been treated as a registration: "
+							+ registration.toJsonString()
+							+ " with the response: " + response.toJsonString());
+				}
+			} else {
+				if (logger.isDebugEnabled()) {
+					logger.debug("No ContextRegistration to be registered");
+				}
+			}
+		}
+
+		return new ResponseEntity<NotifyContextAvailabilityResponse>(
+				new NotifyContextAvailabilityResponse(new StatusCode(200,
+						ReasonPhrase.OK_200.toString(), null)), HttpStatus.OK);
 
 	}
-
 }
