@@ -272,6 +272,24 @@ public class ConfManRestController {
 		ValidatorCheck check = validateMessageBody(requester, request,
 				sNgsi9schema);
 
+		for (ContextRegistration reg : request.getContextRegistrationList()) {
+			
+			if (reg.getProvidingApplication() == null
+					|| reg.getProvidingApplication().toString().isEmpty()) {
+				RegisterContextResponse response = new RegisterContextResponse();
+				StatusCode statusCode = new StatusCode(
+						Code.MISSINGPARAMETER_471.getCode(),
+						ReasonPhrase.MISSINGPARAMETER_471.toString(),
+						"ProvidingApplication missing for "
+								+ reg.toJsonString());
+
+				response.setErrorCode(statusCode);
+
+				return new ResponseEntity<RegisterContextResponse>(response,
+						HttpStatus.OK);
+			}
+		}
+
 		if (check.isCorrect()) {
 
 			RegisterContextResponse response = ngsi9.registerContext(request);
@@ -488,7 +506,8 @@ public class ConfManRestController {
 			@RequestBody NotifyContextAvailabilityRequest request) {
 
 		if (logger.isDebugEnabled()) {
-			logger.debug("Notification arrived. Treating as registration: "+treatNotificationAsRegistration);
+			logger.debug("Notification arrived. Treating as registration: "
+					+ treatNotificationAsRegistration);
 		}
 		if (treatNotificationAsRegistration) {
 
