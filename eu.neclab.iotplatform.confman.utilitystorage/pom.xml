@@ -45,7 +45,7 @@
 							eu.neclab.iotplatform.ngsi.api.datamodel;version="${iotbroker.version}",
 							javax.annotation;version=0.0.0,
 							org.apache.log4j,
-							com.google.common.collect
+							com.google.common.collect;version=0.0.0
 						</Import-Package>
 					</instructions>
 				</configuration>
