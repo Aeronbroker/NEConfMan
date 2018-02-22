@@ -97,7 +97,7 @@ function disableBundle {
 
 function enableBundle {
 	
-	found=`grep $1-$confman_version.jar confman/configuration/config.ini`
+	found=`grep "\/$1-$confman_version.jar" confman/configuration/config.ini`
 	if [ -n "$found" ];
 	then
 		return

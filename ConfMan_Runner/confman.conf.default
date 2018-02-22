@@ -3,7 +3,7 @@
 ##############################
 # NEC IoTDiscovery feature selection
 ##############################
-confman_semantic="enabled"
+confman_semantic="disabled"
 
 ##############################
 # NEC IoTDiscovery configurations

@@ -20,6 +20,15 @@
 		<property name="utilityStorage" ref="UtilityStorage"></property>
 		<property name="knowledgeBase" ref="KnowledgeBase"></property>
 	</bean>
+	
+<!-- 	<bean id="connector" class="eu.neclab.iotplatform.confman.core.ConfManCore"> -->
+<!-- 		<property name="ngsi9Storage" ref="Ngsi9Storage"></property> -->
+<!-- 		<property name="deletionScheduler" ref="deletionscheduler"></property> -->
+<!-- 		<property name="notificationUtils" ref="notificationutils"></property> -->
+<!-- 		<property name="ngsi9ExtensionManager" ref="Ngsi9ExtensionManager"></property> -->
+<!-- 		<property name="utilityStorage" ref="UtilityStorage"></property> -->
+<!-- 		<property name="knowledgeBase" ref="KnowledgeBase"></property> -->
+<!-- 	</bean> -->
 
 	<bean id="deletionscheduler"
 		class="eu.neclab.iotplatform.confman.scheduler.DeletionScheduler">

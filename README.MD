@@ -21,27 +21,52 @@ Compilation Procedure
 --
 The source code is organized as Maven projects and therefore can be compiled using Maven. 
 
-At compile time, Maven will automatically install the required dependency. One exception is the dependency on package `eu.neclab.iotplatform.ngsi.api`. This package is delivered as part of the **IoT Broker GE reference implementation**. It can be found in the *ConfManTargetPlatform* folder and needs to be installed manually into the local Maven repository. If the IoT Broker GEri has been previously compiled on the same system, this step can be skipped. Otherwise, navigate into the `ConfManTargetPlatform/neclab` folder and type the below command.
-Note: Please check the current version of ngsi.api jar file in the same folder and change the below version (shown as 5.3.3) with the existing name of the jar file. 
-
+First it is necessary to clone this repository:
 ```
-mvn install:install-file -DgroupId=org.apache.httpcomponents -DartifactId=httpclient -Dversion=4.2.0-osgi -Dfile=ngsi.api-5.3.3.jar -Dpackaging=jar -DgeneratePom=true
+cd /CHOSENPATH/
+git clone https://github.com/Aeronbroker/NEConfMan.git
 ```
+Which will produce as result a folder */CHOSENPATH/NEConfMan/* with the source code.
 
+At compile time, Maven will automatically install the required dependency. One exception is the dependency on package `eu.neclab.iotplatform.ngsi.api`. This package is delivered as part of the [IoT Broker GE reference implementation Aeron](https://github.com/Aeronbroker/Aeron).
+
+In order to get the ngsi.api bundle, do the following:
+```
+cd /CHOSENPATH/NEConfMan/
+
+# Since GIT does not support download of a single folder, we need to make use of a github.com feature
+# that allows svn checkout of single folders
+svn checkout https://github.com/Aeronbroker/Aeron/trunk/IoTbrokerParent/
+svn checkout https://github.com/Aeronbroker/Aeron/trunk/eu.neclab.iotplatform.ngsi.api/
+
+# Let's compile the dependencies from the Aeron project
+cd /CHOSENPATH/NEConfMan/IoTbrokerParent
+mvn clean install
+cd /CHOSENPATH/NEConfMan/eu.neclab.iotplatform.ngsi.api
+mvn clean install
+```
+ 
 To compile the ConfMan sources, first compile the ConfMan parent project. Navigate into the folder `eu.neclab.iotplatform.confman.parent` and type
 
 ```
-mvn install
+cd /CHOSENPATH/NEConfMan/eu.neclab.iotplatform.confman.parent
+mvn clean install
 ```
 
 Having installed the parent project, the ConfMan bundles are compiled by navigating into the `eu.neclab.iotplatform.confman.builder` folder and typing again
 
 ```
-mvn install
+cd /CHOSENPATH/NEConfMan/eu.neclab.iotplatform.confman.builder
+mvn clean install
 ```
 
-The compiled bundles will be placed as jar files in `eu.neclab.iotplatform.confman.builder/target/builder-4.3.3-assembly/bundle`. Note that the ConfMan repository contains a runtime environment which is pre-configured to load the OSGi bundles from exactly that folder.
+The compiled bundles will be placed as jar files in *eu.neclab.iotplatform.confman.builder/target/builder-7.1-assembly/bundle*. Note that the ConfMan repository contains a runtime environment which is pre-configured to load the OSGi bundles from exactly that folder.
 
+Finally it is necessary to copy the ngsi.api bundle that we have previously compiled within the NEConfMan builder folder:
+```
+cp /CHOSENPATH/NEConfMan/eu.neclab.iotplatform.ngsi.api/target/ngsi.api-7.1-SNAPSHOT.jar /CHOSENPATH/NEConfMan/eu.neclab.iotplatform.confman.builder/target/builder-7.1-SNAPSHOT-assembly/bundle
+``` 
+(change the version of the ngsi.api bundle and of the confman target folder when necessary.)
 
 Configuring and running NEC ConfMan
 ==
@@ -67,7 +92,7 @@ NEConfMan configuration variables are spread among several files. For this reaso
 
 First we have to enter in the *ConfMan-Runner* folder:
 ```
-cd ConfMan-Runner
+cd ConfMan_Runner
 ```
 
 For a very quick configuration of the NEConfMan the following command needs to be run (please make sure the setup.sh has the execute rights with a *chmod +x setup.sh*):
@@ -110,6 +135,37 @@ For having the custom preferences set it is necessary to simply run:
 ```
 
 After running the setup.sh, the NEConfMan can be started with the provided scripts in *ConfMand-Runner* folder.
+
+For instance, let's run the NEConfMan in console mode:
+```
+./startConfigurationManager.sh
+```
+
+and after a few seconds, when the logs have stopped to print new info, let's check if all the bundles are loaded into OSGi. Type the *ss* command and push enter:
+```
+osgi> ss
+```
+
+the output should look like similar to this (depending on the choosen bundles):
+```
+....
+....
+....
+71	ACTIVE      eu.neclab.iotplatform.confman.commons_7.1.0.SNAPSHOT
+72	ACTIVE      eu.neclab.iotplatform.confman.coreextensible_7.1.0.SNAPSHOT
+73	ACTIVE      eu.neclab.iotplatform.confman.couchdb_7.1.0.SNAPSHOT
+74	ACTIVE      eu.neclab.iotplatform.ngsi.api_7.1.0.SNAPSHOT
+75	ACTIVE      eu.neclab.iotplatform.confman.postgres_7.1.0.SNAPSHOT
+76	ACTIVE      eu.neclab.iotplatform.confman.restcontroller_7.1.0.SNAPSHOT
+77	RESOLVED    eu.neclab.iotplatform.confman.serverconf_7.1.0.SNAPSHOT
+	            Master=29
+78	ACTIVE      eu.neclab.iotplatform.confman.utilitystorage_7.1.0.SNAPSHOT
+79	ACTIVE      eu.neclab.iotplatform.confman.extensionmanager_7.1.0.SNAPSHOT
+80	ACTIVE      eu.neclab.iotplatform.confman.knowledgebase_7.1.0.SNAPSHOT
+
+```
+
+
 
 Manual System Configuration
 ---

@@ -336,6 +336,8 @@ public class ConfManCore implements Ngsi9Interface, Resettable {
 				}
 
 			} catch (Exception e) {
+				logger.error("Exception");
+				e.printStackTrace();
 				response.setErrorCode(new StatusCode(Code.INTERNALERROR_500
 						.getCode(), ReasonPhrase.RECEIVERINTERNALERROR_500
 						.toString(), e.getMessage()));

@@ -7,10 +7,20 @@
        http://www.springframework.org/schema/osgi/spring-osgi.xsd">
 
 	<osgi:service id="Ngsi9Interface" ref="confmancore"
-		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" />
+		interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface"
+		ranking="20">
+		<osgi:service-properties>
+			<entry key="ngsi9Service" value="true" />
+			<entry key="ngsi9JavaService" value="true" />
+		</osgi:service-properties>
+	</osgi:service>
+
+	<!-- <osgi:service id="Ngsi9Core" ref="connector" -->
+	<!-- interface="eu.neclab.iotplatform.ngsi.api.ngsi9.Ngsi9Interface" -->
+	<!-- ranking="20" /> -->
 
 	<osgi:service id="Resettable" ref="confmancore"
-		interface="eu.neclab.iotplatform.confman.commons.interfaces.Resettable"/>
+		interface="eu.neclab.iotplatform.confman.commons.interfaces.Resettable" />
 
 	<osgi:reference id="Ngsi9Storage"
 		interface="eu.neclab.iotplatform.confman.commons.interfaces.Ngsi9StorageInterface"></osgi:reference>
